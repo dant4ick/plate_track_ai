@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:plate_track_ai/core/constants/app_strings.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
+import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +17,7 @@ class NutritionStatsScreen extends StatefulWidget {
 class _NutritionStatsScreenState extends State<NutritionStatsScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final FoodStorageService _storageService = FoodStorageService();
+  final UserProfileService _userProfileService = UserProfileService();
   
   // Data states
   List<FoodItem> _todaysFoodItems = [];
@@ -28,16 +30,35 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
   double _totalCarbs = 0;
   double _totalFat = 0;
   
-  // Target values (these could be configurable in a settings screen)
-  final double _targetCalories = 2000;
+  // Target values (will be loaded from user profile or use defaults)
+  double _targetCalories = 2000;
+  double _targetProtein = 80;
+  double _targetCarbs = 250;
+  double _targetFat = 70;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     
-    // Load food data
+    // Initialize services and load data
+    _initializeServices();
+  }
+
+  Future<void> _initializeServices() async {
+    await _userProfileService.initialize();
+    _loadUserTargets();
     _loadFoodData();
+  }
+
+  void _loadUserTargets() {
+    final targets = _userProfileService.getNutritionTargets();
+    if (targets != null) {
+      _targetCalories = targets['calories']!;
+      _targetProtein = targets['protein']!;
+      _targetCarbs = targets['carbohydrates']!;
+      _targetFat = targets['fat']!;
+    }
   }
   
   Future<void> _loadFoodData() async {
@@ -494,7 +515,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
                   // Navigate to camera - show a helpful message
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Use the Home tab\'s "Scan Food" button to add meals'),
+                      content: Text('Use the camera button at the bottom to start tracking meals'),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -528,6 +549,8 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
 
   
   Future<void> _showDeleteDialog(FoodItem item) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -538,12 +561,12 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.red[50],
+                  color: isDark ? Colors.red[900]?.withOpacity(0.3) : Colors.red[50],
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   Icons.delete_outline,
-                  color: Colors.red[400],
+                  color: isDark ? Colors.red[300] : Colors.red[400],
                   size: 24,
                 ),
               ),
@@ -568,15 +591,17 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.orange[50],
+                  color: isDark ? Colors.orange[900]?.withOpacity(0.3) : Colors.orange[50],
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange[200]!),
+                  border: Border.all(
+                    color: isDark ? Colors.orange[600]! : Colors.orange[200]!,
+                  ),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.warning_amber_rounded,
-                      color: Colors.orange[600],
+                      color: isDark ? Colors.orange[300] : Colors.orange[600],
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -584,7 +609,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
                       child: Text(
                         'This action cannot be undone.',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.orange[700],
+                              color: isDark ? Colors.orange[200] : Colors.orange[700],
                               fontWeight: FontWeight.w500,
                             ),
                       ),
@@ -602,7 +627,9 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
               ),
               child: Text(
                 'Cancel',
-                style: TextStyle(color: Colors.grey[600]),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                ),
               ),
             ),
             ElevatedButton(

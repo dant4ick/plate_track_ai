@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:plate_track_ai/core/constants/app_strings.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
+import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 
 class RecommendationsScreen extends StatefulWidget {
@@ -12,6 +13,7 @@ class RecommendationsScreen extends StatefulWidget {
 
 class _RecommendationsScreenState extends State<RecommendationsScreen> {
   final FoodStorageService _storageService = FoodStorageService();
+  final UserProfileService _userProfileService = UserProfileService();
   bool _isLoading = false;
   
   // Nutrition summary for the past week
@@ -20,11 +22,11 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
   double _avgCarbs = 0;
   double _avgFat = 0;
   
-  // Target values (these could be configurable in a settings screen)
-  final double _targetCalories = 2000;
-  final double _targetProtein = 80;
-  final double _targetCarbs = 250;
-  final double _targetFat = 70;
+  // Target values (will be loaded from user profile or use defaults)
+  double _targetCalories = 2000;
+  double _targetProtein = 80;
+  double _targetCarbs = 250;
+  double _targetFat = 70;
   
   // List of personalized recommendations
   List<Map<String, dynamic>> _recommendations = [];
@@ -32,9 +34,32 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize the service and load data once
+    // Initialize services and load data
+    _initializeServices();
+  }
+
+  Future<void> _initializeServices() async {
+    // Initialize the storage service
     _storageService.initialize();
+    
+    // Initialize user profile service and load targets
+    await _userProfileService.initialize();
+    _loadUserTargets();
+    
+    // Load food data
     _loadData();
+  }
+
+  void _loadUserTargets() {
+    final targets = _userProfileService.getNutritionTargets();
+    if (targets != null) {
+      setState(() {
+        _targetCalories = targets['calories']!;
+        _targetProtein = targets['protein']!;
+        _targetCarbs = targets['carbohydrates']!;
+        _targetFat = targets['fat']!;
+      });
+    }
   }
   
   // Don't need to load data in the build method, it will be triggered by the ValueListenable
@@ -62,10 +87,12 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
           daysWithData++;
           
           for (final item in items) {
-            totalCalories += item.calories;
-            totalProtein += item.nutritionFacts.protein;
-            totalCarbs += item.nutritionFacts.carbohydrates;
-            totalFat += item.nutritionFacts.fat;
+            // Calculate actual nutrition values based on mass
+            final double mass = item.nutritionFacts.mass ?? 100.0;
+            totalCalories += (item.calories * mass) / 100.0;
+            totalProtein += (item.nutritionFacts.protein * mass) / 100.0;
+            totalCarbs += (item.nutritionFacts.carbohydrates * mass) / 100.0;
+            totalFat += (item.nutritionFacts.fat * mass) / 100.0;
           }
         }
       }

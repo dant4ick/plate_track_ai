@@ -5,7 +5,7 @@ import 'package:plate_track_ai/shared/models/food_item.dart';
 
 class AppButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool isLoading;
   final bool isSecondary;
   final IconData? icon;
@@ -187,6 +187,7 @@ class FoodItemCard extends StatelessWidget {
         : DateFormat('MMM d, h:mm a').format(item.timestamp);
     final double mass = item.nutritionFacts.mass ?? 100.0;
     final int actualCalories = ((item.calories * mass) / 100.0).toInt();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Card(
       elevation: 1,
@@ -201,7 +202,7 @@ class FoodItemCard extends StatelessWidget {
               height: 50,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: Colors.grey[200],
+                color: isDark ? Colors.grey[800] : Colors.grey[200],
               ),
               child: item.imagePath != null
                   ? ClipRRect(
@@ -213,7 +214,7 @@ class FoodItemCard extends StatelessWidget {
                     )
                   : Icon(
                       Icons.restaurant,
-                      color: Colors.grey[400],
+                      color: isDark ? Colors.grey[500] : Colors.grey[400],
                     ),
             ),
             const SizedBox(width: 12),
@@ -241,17 +242,17 @@ class FoodItemCard extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.red[50],
+                              color: isDark ? Colors.red[900]?.withOpacity(0.3) : Colors.red[50],
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: Colors.red[200]!,
+                                color: isDark ? Colors.red[600]! : Colors.red[200]!,
                                 width: 1,
                               ),
                             ),
                             child: Icon(
                               Icons.delete_outline,
                               size: 16,
-                              color: Colors.red[400],
+                              color: isDark ? Colors.red[300] : Colors.red[400],
                             ),
                           ),
                         ),
@@ -263,7 +264,7 @@ class FoodItemCard extends StatelessWidget {
                   Text(
                     showMass ? '$timeString · ${mass.toInt()}g' : timeString,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         ),
                   ),
                   
@@ -294,13 +295,13 @@ class FoodItemCard extends StatelessWidget {
                             '$actualCalories',
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.red[400],
+                                  color: isDark ? Colors.red[300] : Colors.red[400],
                                 ),
                           ),
                           Text(
                             'kcal',
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey[600],
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                 ),
                           ),
                         ],

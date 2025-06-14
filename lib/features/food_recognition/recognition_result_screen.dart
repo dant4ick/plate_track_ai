@@ -510,8 +510,9 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
         ),
       );
       
-      // Go back to previous screen with result to reset analyzing state
-      Navigator.pop(context, true);
+      // Navigate back to the main screen (dashboard) instead of camera
+      // This removes all screens in the stack up to the HomeScreen
+      Navigator.popUntil(context, (route) => route.isFirst);
     } catch (e) {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(

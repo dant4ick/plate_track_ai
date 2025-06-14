@@ -1,13 +1,12 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:plate_track_ai/core/constants/app_strings.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
-import 'package:plate_track_ai/features/food_recognition/food_camera_screen.dart';
-import 'package:plate_track_ai/features/food_recognition/recognition_result_screen.dart';
 import 'package:plate_track_ai/core/services/food_recognition_service.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
+import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
+import 'package:plate_track_ai/features/profile/profile_management_screen.dart';
+import 'dart:async';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -19,26 +18,62 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final FoodStorageService _storageService = FoodStorageService();
   final FoodRecognitionService _recognitionService = FoodRecognitionService();
+  final UserProfileService _userProfileService = UserProfileService();
   List<FoodItem> _recentFoodItems = [];
   bool _isLoading = true;
-  bool _isProcessingGalleryImage = false;
   double _todayCalories = 0;
   int _todayItemsCount = 0;
+  
+  // Target values (will be loaded from user profile or use defaults)
+  double _targetCalories = 2000;
+  
+  // Stream subscription for data changes
+  late StreamSubscription<void> _dataChangeSubscription;
 
   @override
   void initState() {
     super.initState();
-    _loadDashboardData();
+    _initializeServices();
+  }
+
+  Future<void> _initializeServices() async {
+    // Initialize recognition service
     _recognitionService.initialize();
+    
+    // Initialize user profile service and load targets
+    await _userProfileService.initialize();
+    _loadUserTargets();
+    
+    // Initialize storage service and listen to data changes
+    await _storageService.initialize();
+    _dataChangeSubscription = _storageService.onDataChanged.listen((_) {
+      // Refresh dashboard data when storage data changes
+      _loadDashboardData();
+    });
+    
+    // Load dashboard data
+    _loadDashboardData();
+  }
+
+  void _loadUserTargets() {
+    final targets = _userProfileService.getNutritionTargets();
+    if (targets != null && mounted) {
+      setState(() {
+        _targetCalories = targets['calories']!;
+      });
+    }
   }
 
   @override
   void dispose() {
+    _dataChangeSubscription.cancel();
     _recognitionService.dispose();
     super.dispose();
   }
 
   Future<void> _loadDashboardData() async {
+    if (!mounted) return;
+    
     setState(() {
       _isLoading = true;
     });
@@ -54,124 +89,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _recentFoodItems = allItems.take(5).toList();
       
       // Calculate today's stats
-      _todayCalories = todayItems.fold(0.0, (sum, item) => sum + item.calories);
+      _todayCalories = todayItems.fold(0.0, (sum, item) {
+        final double mass = item.nutritionFacts.mass ?? 100.0;
+        final double actualCalories = (item.calories * mass) / 100.0;
+        return sum + actualCalories;
+      });
       _todayItemsCount = todayItems.length;
       
     } catch (e) {
       debugPrint('Error loading dashboard data: $e');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _navigateToCamera() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const FoodCameraScreen(),
-      ),
-    ).then((result) {
-      // Refresh data when coming back from camera
-      if (result == true) {
-        _loadDashboardData();
-      }
-    });
-  }
-
-  Future<void> _pickImageFromGallery() async {
-    if (_isProcessingGalleryImage) return;
-
-    setState(() {
-      _isProcessingGalleryImage = true;
-    });
-
-    try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1200,
-        maxHeight: 1200,
-      );
-
-      if (image != null) {
-        await _processGalleryImage(File(image.path));
-      }
-    } catch (e) {
-      debugPrint('Error picking image from gallery: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error selecting image: $e'),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
       if (mounted) {
         setState(() {
-          _isProcessingGalleryImage = false;
+          _isLoading = false;
         });
       }
     }
   }
 
-  Future<void> _processGalleryImage(File imageFile) async {
-    try {
-      // Get nutrition data from the recognition service
-      final nutritionValues = await _recognitionService.recognizeFoodValues(imageFile);
-      
-      if (!mounted) return;
-      
-      // Create food item with per 100g nutrition values
-      final foodItem = FoodItem(
-        name: 'Food Item',
-        calories: nutritionValues['calories'] ?? 0,
-        nutritionFacts: NutritionFacts(
-          protein: nutritionValues['protein'] ?? 0,
-          carbohydrates: nutritionValues['carbs'] ?? 0,
-          fat: nutritionValues['fat'] ?? 0,
-          mass: nutritionValues['mass'] ?? 100.0,
-        ),
-        imagePath: imageFile.path,
-      );
-      
-      // Navigate to results screen with the data
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => RecognitionResultScreen(
-            imageFile: imageFile,
-            foodItem: foodItem,
-            onSave: (FoodItem item) async {
-              // Save to storage when user confirms
-              await _storageService.saveFoodItem(item);
-            },
-          ),
-        ),
-      );
-      
-      // Refresh data if item was saved
-      if (result == true && mounted) {
-        _loadDashboardData();
-      }
-    } catch (e) {
-      debugPrint('Error processing gallery image: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error analyzing image: $e'),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
   Future<void> _showDeleteDialog(FoodItem item) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -182,12 +120,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.red[50],
+                  color: isDark ? Colors.red[900]?.withOpacity(0.3) : Colors.red[50],
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   Icons.delete_outline,
-                  color: Colors.red[400],
+                  color: isDark ? Colors.red[300] : Colors.red[400],
                   size: 24,
                 ),
               ),
@@ -212,15 +150,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.orange[50],
+                  color: isDark ? Colors.orange[900]?.withOpacity(0.3) : Colors.orange[50],
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange[200]!),
+                  border: Border.all(
+                    color: isDark ? Colors.orange[600]! : Colors.orange[200]!,
+                  ),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.warning_amber_rounded,
-                      color: Colors.orange[600],
+                      color: isDark ? Colors.orange[300] : Colors.orange[600],
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -228,7 +168,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Text(
                         'This action cannot be undone.',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.orange[700],
+                              color: isDark ? Colors.orange[200] : Colors.orange[700],
                               fontWeight: FontWeight.w500,
                             ),
                       ),
@@ -246,7 +186,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               child: Text(
                 'Cancel',
-                style: TextStyle(color: Colors.grey[600]),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                ),
               ),
             ),
             ElevatedButton(
@@ -311,8 +253,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator())
-        : _isProcessingGalleryImage
-        ? const LoadingIndicator(message: 'Analyzing image...')
         : RefreshIndicator(
             onRefresh: _loadDashboardData,
             child: SingleChildScrollView(
@@ -331,23 +271,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   
                   const SizedBox(height: 24),
                   
-                  // Quick actions
-                  _buildQuickActionsCard(),
-                  
-                  const SizedBox(height: 24),
-                  
                   // Recent items
                   _buildRecentItemsSection(),
                 ],
               ),
             ),
           ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _navigateToCamera,
-        icon: const Icon(Icons.camera_alt),
-        label: const Text('Scan Food'),
-        tooltip: 'Take a photo to analyze food',
-      ),
     );
   }
 
@@ -392,16 +321,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Ready to track your nutrition today?',
+                'Use the camera button to scan your food and track nutrition!',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey[600],
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                     ),
-              ),
-              const SizedBox(height: 16),
-              AppButton(
-                text: 'Start Tracking',
-                onPressed: _navigateToCamera,
-                icon: Icons.add_a_photo,
               ),
             ],
           ),
@@ -411,6 +334,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildQuickStatsCard() {
+    final double calorieProgress = _todayCalories / _targetCalories;
+    
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -432,21 +357,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                 ),
+                const Spacer(),
+                // Add profile button
+                IconButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const ProfileManagementScreen(),
+                      ),
+                    ).then((_) => _loadUserTargets()); // Reload targets when returning
+                  },
+                  icon: const Icon(Icons.person),
+                  tooltip: 'Profile Settings',
+                ),
               ],
             ),
             const SizedBox(height: 16),
+            // Calorie progress bar
+            _buildCalorieProgress(calorieProgress),
+            const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(
-                  child: _buildStatItem(
-                    'Calories',
-                    '${_todayCalories.toInt()}',
-                    'kcal',
-                    Icons.local_fire_department,
-                    Colors.red[400]!,
-                  ),
-                ),
-                const SizedBox(width: 16),
                 Expanded(
                   child: _buildStatItem(
                     'Items',
@@ -456,11 +387,58 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Colors.green[400]!,
                   ),
                 ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildStatItem(
+                    'Goal',
+                    '${(calorieProgress * 100).toInt()}%',
+                    'complete',
+                    Icons.track_changes,
+                    calorieProgress >= 1.0 ? Colors.green[400]! : Colors.orange[400]!,
+                  ),
+                ),
               ],
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCalorieProgress(double progress) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Calories',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            Text(
+              '${_todayCalories.toInt()} / ${_targetCalories.toInt()} kcal',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: LinearProgressIndicator(
+            value: progress.clamp(0.0, 1.0),
+            minHeight: 8,
+            backgroundColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              progress >= 1.0 ? Colors.green[400]! : Colors.red[400]!,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -485,7 +463,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Text(
             unit,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                 ),
           ),
           const SizedBox(height: 4),
@@ -496,78 +474,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActionsCard() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Quick Actions',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(
-                    'Take Photo',
-                    Icons.camera_alt,
-                    Colors.blue[400]!,
-                    _navigateToCamera,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildActionButton(
-                    'From Gallery',
-                    Icons.photo_library,
-                    Colors.purple[400]!,
-                    () => _pickImageFromGallery(),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton(String label, IconData icon, Color color, VoidCallback onPressed) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: color,
-                    ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -584,29 +490,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Icon(
                 Icons.restaurant_menu,
                 size: 48,
-                color: Colors.grey[400],
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
               ),
               const SizedBox(height: 16),
               Text(
                 'No food items yet',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey[600],
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                     ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Start by taking a photo of your meal!',
+                'Use the camera button below to start tracking your meals!',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[500],
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                     ),
                 textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              AppButton(
-                text: 'Get Started',
-                onPressed: _navigateToCamera,
-                icon: Icons.camera_alt,
               ),
             ],
           ),
