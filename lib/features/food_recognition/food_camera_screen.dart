@@ -351,6 +351,16 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
     }
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Food Scanner'),
+        backgroundColor: Colors.black54,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: Stack(
         children: [
           // Camera preview

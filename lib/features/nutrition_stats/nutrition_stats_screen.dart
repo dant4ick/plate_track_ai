@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:plate_track_ai/core/constants/app_strings.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
+import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:intl/intl.dart';
 
 class NutritionStatsScreen extends StatefulWidget {
@@ -14,7 +15,6 @@ class NutritionStatsScreen extends StatefulWidget {
 
 class _NutritionStatsScreenState extends State<NutritionStatsScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  int _selectedTabIndex = 0;
   final FoodStorageService _storageService = FoodStorageService();
   
   // Data states
@@ -30,19 +30,11 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
   
   // Target values (these could be configurable in a settings screen)
   final double _targetCalories = 2000;
-  final double _targetProtein = 80;
-  final double _targetCarbs = 250;
-  final double _targetFat = 70;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() {
-      setState(() {
-        _selectedTabIndex = _tabController.index;
-      });
-    });
     
     // Load food data
     _loadFoodData();
@@ -143,6 +135,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
       ),
       body: TabBarView(
         controller: _tabController,
+        physics: const NeverScrollableScrollPhysics(), // Disable swipe gesture
         children: [
           _buildDailyStatsTab(),
           _buildWeeklyStatsTab(),
@@ -152,11 +145,19 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
   }
 
   Widget _buildDailyStatsTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return RefreshIndicator(
+      onRefresh: _loadFoodData,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+          // Header section
+          _buildHeaderSection(),
+          
+          const SizedBox(height: 24),
+          
           // Calorie summary card
           _buildCalorieCard(),
           
@@ -184,38 +185,43 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
           const SizedBox(height: 16),
           _buildFoodItemsList(),
         ],
+        ),
       ),
     );
   }
 
   Widget _buildWeeklyStatsTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Weekly calorie line chart
-          Text(
-            'Weekly Calories',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: 16),
-          _buildWeeklyCalorieChart(),
-          
-          const SizedBox(height: 24),
-          
-          // Weekly nutrient averages
-          Text(
-            'Weekly Averages',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: 16),
-          _buildWeeklyAveragesCards(),
-        ],
+    return RefreshIndicator(
+      onRefresh: _loadFoodData,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Weekly calorie line chart
+            Text(
+              'Weekly Calories',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            _buildWeeklyCalorieChart(),
+            
+            const SizedBox(height: 24),
+            
+            // Weekly nutrient averages
+            Text(
+              'Weekly Averages',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            _buildWeeklyAveragesCards(),
+          ],
+        ),
       ),
     );
   }
@@ -229,43 +235,92 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  AppStrings.caloriesConsumed,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red[400]!.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.local_fire_department,
+                    color: Colors.red[400]!,
+                    size: 28,
+                  ),
                 ),
-                Text(
-                  '${consumedCalories.toInt()} / ${targetCalories.toInt()} kcal',
-                  style: Theme.of(context).textTheme.titleMedium,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppStrings.caloriesConsumed,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${consumedCalories.toInt()} / ${targetCalories.toInt()} kcal',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red[400],
+                            ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: LinearProgressIndicator(
                 value: progressPercentage.clamp(0.0, 1.0),
                 minHeight: 12,
-                backgroundColor: Colors.grey[200],
+                backgroundColor: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.grey[700] 
+                    : Colors.grey[200],
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).colorScheme.primary,
+                  Colors.red[400]!,
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              '${(progressPercentage * 100).toInt()}% of daily goal',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${(progressPercentage * 100).toInt()}% of daily goal',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: progressPercentage >= 1.0 
+                        ? Colors.green[400]!.withOpacity(0.1)
+                        : Colors.orange[400]!.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  child: Text(
+                    progressPercentage >= 1.0 ? 'Goal reached!' : 'Keep going!',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: progressPercentage >= 1.0 
+                              ? Colors.green[600]
+                              : Colors.orange[600],
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -319,7 +374,9 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Theme.of(context).brightness == Brightness.dark 
+                ? Colors.black.withOpacity(0.2)
+                : Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 1),
@@ -397,102 +454,196 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
   Widget _buildFoodItemsList() {
     if (_todaysFoodItems.isEmpty) {
       return Card(
-        elevation: 0,
-        color: Colors.grey[100],
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: Center(
-            child: Column(
-              children: [
-                Icon(
-                  Icons.no_food,
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[400]!.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.restaurant_menu,
                   size: 48,
                   color: Colors.grey[400],
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'No food items recorded today',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                ),
-                const SizedBox(height: 8),
-                TextButton.icon(
-                  onPressed: () {
-                    // Navigate to camera tab - this requires a more complex implementation
-                    // Here we just provide a placeholder
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please navigate to the Camera tab to add food items'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text('Add food'),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No food items recorded today',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[600],
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Start tracking your meals to see detailed nutrition statistics!',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey[500],
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              TextButton.icon(
+                onPressed: () {
+                  // Navigate to camera - show a helpful message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Use the Home tab\'s "Scan Food" button to add meals'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.camera_alt),
+                label: const Text('Start Tracking'),
+              ),
+            ],
           ),
         ),
       );
     }
-    
+
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _todaysFoodItems.length,
-      separatorBuilder: (context, index) => const Divider(),
+      separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = _todaysFoodItems[index];
-        final timeString = DateFormat('h:mm a').format(item.timestamp);
         
-        // Calculate actual calories based on per 100g value and mass
-        final double mass = item.nutritionFacts.mass ?? 100.0;
-        final int actualCalories = ((item.calories * mass) / 100.0).toInt();
-        
-        return ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(
-            item.name,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-          ),
-          subtitle: Text('$timeString · ${mass.toInt()}g'),
-          trailing: Text(
-            '$actualCalories kcal',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-          ),
-          onLongPress: () => _showDeleteDialog(item),
+        return FoodItemCard(
+          item: item,
+          onDelete: () => _showDeleteDialog(item),
+          showDeleteButton: true,
+          timeFormat: 'h:mm a',
         );
       },
     );
   }
+
   
   Future<void> _showDeleteDialog(FoodItem item) async {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete food item?'),
-          content: Text('Do you want to delete "${item.name}" from your records?'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.delete_outline,
+                  color: Colors.red[400],
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Delete Food Item',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Are you sure you want to delete "${item.name}" from your nutrition records?',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.orange[600],
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'This action cannot be undone.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.orange[700],
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
                 await _storageService.deleteFoodItem(item.id);
                 Navigator.of(context).pop();
                 _loadFoodData(); // Refresh data
+                
+                // Show success message
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          Icon(
+                            Icons.check_circle,
+                            color: Colors.green[400],
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text('Food item deleted successfully'),
+                        ],
+                      ),
+                      backgroundColor: Colors.green[600],
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  );
+                }
               },
-              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[400],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('Delete'),
             ),
           ],
         );
@@ -529,7 +680,9 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Theme.of(context).brightness == Brightness.dark 
+                ? Colors.black.withOpacity(0.2)
+                : Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 1),
@@ -604,7 +757,9 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
             horizontalInterval: 500,
             getDrawingHorizontalLine: (value) {
               return FlLine(
-                color: Colors.grey[300],
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.grey[600] 
+                    : Colors.grey[300],
                 strokeWidth: 1,
               );
             },
@@ -629,6 +784,8 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
     // Calculate weekly averages
     double avgCalories = 0;
     double avgProtein = 0;
+    double avgCarbs = 0;
+    double avgFat = 0;
     int daysWithData = 0;
     
     for (final dailyItems in _weeklyFoodItems) {
@@ -636,16 +793,22 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
         daysWithData++;
         double dailyCalories = 0;
         double dailyProtein = 0;
+        double dailyCarbs = 0;
+        double dailyFat = 0;
         
         for (final item in dailyItems) {
           // Calculate based on per 100g values and mass
           final double mass = item.nutritionFacts.mass ?? 100.0;
           dailyCalories += (item.calories * mass) / 100.0;
           dailyProtein += (item.nutritionFacts.protein * mass) / 100.0;
+          dailyCarbs += (item.nutritionFacts.carbohydrates * mass) / 100.0;
+          dailyFat += (item.nutritionFacts.fat * mass) / 100.0;
         }
         
         avgCalories += dailyCalories;
         avgProtein += dailyProtein;
+        avgCarbs += dailyCarbs;
+        avgFat += dailyFat;
       }
     }
     
@@ -653,28 +816,58 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
     if (daysWithData > 0) {
       avgCalories /= daysWithData;
       avgProtein /= daysWithData;
+      avgCarbs /= daysWithData;
+      avgFat /= daysWithData;
     }
 
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: _buildAverageCard(
-            AppStrings.calories, 
-            avgCalories.toInt().toString(), 
-            'kcal/day',
-            Colors.red[400]!,
-            Icons.local_fire_department,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: _buildAverageCard(
+                AppStrings.calories, 
+                avgCalories.toInt().toString(), 
+                'kcal/day',
+                Colors.red[400]!,
+                Icons.local_fire_department,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildAverageCard(
+                AppStrings.protein, 
+                avgProtein.toInt().toString(), 
+                'g/day',
+                Colors.purple[400]!,
+                Icons.fitness_center,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildAverageCard(
-            AppStrings.protein, 
-            avgProtein.toInt().toString(), 
-            'g/day',
-            Colors.purple[400]!,
-            Icons.fitness_center,
-          ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildAverageCard(
+                AppStrings.carbs, 
+                avgCarbs.toInt().toString(), 
+                'g/day',
+                Colors.amber[700]!,
+                Icons.grain,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildAverageCard(
+                AppStrings.fat, 
+                avgFat.toInt().toString(), 
+                'g/day',
+                Colors.blue[400]!,
+                Icons.opacity,
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -720,6 +913,82 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> with Single
                   ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderSection() {
+    String message;
+    IconData icon;
+    
+    if (_totalCalories < _targetCalories * 0.5) {
+      message = 'You\'re off to a good start today!';
+      icon = Icons.emoji_events;
+    } else if (_totalCalories >= _targetCalories) {
+      message = 'Great job reaching your calorie goal!';
+      icon = Icons.check_circle;
+    } else {
+      message = 'Keep up the great work!';
+      icon = Icons.trending_up;
+    }
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Nutrition Overview',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      message,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

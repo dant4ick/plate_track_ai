@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:plate_track_ai/core/constants/app_strings.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
-import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 class RecommendationsScreen extends StatefulWidget {
   const RecommendationsScreen({Key? key}) : super(key: key);
@@ -229,44 +227,37 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
           ),
           body: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header
-                    Text(
-                      AppStrings.personalizedTips,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      AppStrings.basedOnDiet,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // Daily nutrition insights card
-                    _buildInsightsCard(),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Recommendations section
-                    Text(
-                      AppStrings.improveNutrition,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Recommendations list
-                    _buildRecommendationsList(),
-                  ],
+            : RefreshIndicator(
+                onRefresh: _loadData,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header section
+                      _buildHeaderSection(),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Daily nutrition insights card
+                      _buildInsightsCard(),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Recommendations section
+                      Text(
+                        AppStrings.improveNutrition,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Recommendations list
+                      _buildRecommendationsList(),
+                    ],
+                  ),
                 ),
               ),
         );
@@ -281,6 +272,90 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
     // This will be called when the dependencies of this widget change,
     // including when the ValueListenable emits a new value
     _loadData();
+  }
+  
+  Widget _buildHeaderSection() {
+    String message;
+    IconData icon;
+    Color iconColor;
+    
+    if (_avgCalories == 0) {
+      message = 'Start tracking your meals to get personalized tips!';
+      icon = Icons.restaurant_menu;
+      iconColor = Colors.blue[400]!;
+    } else if (_avgCalories < _targetCalories * 0.8) {
+      message = 'Your nutrition data looks good. Keep making healthy choices!';
+      icon = Icons.trending_up;
+      iconColor = Colors.green[400]!;
+    } else if (_avgCalories > _targetCalories * 1.2) {
+      message = 'Consider moderating your calorie intake for better balance.';
+      icon = Icons.info;
+      iconColor = Colors.orange[400]!;
+    } else {
+      message = 'You\'re doing great with your nutrition tracking!';
+      icon = Icons.check_circle;
+      iconColor = Colors.green[400]!;
+    }
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              iconColor.withOpacity(0.1),
+              iconColor.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: iconColor,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.personalizedTips,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: iconColor,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      message,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
   
   Widget _buildInsightsCard() {
@@ -367,7 +442,9 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
     return RichText(
       text: TextSpan(
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[800],
+              color: Theme.of(context).brightness == Brightness.dark 
+                  ? Colors.grey[200] 
+                  : Colors.grey[800],
             ),
         children: [
           const TextSpan(

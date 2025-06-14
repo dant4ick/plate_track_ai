@@ -4,7 +4,7 @@ class AppStrings {
   static const appDescription = 'Track nutrition with AI';
   
   // Bottom navigation
-  static const cameraTab = 'Camera';
+  static const homeTab = 'Home';
   static const statsTab = 'Stats';
   static const recommendationsTab = 'Tips';
   

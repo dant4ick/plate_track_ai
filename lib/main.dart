@@ -1,34 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:plate_track_ai/core/constants/app_strings.dart';
 import 'package:plate_track_ai/core/themes/app_theme.dart';
-import 'package:plate_track_ai/features/food_recognition/food_camera_screen.dart';
+import 'package:plate_track_ai/features/dashboard/dashboard_screen.dart';
 import 'package:plate_track_ai/features/nutrition_stats/nutrition_stats_screen.dart';
 import 'package:plate_track_ai/features/recommendations/recommendations_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:plate_track_ai/shared/models/food_item_adapters.dart';
 
-// TODO: fix night mode fields being bright
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Hive for local storage
   await Hive.initFlutter();
-  
+
   // Register Hive Adapters
   if (!Hive.isAdapterRegistered(0)) {
     Hive.registerAdapter(FoodItemAdapter());
   }
-  
+
   if (!Hive.isAdapterRegistered(1)) {
     Hive.registerAdapter(NutritionFactsAdapter());
   }
-  
+
   // Register DateTime adapter (needed for timestamp field)
   if (!Hive.isAdapterRegistered(16)) {
     Hive.registerAdapter(DateTimeAdapter());
   }
-  
+
   runApp(const PlateTrackApp());
 }
 
@@ -73,18 +71,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  
+
   // Remove the static const List to create fresh instances when tabs are switched
   Widget _getScreenForIndex(int index) {
     switch (index) {
       case 0:
-        return const FoodCameraScreen();
+        return const DashboardScreen();
       case 1:
         return const NutritionStatsScreen();
       case 2:
         return const RecommendationsScreen();
       default:
-        return const FoodCameraScreen();
+        return const DashboardScreen();
     }
   }
 
@@ -103,8 +101,8 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.camera_alt),
-            label: AppStrings.cameraTab,
+            icon: Icon(Icons.home),
+            label: AppStrings.homeTab,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),

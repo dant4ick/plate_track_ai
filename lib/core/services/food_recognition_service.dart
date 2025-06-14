@@ -12,21 +12,34 @@ class FoodRecognitionService {
 
   factory FoodRecognitionService() => _instance;
 
-  late Interpreter _nutritionInterpreter;
+  Interpreter? _nutritionInterpreter;
+  bool _isInitialized = false;
+  int _referenceCount = 0;
 
   FoodRecognitionService._internal();
 
   /// Initialize the TFLite interpreter
   Future<void> initialize() async {
-    _nutritionInterpreter = await Interpreter.fromAsset(
-      'assets/ml/image2nutrition.tflite',
-    );
-    debugPrint('FoodRecognitionService initialized');
+    _referenceCount++;
+    
+    if (!_isInitialized) {
+      _nutritionInterpreter = await Interpreter.fromAsset(
+        'assets/ml/image2nutrition.tflite',
+      );
+      _isInitialized = true;
+      debugPrint('FoodRecognitionService initialized');
+    } else {
+      debugPrint('FoodRecognitionService already initialized (ref count: $_referenceCount)');
+    }
   }
 
   /// Recognize food nutrition values from an image
   /// Now the model outputs per 100g values for nutrition facts (except mass)
   Future<Map<String, double>> recognizeFoodValues(File imageFile) async {
+    if (_nutritionInterpreter == null) {
+      throw StateError('FoodRecognitionService not initialized. Call initialize() first.');
+    }
+
     // 1. Preprocess image into a flat Float32List
     final flatInput = await _preprocessImage(imageFile); // length = 224*224*3
 
@@ -49,7 +62,7 @@ class FoodRecognitionService {
     final output = List.filled(5, 0.0).reshape([1, 5]);
 
     // 4. Run inference
-    _nutritionInterpreter.run(inputTensor, output);
+    _nutritionInterpreter!.run(inputTensor, output);
 
     // 5. Return results
     final mass = output[0][1];
@@ -101,7 +114,16 @@ class FoodRecognitionService {
 
   /// Dispose the interpreter when done
   void dispose() {
-    _nutritionInterpreter.close();
-    debugPrint('FoodRecognitionService disposed');
+    _referenceCount--;
+    
+    if (_referenceCount <= 0) {
+      _nutritionInterpreter?.close();
+      _nutritionInterpreter = null;
+      _isInitialized = false;
+      _referenceCount = 0; // Ensure it doesn't go negative
+      debugPrint('FoodRecognitionService disposed and interpreter closed');
+    } else {
+      debugPrint('FoodRecognitionService dispose called (ref count: $_referenceCount, keeping alive)');
+    }
   }
 }

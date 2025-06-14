@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:plate_track_ai/core/constants/app_strings.dart';
-import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 
@@ -113,8 +112,21 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Food Details'),
-        elevation: 0,
+        title: const Text('Food Analysis'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Review and adjust the nutrition information, then save when ready'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            tooltip: 'Help',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -126,11 +138,20 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
               child: Container(
                 height: 240,
                 width: double.infinity,
+                margin: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
                   image: DecorationImage(
                     image: FileImage(widget.imageFile),
                     fit: BoxFit.cover,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -141,100 +162,167 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Status card
+                  _buildStatusCard(context),
+                  
+                  const SizedBox(height: 16),
+                  
                   // Food name field
-                  TextField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Food Name',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.food_bank),
-                    ),
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Mass field - this needs to be first since it affects other fields
-                  _buildNutritionField(
-                    controller: _massController,
-                    label: "Mass",
-                    icon: Icons.scale,
-                    suffix: "g",
-                    color: Colors.green[600]!,
-                    isEditable: true,
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  Text(
-                    AppStrings.nutritionFacts,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.grey[600],
+                  Card(
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: TextField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Food Name',
+                          border: InputBorder.none,
+                          prefixIcon: Icon(Icons.food_bank, color: Theme.of(context).colorScheme.primary),
                         ),
-                  ),
-                  
-                  // Show per 100g values as a reference
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                    child: Text(
-                      "Values below are calculated based on the mass",
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey[600],
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     ),
                   ),
                   
                   const SizedBox(height: 16),
                   
-                  // Nutrition value fields
+                  // Mass field card
+                  Card(
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.scale,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Portion Size',
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _massController,
+                            decoration: InputDecoration(
+                              labelText: "Mass (grams)",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              suffixText: "g",
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Nutrition facts header
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.analytics,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        AppStrings.nutritionFacts,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  // Subtitle
+                  Text(
+                    "Values calculated based on portion size",
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[600],
+                          fontStyle: FontStyle.italic,
+                        ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Nutrition value cards
                   Row(
                     children: [
                       Expanded(
-                        child: _buildNutritionField(
+                        child: _buildNutritionCard(
                           controller: _caloriesController,
                           label: AppStrings.calories,
                           icon: Icons.local_fire_department,
                           suffix: "kcal",
                           color: Colors.red[400]!,
-                          isEditable: false,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 12),
                       Expanded(
-                        child: _buildNutritionField(
+                        child: _buildNutritionCard(
                           controller: _proteinController,
                           label: AppStrings.protein,
                           icon: Icons.fitness_center,
                           suffix: "g",
                           color: Colors.purple[400]!,
-                          isEditable: false,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   
                   Row(
                     children: [
                       Expanded(
-                        child: _buildNutritionField(
+                        child: _buildNutritionCard(
                           controller: _carbsController,
                           label: AppStrings.carbs,
                           icon: Icons.grain,
                           suffix: "g",
                           color: Colors.amber[700]!,
-                          isEditable: false,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 12),
                       Expanded(
-                        child: _buildNutritionField(
+                        child: _buildNutritionCard(
                           controller: _fatController,
                           label: AppStrings.fat,
                           icon: Icons.opacity,
                           suffix: "g",
                           color: Colors.blue[400]!,
-                          isEditable: false,
                         ),
                       ),
                     ],
@@ -243,27 +331,44 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                   const SizedBox(height: 32),
                   
                   // Tips section
-                  Text(
-                    AppStrings.improveNutrition,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
                         ),
+                        child: Icon(
+                          Icons.lightbulb,
+                          color: Theme.of(context).colorScheme.secondary,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        AppStrings.improveNutrition,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   
-                  // Sample recommendation
+                  // Recommendations
                   _buildRecommendationItem(
                     context,
                     "Good protein source, consider balancing with whole grains",
                     Icons.tips_and_updates,
                   ),
                   
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   
                   _buildRecommendationItem(
                     context,
                     "Try adding more vegetables for additional fiber",
-                    Icons.tips_and_updates,
+                    Icons.eco,
                   ),
                   
                   const SizedBox(height: 32),
@@ -299,28 +404,73 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
     );
   }
   
-  Widget _buildNutritionField({
+  Widget _buildNutritionCard({
     required TextEditingController controller,
     required String label,
     required IconData icon,
     required String suffix,
     required Color color,
-    required bool isEditable,
   }) {
-    return TextField(
-      controller: controller,
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: color),
-        suffixText: suffix,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: color,
+                    size: 16,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  controller.text,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                ),
+                const SizedBox(width: 4),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Text(
+                    suffix,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-        filled: !isEditable,
-        fillColor: !isEditable ? Colors.grey[100] : null,
       ),
-      readOnly: !isEditable,
     );
   }
 
@@ -328,10 +478,11 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
     try {
       // Parse values from controllers
       final double mass = double.parse(_massController.text);
-      final double totalCalories = double.parse(_caloriesController.text);
-      final double totalProtein = double.parse(_proteinController.text);
-      final double totalCarbs = double.parse(_carbsController.text);
-      final double totalFat = double.parse(_fatController.text);
+      // Validate that all fields have valid numbers
+      double.parse(_caloriesController.text);
+      double.parse(_proteinController.text);
+      double.parse(_carbsController.text);
+      double.parse(_fatController.text);
       
       // Create updated FoodItem object with total values based on the current mass
       final updatedFoodItem = FoodItem(
@@ -373,24 +524,106 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
     }
   }
 
+  Widget _buildStatusCard(BuildContext context) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.analytics,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Food Analysis Complete',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Review and adjust the nutrition information below',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildRecommendationItem(BuildContext context, String text, IconData icon) {
     return Card(
-      elevation: 0,
-      color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+      elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+              Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: Theme.of(context).colorScheme.primary,
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: Theme.of(context).colorScheme.secondary,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 text,
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
               ),
             ),
           ],
