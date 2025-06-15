@@ -36,7 +36,7 @@ An intelligent Flutter-based nutrition tracking app that uses AI-powered image r
 
 ## 📱 Screenshots
 
-*Add your app screenshots here*
+![App screens](images/app_collage.png)
 
 ## 🛠️ Tech Stack
 
