@@ -2,6 +2,8 @@
 
 An intelligent Flutter-based nutrition tracking app that uses AI-powered image recognition to analyze food and provide detailed nutritional information. Simply take a photo of your meal and get instant nutrition facts along with personalized dietary recommendations.
 
+[![Download Latest](https://img.shields.io/github/v/release/dant4ick/plate_track_ai?label=Download%20Latest&style=for-the-badge)](https://github.com/dant4ick/plate_track_ai/releases/latest)
+
 ## ✨ Features
 
 ### 🤖 AI-Powered Food Recognition
