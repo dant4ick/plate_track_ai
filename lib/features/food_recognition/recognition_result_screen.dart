@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:plate_track_ai/core/constants/app_strings.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
+import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 
 class RecognitionResultScreen extends StatefulWidget {
   final File imageFile;
@@ -552,10 +553,9 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                   color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.analytics,
-                  color: Theme.of(context).colorScheme.primary,
+                child: AppLogo(
                   size: 32,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
               const SizedBox(width: 16),

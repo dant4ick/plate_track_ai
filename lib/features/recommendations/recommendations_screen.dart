@@ -3,6 +3,7 @@ import 'package:plate_track_ai/core/constants/app_strings.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
+import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 
 class RecommendationsScreen extends StatefulWidget {
   const RecommendationsScreen({Key? key}) : super(key: key);
@@ -242,7 +243,11 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
         
         return Scaffold(
           appBar: AppBar(
-            title: Text(AppStrings.recommendationsTab),
+            title: AppLogoWithText(
+              text: AppStrings.recommendationsTab,
+              logoSize: 24,
+              fontSize: 18,
+            ),
             elevation: 0,
             actions: [
               IconButton(

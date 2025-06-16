@@ -8,6 +8,7 @@ import 'package:plate_track_ai/features/user_setup/user_setup_screen.dart';
 import 'package:plate_track_ai/features/profile/profile_management_screen.dart';
 import 'package:plate_track_ai/features/food_recognition/food_camera_screen.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
+import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:plate_track_ai/shared/models/food_item_adapters.dart';
 import 'package:plate_track_ai/shared/models/user_profile_adapters.dart';
@@ -145,9 +146,26 @@ class _AppInitializerState extends State<AppInitializer> {
     print('AppInitializer: Building - isLoading: $_isLoading, hasUserProfile: $_hasUserProfile');
     
     if (_isLoading) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
-          child: CircularProgressIndicator(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AppLogo(
+                size: 64,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 24),
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(
+                'Loading Plate Track...',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    ),
+              ),
+            ],
+          ),
         ),
       );
     }

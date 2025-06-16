@@ -4,6 +4,7 @@ import 'package:plate_track_ai/core/constants/app_strings.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/models/user_profile.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
+import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 
 class UserSetupScreen extends StatefulWidget {
   final bool isEditing;
@@ -258,10 +259,9 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                       color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(
-                      Icons.person_add,
-                      color: Theme.of(context).colorScheme.primary,
+                    child: AppLogo(
                       size: 32,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   const SizedBox(width: 16),

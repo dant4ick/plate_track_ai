@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:plate_track_ai/core/constants/app_strings.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
+import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 import 'package:plate_track_ai/core/services/food_recognition_service.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
@@ -241,7 +241,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppStrings.appName),
+        title: const AppLogoWithText(),
         elevation: 0,
         actions: [
           IconButton(

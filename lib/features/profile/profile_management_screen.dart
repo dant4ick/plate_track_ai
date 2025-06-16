@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/models/user_profile.dart';
 import 'package:plate_track_ai/features/user_setup/user_setup_screen.dart';
+import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 
 class ProfileManagementScreen extends StatefulWidget {
   const ProfileManagementScreen({Key? key}) : super(key: key);
@@ -222,8 +223,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
                 color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(32),
               ),
-              child: Icon(
-                _currentProfile!.gender == Gender.male ? Icons.male : Icons.female,
+              child: AppLogo(
                 size: 32,
                 color: Theme.of(context).colorScheme.primary,
               ),
