@@ -504,7 +504,7 @@ Widget _buildFoodItemsList() {
     final today = DateTime.now();
     for (int i = 6; i >= 0; i--) {
       final date = DateTime(today.year, today.month, today.day - i);
-      weekDays.add(DateFormat('E').format(date)); // 'Mon', 'Tue', etc.
+      weekDays.add(DateFormat('E', context.locale.toString()).format(date)); // Localized day names
     }
 
     return Container(

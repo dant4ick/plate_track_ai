@@ -184,8 +184,8 @@ class FoodItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final timeString = timeFormat != null 
-        ? DateFormat(timeFormat!).format(item.timestamp)
-        : DateFormat('MMM d, h:mm a').format(item.timestamp);
+        ? DateFormat(timeFormat!, context.locale.toString()).format(item.timestamp)
+        : DateFormat('MMM d, h:mm a', context.locale.toString()).format(item.timestamp);
     final double mass = item.nutritionFacts.mass ?? 100.0;
     final int actualCalories = ((item.calories * mass) / 100.0).toInt();
     final isDark = Theme.of(context).brightness == Brightness.dark;
