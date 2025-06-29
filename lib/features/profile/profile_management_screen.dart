@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/models/user_profile.dart';
 import 'package:plate_track_ai/features/user_setup/user_setup_screen.dart';
 import 'package:plate_track_ai/shared/widgets/app_logo.dart';
+import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
+import 'package:plate_track_ai/main.dart';
 
 class ProfileManagementScreen extends StatefulWidget {
   const ProfileManagementScreen({Key? key}) : super(key: key);
 
   @override
-  State<ProfileManagementScreen> createState() => _ProfileManagementScreenState();
+  State<ProfileManagementScreen> createState() =>
+      _ProfileManagementScreenState();
 }
 
 class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
@@ -41,7 +45,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error loading profile: $e'),
+            content: Text('${'error_loading_profile'.tr()}: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -53,11 +57,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
     if (_currentProfile == null) return;
 
     final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (context) => UserSetupScreen(
-          isEditing: true,
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => UserSetupScreen(isEditing: true)),
     );
 
     if (result == true) {
@@ -70,19 +70,17 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reset Profile'),
-        content: const Text(
-          'Are you sure you want to reset your profile? This will delete all your personal information and you\'ll need to set it up again.',
-        ),
+        title: Text('reset_profile'.tr()),
+        content: Text('reset_profile_confirmation'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Reset'),
+            child: Text('reset'.tr()),
           ),
         ],
       ),
@@ -92,10 +90,10 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
       try {
         await _userProfileService.deleteProfile();
         if (mounted) {
-          // Navigate back to setup screen
+          // Navigate back to AppInitializer to properly handle the flow
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(
-              builder: (context) => const UserSetupScreen(),
+              builder: (context) => const AppInitializer(),
             ),
             (route) => false,
           );
@@ -104,7 +102,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error resetting profile: $e'),
+              content: Text('${'error_resetting_profile'.tr()}: ${e.toString()}'),
               backgroundColor: Colors.red,
             ),
           );
@@ -116,13 +114,13 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile Settings'),
-        elevation: 0,
+      appBar: StandardAppBar(
+        onRefresh: _loadUserProfile,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _currentProfile == null
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _currentProfile == null
               ? _buildNoProfileView()
               : _buildProfileView(),
     );
@@ -133,24 +131,20 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.person_off,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.person_off, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            'No Profile Found',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
+            'no_profile_found'.tr(),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Text(
-            'Create a profile to get personalized nutrition recommendations',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[500],
-                ),
+            'create_profile_description'.tr(),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -163,7 +157,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
               );
             },
             icon: const Icon(Icons.add),
-            label: const Text('Create Profile'),
+            label: Text('create_profile'.tr()),
           ),
         ],
       ),
@@ -183,24 +177,24 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
         children: [
           // Profile Header
           _buildProfileHeader(),
-          
+
           const SizedBox(height: 24),
-          
+
           // Personal Information Section
           _buildPersonalInfoSection(profile),
-          
+
           const SizedBox(height: 24),
-          
+
           // Calculated Values Section
           _buildCalculatedValuesSection(bmr, tdee),
-          
+
           const SizedBox(height: 24),
-          
+
           // Nutrition Targets Section
           if (targets != null) _buildNutritionTargetsSection(targets),
-          
+
           const SizedBox(height: 32),
-          
+
           // Action Buttons
           _buildActionButtons(),
         ],
@@ -234,25 +228,25 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Your Profile',
+                    'your_profile'.tr(),
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_currentProfile!.age} years old • ${_currentProfile!.gender == Gender.male ? 'Male' : 'Female'}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                    '${_currentProfile!.age} ${'years'.tr()} • ${_currentProfile!.gender == Gender.male ? 'male'.tr() : 'female'.tr()}',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
             ),
             IconButton(
               onPressed: _editProfile,
-              icon: const Icon(Icons.edit),
-              tooltip: 'Edit Profile',
+              icon: const Icon(Icons.settings),
+              tooltip: 'edit_profile'.tr(),
             ),
           ],
         ),
@@ -270,21 +264,29 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Personal Information',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              'personal_info'.tr(),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            _buildInfoRow(Icons.cake, 'Age', '${profile.age} years'),
+            _buildInfoRow(
+              Icons.cake,
+              'age'.tr(),
+              '${profile.age} ${'years'.tr()}',
+            ),
             const SizedBox(height: 12),
-            _buildInfoRow(Icons.monitor_weight, 'Weight', '${profile.weight} kg'),
+            _buildInfoRow(
+              Icons.monitor_weight,
+              'weight'.tr(),
+              '${profile.weight} ${'kg'.tr()}',
+            ),
             const SizedBox(height: 12),
-            _buildInfoRow(Icons.height, 'Height', '${profile.height} cm'),
+            _buildInfoRow(Icons.height, 'height'.tr(), '${profile.height} ${'cm'.tr()}'),
             const SizedBox(height: 12),
             _buildInfoRow(
               Icons.directions_run,
-              'Activity Level',
+              'activity_level'.tr(),
               _getActivityLevelDescription(profile.activityLevel),
             ),
           ],
@@ -303,30 +305,30 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Calculated Values',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              'calculated_values'.tr(),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             _buildInfoRow(
               Icons.local_fire_department,
-              'Basal Metabolic Rate (BMR)',
-              '${bmr.toInt()} kcal/day',
+              'bmr_label'.tr(),
+              '${bmr.toInt()} ${'kcal'.tr()}/${'day'.tr()}',
             ),
             const SizedBox(height: 12),
             _buildInfoRow(
               Icons.flash_on,
-              'Total Daily Energy Expenditure (TDEE)',
-              '${tdee.toInt()} kcal/day',
+              'tdee_label'.tr(),
+              '${tdee.toInt()} ${'kcal'.tr()}/${'day'.tr()}',
             ),
             const SizedBox(height: 8),
             Text(
-              'TDEE includes your activity level and represents your daily calorie needs.',
+              'tdee_description'.tr(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                    fontStyle: FontStyle.italic,
-                  ),
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
         ),
@@ -344,42 +346,42 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Daily Nutrition Targets',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              'daily_nutrition_targets'.tr(),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             _buildInfoRow(
               Icons.local_fire_department,
-              'Calories',
-              '${targets['calories']!.toInt()} kcal',
+              'calories'.tr(),
+              '${targets['calories']!.toInt()} ${'kcal'.tr()}',
             ),
             const SizedBox(height: 12),
             _buildInfoRow(
               Icons.fitness_center,
-              'Protein',
-              '${targets['protein']!.toInt()} g',
+              'protein'.tr(),
+              '${targets['protein']!.toInt()} ${'g'.tr()}',
             ),
             const SizedBox(height: 12),
             _buildInfoRow(
               Icons.grain,
-              'Carbohydrates',
-              '${targets['carbohydrates']!.toInt()} g',
+              'carbs'.tr(),
+              '${targets['carbs']!.toInt()} ${'g'.tr()}',
             ),
             const SizedBox(height: 12),
             _buildInfoRow(
               Icons.opacity,
-              'Fat',
-              '${targets['fat']!.toInt()} g',
+              'fat'.tr(),
+              '${targets['fat']!.toInt()} ${'g'.tr()}',
             ),
             const SizedBox(height: 8),
             Text(
-              'Based on standard macro distribution: 20% protein, 50% carbs, 30% fat.',
+              'macro_distribution_description'.tr(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                    fontStyle: FontStyle.italic,
-                  ),
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
         ),
@@ -390,23 +392,16 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 20,
-          color: Colors.grey[600],
-        ),
+        Icon(icon, size: 20, color: Colors.grey[600]),
         const SizedBox(width: 12),
         Expanded(
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
         ),
         Text(
           value,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -420,7 +415,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
           child: ElevatedButton.icon(
             onPressed: _editProfile,
             icon: const Icon(Icons.edit),
-            label: const Text('Edit Profile'),
+            label: Text('edit_profile'.tr()),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
@@ -432,7 +427,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
           child: OutlinedButton.icon(
             onPressed: _resetProfile,
             icon: const Icon(Icons.refresh),
-            label: const Text('Reset Profile'),
+            label: Text('reset_profile'.tr()),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.red,
               side: const BorderSide(color: Colors.red),
@@ -447,15 +442,15 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
   String _getActivityLevelDescription(ActivityLevel level) {
     switch (level) {
       case ActivityLevel.sedentary:
-        return 'Sedentary (little/no exercise)';
+        return 'activity_sedentary'.tr();
       case ActivityLevel.lightlyActive:
-        return 'Lightly Active (light exercise)';
+        return 'activity_lightly_active'.tr();
       case ActivityLevel.moderatelyActive:
-        return 'Moderately Active (moderate exercise)';
+        return 'activity_moderately_active'.tr();
       case ActivityLevel.veryActive:
-        return 'Very Active (hard exercise)';
+        return 'activity_very_active'.tr();
       case ActivityLevel.extremelyActive:
-        return 'Extremely Active (very hard exercise)';
+        return 'activity_extremely_active'.tr();
     }
   }
 }

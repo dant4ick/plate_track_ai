@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class AppLogo extends StatelessWidget {
   final double size;
   final Color? color;
 
-  const AppLogo({
-    Key? key,
-    this.size = 24,
-    this.color,
-  }) : super(key: key);
+  const AppLogo({Key? key, this.size = 24, this.color}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,13 +14,13 @@ class AppLogo extends StatelessWidget {
       'assets/icons/app_icon.svg',
       width: size,
       height: size,
-      colorFilter: color != null
-          ? ColorFilter.mode(color!, BlendMode.srcIn)
-          : ColorFilter.mode(
-              Theme.of(context).colorScheme.primary,
-              BlendMode.srcIn,
-            ),
-      semanticsLabel: 'Plate Track AI Logo',
+      colorFilter:
+          color != null
+              ? ColorFilter.mode(color!, BlendMode.srcIn)
+              : ColorFilter.mode(
+                Theme.of(context).colorScheme.primary,
+                BlendMode.srcIn,
+              ),
     );
   }
 }
@@ -43,7 +40,7 @@ class AppLogoWithText extends StatelessWidget {
     this.fontSize = 20,
     this.logoColor,
     this.textColor,
-    this.text = 'Plate Track',
+    this.text = 'app_name',
     this.fontWeight = FontWeight.w600,
     this.alignment = MainAxisAlignment.center,
   }) : super(key: key);
@@ -54,13 +51,10 @@ class AppLogoWithText extends StatelessWidget {
       mainAxisAlignment: alignment,
       mainAxisSize: MainAxisSize.min,
       children: [
-        AppLogo(
-          size: logoSize,
-          color: logoColor,
-        ),
+        AppLogo(size: logoSize, color: logoColor),
         const SizedBox(width: 8),
         Text(
-          text,
+          text.tr(),
           style: TextStyle(
             fontSize: fontSize,
             fontWeight: fontWeight,

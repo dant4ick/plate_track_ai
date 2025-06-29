@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:plate_track_ai/core/constants/app_strings.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/app_logo.dart';
+import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
 
 class RecognitionResultScreen extends StatefulWidget {
   final File imageFile;
@@ -43,7 +44,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
     // Store the per 100g values (the FoodItem now contains per 100g values)
     _caloriesPer100g = widget.foodItem.calories;
     _proteinPer100g = widget.foodItem.nutritionFacts.protein;
-    _carbsPer100g = widget.foodItem.nutritionFacts.carbohydrates;
+    _carbsPer100g = widget.foodItem.nutritionFacts.carbs;
     _fatPer100g = widget.foodItem.nutritionFacts.fat;
     
     // Initialize with the detected mass or default to 100g
@@ -112,20 +113,21 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Food Analysis'),
+      appBar: StandardAppBar(
+        titleText: 'food_analysis'.tr(),
+        showLogo: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Review and adjust the nutrition information, then save when ready'),
+                SnackBar(
+                  content: Text('review_and_adjust'.tr()),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
             },
-            tooltip: 'Help',
+            tooltip: 'help'.tr(),
           ),
         ],
       ),
@@ -177,7 +179,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                       child: TextField(
                         controller: _nameController,
                         decoration: InputDecoration(
-                          labelText: 'Food Name',
+                          labelText: 'food_name'.tr(),
                           border: InputBorder.none,
                           prefixIcon: Icon(Icons.food_bank, color: Theme.of(context).colorScheme.primary),
                         ),
@@ -215,7 +217,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                               ),
                               const SizedBox(width: 12),
                               Text(
-                                'Portion Size',
+                                'portion_size'.tr(),
                                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -226,11 +228,11 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                           TextField(
                             controller: _massController,
                             decoration: InputDecoration(
-                              labelText: "Mass (grams)",
+                              labelText: 'mass'.tr(),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              suffixText: "g",
+                              suffixText: 'g'.tr(),
                             ),
                             keyboardType: TextInputType.number,
                           ),
@@ -258,7 +260,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        AppStrings.nutritionFacts,
+                        'nutrition_facts'.tr(),
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -270,7 +272,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                   
                   // Subtitle
                   Text(
-                    "Values calculated based on portion size",
+                    'values_calculated_based_on_portion_size'.tr(),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.grey[600],
                           fontStyle: FontStyle.italic,
@@ -285,9 +287,9 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                       Expanded(
                         child: _buildNutritionCard(
                           controller: _caloriesController,
-                          label: AppStrings.calories,
+                          label: 'calories'.tr(),
                           icon: Icons.local_fire_department,
-                          suffix: "kcal",
+                          suffix: 'kcal'.tr(),
                           color: Colors.red[400]!,
                         ),
                       ),
@@ -295,9 +297,9 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                       Expanded(
                         child: _buildNutritionCard(
                           controller: _proteinController,
-                          label: AppStrings.protein,
+                          label: 'protein'.tr(),
                           icon: Icons.fitness_center,
-                          suffix: "g",
+                          suffix: 'g'.tr(),
                           color: Colors.purple[400]!,
                         ),
                       ),
@@ -310,9 +312,9 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                       Expanded(
                         child: _buildNutritionCard(
                           controller: _carbsController,
-                          label: AppStrings.carbs,
+                          label: 'carbs'.tr(),
                           icon: Icons.grain,
-                          suffix: "g",
+                          suffix: 'g'.tr(),
                           color: Colors.amber[700]!,
                         ),
                       ),
@@ -320,9 +322,9 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                       Expanded(
                         child: _buildNutritionCard(
                           controller: _fatController,
-                          label: AppStrings.fat,
+                          label: 'fat'.tr(),
                           icon: Icons.opacity,
-                          suffix: "g",
+                          suffix: 'g'.tr(),
                           color: Colors.blue[400]!,
                         ),
                       ),
@@ -348,7 +350,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        AppStrings.improveNutrition,
+                        'improve_nutrition'.tr(),
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -357,7 +359,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Recommendations
+                  // TODO: Recommendations instead of placeholder
                   _buildRecommendationItem(
                     context,
                     "Good protein source, consider balancing with whole grains",
@@ -385,7 +387,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
           children: [
             Expanded(
               child: AppButton(
-                text: AppStrings.retake,
+                text: 'retake'.tr(),
                 onPressed: () => Navigator.pop(context, true),
                 isSecondary: true,
                 icon: Icons.replay,
@@ -394,7 +396,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
             const SizedBox(width: 16),
             Expanded(
               child: AppButton(
-                text: AppStrings.saveResult,
+                text: 'save_result'.tr(),
                 onPressed: _saveFoodItem,
                 icon: Icons.save_alt,
               ),
@@ -493,7 +495,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
         calories: _caloriesPer100g,
         nutritionFacts: NutritionFacts(
           protein: _proteinPer100g,
-          carbohydrates: _carbsPer100g,
+          carbs: _carbsPer100g,
           fat: _fatPer100g,
           mass: mass,
         ),
@@ -504,9 +506,9 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
       widget.onSave(updatedFoodItem);
       
       // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Food item saved to your history'),
+        ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('food_item_saved'.tr()),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -518,7 +520,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error saving food item: $e'),
+            content: Text('${'error_saving_food_item'.tr()}: ${e.toString()}'),
           behavior: SnackBarBehavior.floating,
           backgroundColor: Colors.red,
         ),
@@ -564,7 +566,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Food Analysis Complete',
+                        'food_analysis_complete'.tr(),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).colorScheme.primary,
@@ -572,7 +574,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Review and adjust the nutrition information below',
+                        'review_and_adjust_nutrition'.tr(),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.grey[600],
                           ),

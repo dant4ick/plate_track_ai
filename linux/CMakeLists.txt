@@ -126,3 +126,13 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "Debug")
   install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
     COMPONENT Runtime)
 endif()
+
+# Define EPHEMERAL_DIR for the generated_config.cmake include
+set(EPHEMERAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/flutter/ephemeral")
+include(${EPHEMERAL_DIR}/generated_config.cmake)
+
+# get tf lite binaries
+install(
+  FILES ${PROJECT_BUILD_DIR}/../blobs/libtensorflowlite_c-linux.so
+  DESTINATION ${INSTALL_BUNDLE_DATA_DIR}/../blobs/
+)

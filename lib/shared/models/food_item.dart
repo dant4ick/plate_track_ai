@@ -68,7 +68,7 @@ class NutritionFacts extends Equatable {
   final double protein; // in grams
   
   @HiveField(1)
-  final double carbohydrates; // in grams
+  final double carbs; // in grams
   
   @HiveField(2)
   final double fat; // in grams
@@ -78,18 +78,18 @@ class NutritionFacts extends Equatable {
 
   const NutritionFacts({
     required this.protein,
-    required this.carbohydrates,
+    required this.carbs,
     required this.fat,
     this.mass,
   });
 
   @override
-  List<Object?> get props => [protein, carbohydrates, fat, mass];
+  List<Object?> get props => [protein, carbs, fat, mass];
 
   Map<String, dynamic> toJson() {
     return {
       'protein': protein,
-      'carbohydrates': carbohydrates,
+      'carbs': carbs,
       'fat': fat,
       'mass': mass,
     };
@@ -98,7 +98,7 @@ class NutritionFacts extends Equatable {
   factory NutritionFacts.fromJson(Map<String, dynamic> json) {
     return NutritionFacts(
       protein: json['protein'],
-      carbohydrates: json['carbohydrates'],
+      carbs: json['carbs'],
       fat: json['fat'],
       mass: json['mass'],
     );

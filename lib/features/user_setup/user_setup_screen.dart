@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:plate_track_ai/core/constants/app_strings.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/models/user_profile.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
-import 'package:plate_track_ai/shared/widgets/app_logo.dart';
+import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
 
 class UserSetupScreen extends StatefulWidget {
   final bool isEditing;
@@ -32,6 +32,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
   // Form state
   Gender _selectedGender = Gender.male;
   ActivityLevel _selectedActivityLevel = ActivityLevel.moderatelyActive;
+  String _selectedLanguage = 'en'; // Default language
   
   bool _isLoading = false;
   double _calculatedBMR = 0;
@@ -46,6 +47,13 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     _ageController.addListener(_calculateBMR);
     _weightController.addListener(_calculateBMR);
     _heightController.addListener(_calculateBMR);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Set current language - this is safe to do here as context is fully available
+    _selectedLanguage = context.locale.languageCode;
   }
 
   Future<void> _initializeService() async {
@@ -131,7 +139,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.isEditing ? 'Profile updated successfully!' : 'Profile created successfully!'),
+            content: Text(widget.isEditing ? 'profile_updated_successfully'.tr() : 'profile_created_successfully'.tr()),
             backgroundColor: Colors.green[600],
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -142,19 +150,24 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
         await widget.onComplete?.call();
         print('UserSetupScreen: onComplete callback completed');
         
-        // Only pop navigation if we're editing an existing profile
+        // Navigation logic based on context
         if (widget.isEditing) {
           print('UserSetupScreen: Popping navigation for editing mode');
           Navigator.of(context).pop(true);
+        } else if (widget.onComplete != null) {
+          print('UserSetupScreen: Profile created with callback - assuming reset flow, popping to allow app to reinitialize');
+          // This handles the reset case - pop everything and let the app reinitialize
+          Navigator.of(context).popUntil((route) => route.isFirst);
         } else {
-          print('UserSetupScreen: Not popping navigation - new profile creation');
+          print('UserSetupScreen: Profile created without callback - staying on screen as managed by AppInitializer');
+          // This is the normal app startup case - AppInitializer will handle the transition
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error saving profile: ${e.toString()}'),
+            content: Text('error_saving_profile'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: Colors.red[600],
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -170,6 +183,25 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     }
   }
 
+  Future<void> _changeLanguage(String languageCode) async {
+    Locale newLocale = Locale(languageCode);
+    await context.setLocale(newLocale);
+    setState(() {
+      _selectedLanguage = languageCode;
+    });
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('language_changed'.tr()),
+          backgroundColor: Colors.green[600],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _ageController.dispose();
@@ -181,9 +213,9 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.isEditing ? AppStrings.editProfile : AppStrings.userSetup),
-        elevation: 0,
+      appBar: StandardAppBar(
+        titleText: widget.isEditing ? 'edit_profile'.tr() : 'user_setup'.tr(),
+        showLogo: false,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -193,7 +225,12 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header card
-              _buildHeaderCard(),
+              // _buildHeaderCard(),
+              
+              // const SizedBox(height: 24),
+              
+              // Language Selection section
+              _buildLanguageSection(),
               
               const SizedBox(height: 24),
               
@@ -216,10 +253,10 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               SizedBox(
                 width: double.infinity,
                 child: AppButton(
-                  text: widget.isEditing ? 'Update Profile' : AppStrings.complete,
+                    text: widget.isEditing ? 'update_profile'.tr() : 'complete'.tr(),
                   onPressed: _isLoading ? null : () => _saveProfile(),
                   isLoading: _isLoading,
-                  icon: widget.isEditing ? Icons.edit : Icons.check,
+                  icon: Icons.check,
                 ),
               ),
             ],
@@ -229,70 +266,77 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     );
   }
 
-  Widget _buildHeaderCard() {
+  Widget _buildLanguageSection() {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              Theme.of(context).colorScheme.secondary.withOpacity(0.1),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.language,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'language'.tr(),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            
+            // Language selection tiles
+            _buildLanguageTile('en', 'english'.tr(), '🇺🇸'),
+            const SizedBox(height: 8),
+            _buildLanguageTile('ru', 'russian'.tr(), '🇷🇺'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageTile(String languageCode, String languageName, String flag) {
+    final isSelected = _selectedLanguage == languageCode;
+    
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isSelected 
+            ? Theme.of(context).colorScheme.primary 
+            : Colors.grey[300]!,
+          width: isSelected ? 2 : 1,
+        ),
+        color: isSelected 
+          ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+          : null,
+      ),
+      child: ListTile(
+        leading: Text(
+          flag,
+          style: const TextStyle(fontSize: 24),
+        ),
+        title: Text(
+          languageName,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: AppLogo(
-                      size: 32,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.isEditing ? AppStrings.editProfile : AppStrings.createProfile,
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          widget.isEditing 
-                            ? 'Update your information to get accurate nutrition recommendations'
-                            : 'Set up your profile to get personalized nutrition recommendations',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey[600],
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+        trailing: isSelected 
+          ? Icon(
+              Icons.check_circle,
+              color: Theme.of(context).colorScheme.primary,
+            )
+          : null,
+        onTap: () => _changeLanguage(languageCode),
       ),
     );
   }
@@ -315,7 +359,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppStrings.personalInfo,
+                  'personal_info'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -328,8 +372,8 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
             TextFormField(
               controller: _ageController,
               decoration: InputDecoration(
-                labelText: AppStrings.age,
-                suffixText: AppStrings.ageYears,
+                labelText: 'age'.tr(),
+                suffixText: 'years'.tr(),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -339,11 +383,11 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your age';
+                    return 'please_enter_your_age'.tr();
                 }
                 final age = int.tryParse(value);
                 if (age == null || age < 10 || age > 120) {
-                  return 'Please enter a valid age (10-120)';
+                    return 'please_enter_valid_age'.tr();
                 }
                 return null;
               },
@@ -355,8 +399,8 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
             TextFormField(
               controller: _weightController,
               decoration: InputDecoration(
-                labelText: AppStrings.weight,
-                suffixText: AppStrings.weightKg,
+                labelText: 'weight'.tr(),
+                suffixText: 'kg'.tr(),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -368,11 +412,11 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               ],
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your weight';
+                    return 'please_enter_your_weight'.tr();
                 }
                 final weight = double.tryParse(value);
                 if (weight == null || weight < 20 || weight > 300) {
-                  return 'Please enter a valid weight (20-300 kg)';
+                    return 'please_enter_valid_weight'.tr();
                 }
                 return null;
               },
@@ -384,8 +428,8 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
             TextFormField(
               controller: _heightController,
               decoration: InputDecoration(
-                labelText: AppStrings.height,
-                suffixText: AppStrings.heightCm,
+                labelText: 'height'.tr(),
+                suffixText: 'cm'.tr(),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -397,11 +441,11 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               ],
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your height';
+                    return 'please_enter_your_height'.tr();
                 }
                 final height = double.tryParse(value);
                 if (height == null || height < 100 || height > 250) {
-                  return 'Please enter a valid height (100-250 cm)';
+                    return 'please_enter_valid_height'.tr();
                 }
                 return null;
               },
@@ -411,7 +455,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
             
             // Gender selection
             Text(
-              AppStrings.gender,
+              'gender'.tr(),
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -471,7 +515,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppStrings.activityLevel,
+                  'activity_level'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -545,7 +589,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppStrings.bmrCalculation,
+                  'bmr_calculation'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -556,9 +600,9 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
             
             if (_calculatedBMR > 0) ...[
               _buildResultCard(
-                'BMR (Basal Metabolic Rate)',
-                '${_calculatedBMR.toInt()} kcal/day',
-                'Calories burned at rest',
+                'bmr_label'.tr(),
+                '${_calculatedBMR.toInt()} ${'kcal'.tr()}/${'day'.tr()}',
+                'bmr_description'.tr(),
                 Icons.local_fire_department,
                 Colors.orange[400]!,
               ),
@@ -566,9 +610,9 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               const SizedBox(height: 12),
               
               _buildResultCard(
-                AppStrings.dailyCalorieNeeds,
-                '${_calculatedTDEE.toInt()} kcal/day',
-                'Total daily energy expenditure',
+                'tdee_label'.tr(),
+                '${_calculatedTDEE.toInt()} ${'kcal'.tr()}/${'day'.tr()}',
+                'tdee_description'.tr(),
                 Icons.restaurant,
                 Colors.green[400]!,
               ),
@@ -588,7 +632,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Enter your information above to see your calculated BMR and daily calorie needs',
+                        'enter_info_to_see_bmr'.tr(),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Colors.grey[600],
                             ),

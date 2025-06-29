@@ -44,7 +44,7 @@ An intelligent Flutter-based nutrition tracking app that uses AI-powered image r
 
 ### Frontend
 - **Flutter** 3.29.3 - Cross-platform mobile development framework
-- **Dart** - Programming language optimized for mobile development
+- **Dart** 3.7.2 - Programming language optimized for mobile development
 
 ### AI & Machine Learning
 - **TensorFlow Lite** - On-device machine learning for food recognition
@@ -59,17 +59,24 @@ An intelligent Flutter-based nutrition tracking app that uses AI-powered image r
 - **FL Chart** - Beautiful, animated charts for nutrition visualization
 - **Google Fonts** - Custom typography for enhanced visual appeal
 - **Material Design 3** - Modern UI components and theming
+- **Shimmer** - Loading animations and skeleton screens
+- **Cached Network Image** - Efficient image caching and loading
+- **Flutter SVG** - Scalable vector graphics support
 
 ### Camera & Image Processing
 - **Camera Plugin** - Native camera integration with flash controls
 - **Image Picker** - Gallery selection and image handling
 - **Image Processing** - Advanced image preprocessing for ML model
 
+### Localization & Internationalization
+- **Easy Localization** - Multi-language support with JSON translations
+- **Intl** - Date formatting and number localization
+
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Flutter SDK 3.29.3
-- Dart SDK 3.0+
+- Dart SDK 3.7.2
 - Android Studio / VS Code with Flutter extensions
 - iOS development setup (for iOS builds)
 
@@ -113,21 +120,20 @@ flutter build ios --release
 ```
 lib/
 ├── core/
-│   ├── constants/        # App constants and strings
 │   ├── services/         # Business logic and API services
-│   ├── themes/          # App theming and styling
-│   └── utils/           # Utility functions
+│   ├── themes/           # App theming and styling
+│   └── utils/            # Utility functions
 ├── features/
-│   ├── dashboard/       # Home screen and daily overview
+│   ├── dashboard/        # Home screen and daily overview
 │   ├── food_recognition/ # Camera and AI recognition
-│   ├── nutrition_stats/ # Charts and analytics
-│   ├── recommendations/ # AI-powered suggestions
-│   ├── profile/         # User profile management
-│   └── user_setup/      # Onboarding and profile creation
+│   ├── nutrition_stats/  # Charts and analytics
+│   ├── recommendations/  # AI-powered suggestions
+│   ├── profile/          # User profile management
+│   └── user_setup/       # Onboarding and profile creation
 ├── shared/
-│   ├── models/          # Data models and Hive adapters
-│   └── widgets/         # Reusable UI components
-└── main.dart           # App entry point
+│   ├── models/           # Data models and Hive adapters
+│   └── widgets/          # Reusable UI components
+└── main.dart             # App entry point
 ```
 
 ## 🎯 Key Features Deep Dive
@@ -162,6 +168,12 @@ Hive boxes store:
 - **User Profiles**: Personal information and goals
 - **Settings**: App preferences and configurations
 
+### Localization
+The app supports multiple languages using Easy Localization:
+- **English**: Default language with full feature support
+- **Russian**: Complete translation for Russian-speaking users
+- Translation files are stored in `assets/translations/` as JSON files
+
 ## 🤝 Contributing
 
 We welcome contributions! Please follow these steps:
@@ -190,12 +202,3 @@ For support, questions, or suggestions:
 ## 🎉 Acknowledgments
 
 - [Nutrition5k](https://github.com/google-research-datasets/Nutrition5k)
-
----
-
-<div align="center">
-  <p>Made with ❤️ and Flutter</p>
-  <p>
-    <a href="#-plate-track-ai">⬆️ Back to top</a>
-  </p>
-</div>

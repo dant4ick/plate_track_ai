@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:intl/intl.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 
@@ -141,7 +142,7 @@ class LoadingIndicator extends StatelessWidget {
 
   const LoadingIndicator({
     Key? key,
-    this.message = 'Loading...',
+    required this.message,
   }) : super(key: key);
 
   @override
@@ -262,7 +263,7 @@ class FoodItemCard extends StatelessWidget {
                   
                   // Time and mass
                   Text(
-                    showMass ? '$timeString · ${mass.toInt()}g' : timeString,
+                    showMass ? '$timeString · ${mass.toInt()}${'g'.tr()}' : timeString,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         ),
@@ -271,20 +272,29 @@ class FoodItemCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   
                   // Bottom row with nutrients and calories
-                  Row(
+                    Row(
                     children: [
                       if (showNutrientChips) ...[
-                        Expanded(
-                          child: Wrap(
-                            spacing: 4,
-                            children: [
-                              _buildNutrientChip('P: ${((item.nutritionFacts.protein * mass) / 100).toInt()}g', Colors.purple[400]!),
-                              _buildNutrientChip('C: ${((item.nutritionFacts.carbohydrates * mass) / 100).toInt()}g', Colors.amber[600]!),
-                              _buildNutrientChip('F: ${((item.nutritionFacts.fat * mass) / 100).toInt()}g', Colors.blue[400]!),
-                            ],
+                      Expanded(
+                        child: Wrap(
+                        spacing: 4,
+                        children: [
+                          _buildNutrientChip(
+                          '${'protein_short'.tr()}: ${((item.nutritionFacts.protein * mass) / 100).toInt()}${'g'.tr()}',
+                          Colors.purple[400]!,
                           ),
+                          _buildNutrientChip(
+                          '${'carbs_short'.tr()}: ${((item.nutritionFacts.carbs * mass) / 100).toInt()}${'g'.tr()}',
+                          Colors.amber[600]!,
+                          ),
+                          _buildNutrientChip(
+                          '${'fat_short'.tr()}: ${((item.nutritionFacts.fat * mass) / 100).toInt()}${'g'.tr()}',
+                          Colors.blue[400]!,
+                          ),
+                        ],
                         ),
-                        const SizedBox(width: 12),
+                      ),
+                      const SizedBox(width: 12),
                       ],
                       
                       // Calories
@@ -299,7 +309,7 @@ class FoodItemCard extends StatelessWidget {
                                 ),
                           ),
                           Text(
-                            'kcal',
+                            'kcal'.tr(),
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                 ),

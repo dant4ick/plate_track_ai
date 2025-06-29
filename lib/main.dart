@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:plate_track_ai/core/constants/app_strings.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/core/themes/app_theme.dart';
 import 'package:plate_track_ai/features/dashboard/dashboard_screen.dart';
 import 'package:plate_track_ai/features/nutrition_stats/nutrition_stats_screen.dart';
@@ -15,6 +15,9 @@ import 'package:plate_track_ai/shared/models/user_profile_adapters.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize EasyLocalization
+  await EasyLocalization.ensureInitialized();
 
   // Initialize Hive for local storage
   await Hive.initFlutter();
@@ -46,7 +49,14 @@ void main() async {
     Hive.registerAdapter(ActivityLevelAdapter());
   }
 
-  runApp(const PlateTrackApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('en'), Locale('ru')],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en'),
+      child: const PlateTrackApp(),
+    ),
+  );
 }
 
 // Custom DateTime adapter for Hive
@@ -71,11 +81,14 @@ class PlateTrackApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: AppStrings.appName,
+      title: 'app_name'.tr(),
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system, // Uses the device's theme settings
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
       home: const AppInitializer(),
     );
   }
@@ -159,7 +172,7 @@ class _AppInitializerState extends State<AppInitializer> {
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
               Text(
-                'Loading Plate Track...',
+                'loading_plate_track'.tr(),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                     ),
@@ -228,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
     
     if (isMain) {
       return Expanded(
-        flex: 2, // Give the main button more space
+        flex: 3, // Give the main button more space
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Material(
@@ -253,6 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     
     return Expanded(
+      flex: 2,
       child: InkWell(
         onTap: () => _onItemTapped(index),
         child: Container(
@@ -315,11 +329,11 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Row(
               children: [
-                _buildNavItem(0, Icons.home, AppStrings.homeTab),
-                _buildNavItem(1, Icons.bar_chart, AppStrings.statsTab),
-                _buildNavItem(-1, Icons.camera_alt, 'Scan Food', isMain: true),
-                _buildNavItem(2, Icons.lightbulb, AppStrings.recommendationsTab),
-                _buildNavItem(3, Icons.person, AppStrings.profileTab),
+                _buildNavItem(0, Icons.home, 'home_tab'.tr()),
+                _buildNavItem(1, Icons.bar_chart, 'stats_tab'.tr()),
+                _buildNavItem(-1, Icons.camera_alt, '', isMain: true),
+                _buildNavItem(2, Icons.lightbulb, 'recommendations_tab'.tr()),
+                _buildNavItem(3, Icons.person, 'profile_tab'.tr()),
               ],
             ),
           ),

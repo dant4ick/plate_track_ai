@@ -131,13 +131,13 @@ class UserProfileService {
 
     // Standard macro distribution:
     // Protein: 10-35% of total calories (using 20%)
-    // Carbohydrates: 45-65% of total calories (using 50%)
+    // Carbs: 45-65% of total calories (using 50%)
     // Fat: 20-35% of total calories (using 30%)
     
     return {
       'calories': tdee,
       'protein': (tdee * 0.20) / 4, // 4 calories per gram of protein
-      'carbohydrates': (tdee * 0.50) / 4, // 4 calories per gram of carbs
+      'carbs': (tdee * 0.50) / 4, // 4 calories per gram of carbs
       'fat': (tdee * 0.30) / 9, // 9 calories per gram of fat
     };
   }

@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:plate_track_ai/core/constants/app_strings.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
+import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
 import 'package:plate_track_ai/features/food_recognition/recognition_result_screen.dart';
 import 'package:plate_track_ai/core/services/food_recognition_service.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
@@ -252,12 +253,12 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
       
       // Create food item with per 100g nutrition values
       final foodItem = FoodItem(
-        name: 'Food Item',
+        name: 'food_item'.tr(),
         // Store per 100g values in the food item
         calories: nutritionValues['calories'] ?? 0,
         nutritionFacts: NutritionFacts(
           protein: nutritionValues['protein'] ?? 0,
-          carbohydrates: nutritionValues['carbs'] ?? 0,
+          carbs: nutritionValues['carbs'] ?? 0,
           fat: nutritionValues['fat'] ?? 0,
           mass: nutritionValues['mass'] ?? 100.0, // Default to 100g if not available
         ),
@@ -296,11 +297,11 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
       
       // Create a fallback food item with sample data
       final fallbackFoodItem = FoodItem(
-        name: 'Sample Food',
+        name: 'sample_food'.tr(),
         calories: 245,
-        nutritionFacts: const NutritionFacts(
+        nutritionFacts: NutritionFacts(
           protein: 15,
-          carbohydrates: 30,
+          carbs: 30,
           fat: 8,
           mass: 100,
         ),
@@ -340,22 +341,22 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
   Widget build(BuildContext context) {
     if (_isAnalyzing) {
       return Scaffold(
-        body: LoadingIndicator(message: AppStrings.analyzing),
+        body: LoadingIndicator(message: 'analyzing_food'.tr()),
       );
     }
 
     if (!_isInitialized || _controller == null) {
-      return const Scaffold(
-        body: LoadingIndicator(),
+      return Scaffold(
+        body: LoadingIndicator(message: 'loading'.tr()),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Food Scanner'),
+      appBar: StandardAppBar(
+        titleText: 'food_scanner'.tr(),
+        showLogo: false,
         backgroundColor: Colors.black54,
         foregroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -398,7 +399,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                     _toggleFlash();
                   }
                 },
-                tooltip: 'Toggle flash mode',
+                tooltip: 'toggle_flash_mode'.tr(),
               ),
             ),
           ),
@@ -416,7 +417,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  _isCapturing ? "Capturing..." : AppStrings.frameYourFood,
+                  _isCapturing ? "capturing".tr() : 'frame_your_food'.tr(),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -461,7 +462,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   AppButton(
-                    text: AppStrings.selectFromGallery,
+                    text: 'select_from_gallery'.tr(),
                     onPressed: () {
                       if (!_isCapturing && !_isAnalyzing) {
                         _pickImageFromGallery();
@@ -472,7 +473,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                   ),
                   const SizedBox(width: 16),
                   AppButton(
-                    text: AppStrings.takePhoto,
+                    text: 'take_photo'.tr(),
                     onPressed: () {
                       if (!_isCapturing && !_isAnalyzing) {
                         _takePicture();

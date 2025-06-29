@@ -54,7 +54,7 @@ class NutritionFactsAdapter extends TypeAdapter<NutritionFacts> {
     
     return NutritionFacts(
       protein: fields[0] as double,
-      carbohydrates: fields[1] as double,
+      carbs: fields[1] as double,
       fat: fields[2] as double,
       mass: fields[3] as double?,
     );
@@ -66,7 +66,7 @@ class NutritionFactsAdapter extends TypeAdapter<NutritionFacts> {
     writer.writeByte(0);
     writer.write(obj.protein);
     writer.writeByte(1);
-    writer.write(obj.carbohydrates);
+    writer.write(obj.carbs);
     writer.writeByte(2);
     writer.write(obj.fat);
     writer.writeByte(3);

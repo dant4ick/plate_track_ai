@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:hive/hive.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 @HiveType(typeId: 2)
 class UserProfile extends Equatable {
@@ -125,9 +127,9 @@ enum Gender {
   String get displayName {
     switch (this) {
       case Gender.male:
-        return 'Male';
+        return 'male'.tr();
       case Gender.female:
-        return 'Female';
+        return 'female'.tr();
     }
   }
 }
@@ -148,30 +150,30 @@ enum ActivityLevel {
   String get displayName {
     switch (this) {
       case ActivityLevel.sedentary:
-        return 'Sedentary';
+        return 'activity_sedentary'.tr();
       case ActivityLevel.lightlyActive:
-        return 'Lightly Active';
+        return 'activity_lightly_active'.tr();
       case ActivityLevel.moderatelyActive:
-        return 'Moderately Active';
+        return 'activity_moderately_active'.tr();
       case ActivityLevel.veryActive:
-        return 'Very Active';
+        return 'activity_very_active'.tr();
       case ActivityLevel.extremelyActive:
-        return 'Extremely Active';
+        return 'activity_extremely_active'.tr();
     }
   }
 
   String get description {
     switch (this) {
       case ActivityLevel.sedentary:
-        return 'Little or no exercise';
+        return 'activity_sedentary_desc'.tr();
       case ActivityLevel.lightlyActive:
-        return 'Light exercise 1-3 days/week';
+        return 'activity_lightly_active_desc'.tr();
       case ActivityLevel.moderatelyActive:
-        return 'Moderate exercise 3-5 days/week';
+        return 'activity_moderately_active_desc'.tr();
       case ActivityLevel.veryActive:
-        return 'Hard exercise 6-7 days/week';
+        return 'activity_very_active_desc'.tr();
       case ActivityLevel.extremelyActive:
-        return 'Very hard exercise & physical job';
+        return 'activity_extremely_active_desc'.tr();
     }
   }
 
