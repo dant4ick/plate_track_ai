@@ -6,7 +6,7 @@ class AppLogo extends StatelessWidget {
   final double size;
   final Color? color;
 
-  const AppLogo({Key? key, this.size = 24, this.color}) : super(key: key);
+  const AppLogo({super.key, this.size = 24, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@ class AppLogoWithText extends StatelessWidget {
   final MainAxisAlignment alignment;
 
   const AppLogoWithText({
-    Key? key,
+    super.key,
     this.logoSize = 28,
     this.fontSize = 20,
     this.logoColor,
@@ -43,7 +43,7 @@ class AppLogoWithText extends StatelessWidget {
     this.text = 'app_name',
     this.fontWeight = FontWeight.w600,
     this.alignment = MainAxisAlignment.center,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -5,11 +5,10 @@ import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
-import 'package:intl/intl.dart';
 import 'package:plate_track_ai/shared/widgets/food_items.dart';
 
 class NutritionStatsScreen extends StatefulWidget {
-  const NutritionStatsScreen({Key? key}) : super(key: key);
+  const NutritionStatsScreen({super.key});
 
   @override
   State<NutritionStatsScreen> createState() => _NutritionStatsScreenState();
@@ -34,9 +33,6 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
 
   // Target values (will be loaded from user profile or use defaults)
   double _targetCalories = 2000;
-  double _targetProtein = 80;
-  double _targetCarbs = 250;
-  double _targetFat = 70;
 
   @override
   void initState() {
@@ -57,9 +53,6 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
     final targets = _userProfileService.getNutritionTargets();
     if (targets != null) {
       _targetCalories = targets['calories']!;
-      _targetProtein = targets['protein']!;
-      _targetCarbs = targets['carbs']!;
-      _targetFat = targets['fat']!;
     }
   }
 
@@ -84,7 +77,6 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
         _weeklyFoodItems.add(items);
       }
     } catch (e) {
-      print('Error loading food data: $e');
       // Use sample data as fallback
       _todaysFoodItems = [];
       _weeklyFoodItems = List.generate(7, (_) => []);
@@ -256,7 +248,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red[400]!.withOpacity(0.1),
+                    color: Colors.red[400]!.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -322,8 +314,8 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
                   decoration: BoxDecoration(
                     color:
                         progressPercentage >= 1.0
-                            ? Colors.green[400]!.withOpacity(0.1)
-                            : Colors.orange[400]!.withOpacity(0.1),
+                            ? Colors.green[400]!.withValues(alpha: 0.1)
+                            : Colors.orange[400]!.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -395,8 +387,8 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
           BoxShadow(
             color:
                 Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black.withOpacity(0.2)
-                    : Colors.grey.withOpacity(0.1),
+                    ? Colors.black.withValues(alpha: 0.2)
+                    : Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 1),
@@ -517,8 +509,8 @@ Widget _buildFoodItemsList() {
           BoxShadow(
             color:
                 Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black.withOpacity(0.2)
-                    : Colors.grey.withOpacity(0.1),
+                    ? Colors.black.withValues(alpha: 0.2)
+                    : Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 1),
@@ -541,7 +533,7 @@ Widget _buildFoodItemsList() {
                           ? Theme.of(context).colorScheme.primary
                           : Theme.of(
                             context,
-                          ).colorScheme.secondary.withOpacity(0.7),
+                          ).colorScheme.secondary.withValues(alpha: 0.7),
                   width: 20,
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(4),
@@ -783,8 +775,8 @@ Widget _buildFoodItemsList() {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+              Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -797,7 +789,7 @@ Widget _buildFoodItemsList() {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(

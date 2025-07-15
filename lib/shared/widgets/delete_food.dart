@@ -23,7 +23,7 @@ Future<void> showDeleteConfirmationDialog({
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isDark ? Colors.red[900]?.withOpacity(0.3) : Colors.red[50],
+                color: isDark ? Colors.red[900]?.withValues(alpha: 0.3) : Colors.red[50],
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -51,7 +51,7 @@ Future<void> showDeleteConfirmationDialog({
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isDark ? Colors.orange[900]?.withOpacity(0.3) : Colors.orange[50],
+                color: isDark ? Colors.orange[900]?.withValues(alpha: 0.3) : Colors.orange[50],
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isDark ? Colors.orange[600]! : Colors.orange[200]!,
@@ -88,7 +88,7 @@ Future<void> showDeleteConfirmationDialog({
             child: Text(
               'cancel'.tr(),
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ),

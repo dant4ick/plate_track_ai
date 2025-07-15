@@ -14,7 +14,7 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final PreferredSizeWidget? bottom;
 
   const StandardAppBar({
-    Key? key,
+    super.key,
     this.titleText,
     this.showLogo = true,
     this.actions,
@@ -24,7 +24,7 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.backgroundColor,
     this.foregroundColor,
     this.bottom,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

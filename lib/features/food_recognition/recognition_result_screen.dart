@@ -12,11 +12,11 @@ class RecognitionResultScreen extends StatefulWidget {
   final Function(FoodItem) onSave;
 
   const RecognitionResultScreen({
-    Key? key,
+    super.key,
     required this.imageFile,
     required this.foodItem,
     required this.onSave,
-  }) : super(key: key);
+  });
 
   @override
   State<RecognitionResultScreen> createState() => _RecognitionResultScreenState();
@@ -150,7 +150,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -206,7 +206,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Icon(
@@ -249,7 +249,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
@@ -339,7 +339,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
@@ -427,7 +427,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Icon(
@@ -538,8 +538,8 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+              Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -552,7 +552,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: AppLogo(
@@ -599,8 +599,8 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
           borderRadius: BorderRadius.circular(12),
           gradient: LinearGradient(
             colors: [
-              Theme.of(context).colorScheme.secondary.withOpacity(0.1),
-              Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+              Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+              Theme.of(context).colorScheme.secondary.withValues(alpha: 0.05),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -611,7 +611,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(

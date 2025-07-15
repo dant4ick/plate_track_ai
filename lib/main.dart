@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/core/themes/app_theme.dart';
 import 'package:plate_track_ai/features/dashboard/dashboard_screen.dart';
@@ -116,9 +117,7 @@ class _AppInitializerState extends State<AppInitializer> {
 
   Future<void> _initializeApp() async {
     try {
-      print('AppInitializer: Starting initialization...');
       await _userProfileService.initialize();
-      print('AppInitializer: UserProfileService initialized, hasUserProfile: ${_userProfileService.hasUserProfile}');
       if (mounted) {
         setState(() {
           _hasUserProfile = _userProfileService.hasUserProfile;
@@ -126,7 +125,6 @@ class _AppInitializerState extends State<AppInitializer> {
         });
       }
     } catch (e) {
-      print('Error initializing app: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -137,14 +135,12 @@ class _AppInitializerState extends State<AppInitializer> {
 
   Future<void> _onProfileSetupComplete() async {
     try {
-      print('AppInitializer: Profile setup completed, re-initializing service...');
       
       // Add a small delay to ensure the profile was saved
       await Future.delayed(const Duration(milliseconds: 100));
       
       // Re-initialize the service to check if profile was saved
       await _userProfileService.initialize();
-      print('AppInitializer: Service re-initialized, hasUserProfile: ${_userProfileService.hasUserProfile}');
       
       if (mounted) {
         setState(() {
@@ -152,13 +148,14 @@ class _AppInitializerState extends State<AppInitializer> {
         });
       }
     } catch (e) {
-      print('AppInitializer: Error in onProfileSetupComplete: $e');
+      if (kDebugMode) {
+        debugPrint('AppInitializer: Error handling user setup completion: $e');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    print('AppInitializer: Building - isLoading: $_isLoading, hasUserProfile: $_hasUserProfile');
     
     if (_isLoading) {
       return Scaffold(
@@ -176,7 +173,7 @@ class _AppInitializerState extends State<AppInitializer> {
               Text(
                 'loading_plate_track'.tr(),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
               ),
             ],
@@ -319,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Theme.of(context).scaffoldBackgroundColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),

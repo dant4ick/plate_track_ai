@@ -11,7 +11,7 @@ import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
 
 class FoodCameraScreen extends StatefulWidget {
-  const FoodCameraScreen({Key? key}) : super(key: key);
+  const FoodCameraScreen({super.key});
 
   @override
   State<FoodCameraScreen> createState() => _FoodCameraScreenState();
@@ -266,7 +266,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
       );
       
       // Navigate to results screen with the data
-      final result = await Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => RecognitionResultScreen(
@@ -310,7 +310,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
       
       // Navigate to results screen with fallback data
       if (mounted) {
-        final result = await Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => RecognitionResultScreen(

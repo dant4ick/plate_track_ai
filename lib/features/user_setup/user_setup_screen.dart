@@ -11,10 +11,10 @@ class UserSetupScreen extends StatefulWidget {
   final Future<void> Function()? onComplete;
 
   const UserSetupScreen({
-    Key? key,
+    super.key,
     this.isEditing = false,
     this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<UserSetupScreen> createState() => _UserSetupScreenState();
@@ -97,9 +97,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
   }
 
   Future<void> _saveProfile() async {
-    print('UserSetupScreen: _saveProfile called, isEditing: ${widget.isEditing}');
     if (!_formKey.currentState!.validate()) {
-      print('UserSetupScreen: Form validation failed');
       return;
     }
 
@@ -112,10 +110,8 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
       final weight = double.parse(_weightController.text);
       final height = double.parse(_heightController.text);
 
-      print('UserSetupScreen: Parsed values - age: $age, weight: $weight, height: $height, gender: $_selectedGender, activity: $_selectedActivityLevel');
 
       if (widget.isEditing) {
-        print('UserSetupScreen: Updating existing profile');
         await _userProfileService.updateProfile(
           age: age,
           weight: weight,
@@ -123,9 +119,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
           gender: _selectedGender,
           activityLevel: _selectedActivityLevel,
         );
-        print('UserSetupScreen: Profile updated successfully');
       } else {
-        print('UserSetupScreen: Creating new profile');
         await _userProfileService.createProfile(
           age: age,
           weight: weight,
@@ -133,7 +127,6 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
           gender: _selectedGender,
           activityLevel: _selectedActivityLevel,
         );
-        print('UserSetupScreen: Profile created successfully');
       }
 
       if (mounted) {
@@ -146,20 +139,17 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
           ),
         );
 
-        print('UserSetupScreen: About to call onComplete callback, isEditing: ${widget.isEditing}');
         await widget.onComplete?.call();
-        print('UserSetupScreen: onComplete callback completed');
         
         // Navigation logic based on context
+        if (!mounted) return;
+        
         if (widget.isEditing) {
-          print('UserSetupScreen: Popping navigation for editing mode');
           Navigator.of(context).pop(true);
         } else if (widget.onComplete != null) {
-          print('UserSetupScreen: Profile created with callback - assuming reset flow, popping to allow app to reinitialize');
           // This handles the reset case - pop everything and let the app reinitialize
           Navigator.of(context).popUntil((route) => route.isFirst);
         } else {
-          print('UserSetupScreen: Profile created without callback - staying on screen as managed by AppInitializer');
           // This is the normal app startup case - AppInitializer will handle the transition
         }
       }
@@ -316,7 +306,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
           width: isSelected ? 2 : 1,
         ),
         color: isSelected 
-          ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
           : null,
       ),
       child: ListTile(
@@ -543,7 +533,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
           width: _selectedActivityLevel == level ? 2 : 1,
         ),
         color: _selectedActivityLevel == level 
-          ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
           : null,
       ),
       child: RadioListTile<ActivityLevel>(
@@ -652,16 +642,16 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(

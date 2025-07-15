@@ -6,7 +6,7 @@ import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
 
 class RecommendationsScreen extends StatefulWidget {
-  const RecommendationsScreen({Key? key}) : super(key: key);
+  const RecommendationsScreen({super.key});
 
   @override
   State<RecommendationsScreen> createState() => _RecommendationsScreenState();
@@ -115,7 +115,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
       // Generate personalized recommendations
       _generateRecommendations();
     } catch (e) {
-      print('Error loading nutrition data: $e');
       // Use default recommendations if there's an error
       _useDefaultRecommendations();
     } finally {
@@ -333,7 +332,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
-            colors: [iconColor.withOpacity(0.1), iconColor.withOpacity(0.05)],
+            colors: [iconColor.withValues(alpha: 0.1), iconColor.withValues(alpha: 0.05)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -345,7 +344,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.1),
+                  color: iconColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: iconColor, size: 32),
@@ -554,7 +553,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(icon, color: color, size: 24),

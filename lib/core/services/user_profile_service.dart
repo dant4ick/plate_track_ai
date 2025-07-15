@@ -2,6 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:plate_track_ai/shared/models/user_profile.dart';
 import 'package:uuid/uuid.dart';
+import 'package:flutter/foundation.dart';
 
 class UserProfileService {
   static const String _userProfileBoxName = 'userProfile';
@@ -15,7 +16,9 @@ class UserProfileService {
       _userProfileBox = await Hive.openBox<UserProfile>(_userProfileBoxName);
       await _loadCurrentProfile();
     } catch (e) {
-      print('Error initializing UserProfileService: $e');
+      if (kDebugMode) {
+        debugPrint('UserProfileService: Error initializing service: $e');
+      }
     }
   }
 
@@ -28,7 +31,9 @@ class UserProfileService {
         _currentProfile = _userProfileBox!.get(currentUserId);
       }
     } catch (e) {
-      print('Error loading current profile: $e');
+      if (kDebugMode) {
+        debugPrint('UserProfileService: Error loading current profile: $e');
+      }
     }
   }
 

@@ -24,8 +24,8 @@ Widget buildFoodItemSection({
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.grey[700]!.withOpacity(0.2)
-                    : Colors.grey[400]!.withOpacity(0.1),
+                    ? Colors.grey[700]!.withValues(alpha: 0.2)
+                    : Colors.grey[400]!.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -39,14 +39,14 @@ Widget buildFoodItemSection({
               'no_food_items_yet'.tr(),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
             ),
             const SizedBox(height: 8),
             Text(
               'start_tracking_message'.tr(),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
               textAlign: TextAlign.center,
             ),

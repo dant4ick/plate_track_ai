@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
 import 'package:plate_track_ai/core/services/food_recognition_service.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
@@ -11,7 +10,7 @@ import 'dart:async';
 import 'package:plate_track_ai/shared/widgets/food_items.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -164,8 +163,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+              Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -189,7 +188,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withOpacity(0.6),
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -273,7 +272,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Text(
               '${_todayCalories.toInt()} / ${_targetCalories.toInt()} ${'kcal'.tr()}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -286,7 +285,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             minHeight: 8,
             backgroundColor: Theme.of(
               context,
-            ).colorScheme.onSurface.withOpacity(0.1),
+            ).colorScheme.onSurface.withValues(alpha: 0.1),
             valueColor: AlwaysStoppedAnimation<Color>(
               progress >= 1.0 ? Colors.green[400]! : Colors.red[400]!,
             ),
@@ -306,7 +305,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -323,7 +322,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Text(
             unit,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 4),

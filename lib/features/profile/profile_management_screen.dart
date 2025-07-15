@@ -8,7 +8,7 @@ import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
 import 'package:plate_track_ai/main.dart';
 
 class ProfileManagementScreen extends StatefulWidget {
-  const ProfileManagementScreen({Key? key}) : super(key: key);
+  const ProfileManagementScreen({super.key});
 
   @override
   State<ProfileManagementScreen> createState() =>
@@ -214,7 +214,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(32),
               ),
               child: AppLogo(

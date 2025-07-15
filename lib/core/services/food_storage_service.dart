@@ -32,7 +32,6 @@ class FoodStorageService {
         // Listen to Hive box changes
         _foodBox.listenable().addListener(_notifyListeners);
       } catch (e) {
-        print('Error initializing food storage: $e');
         // Try to delete the box if it's corrupted
         await Hive.deleteBoxFromDisk(_foodBoxName);
         // Try to open again
@@ -77,11 +76,15 @@ class FoodStorageService {
         if (item is FoodItem) {
           items.add(item);
         } else {
-          print('Skipping item with key $key: Not a FoodItem');
+          if (kDebugMode) {
+            debugPrint('FoodStorageService: Invalid item type found for key $key: ${item.runtimeType}');
+          }
         }
       }
     } catch (e) {
-      print('Error retrieving food items: $e');
+      if (kDebugMode) {
+        debugPrint('FoodStorageService: Error retrieving food items: $e');
+      }
     }
     
     return items;

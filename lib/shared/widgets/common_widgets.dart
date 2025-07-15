@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:intl/intl.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 
 class AppButton extends StatelessWidget {
@@ -12,13 +11,13 @@ class AppButton extends StatelessWidget {
   final IconData? icon;
 
   const AppButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onPressed,
     this.isLoading = false,
     this.isSecondary = false,
     this.icon,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -61,12 +60,12 @@ class NutritionCard extends StatelessWidget {
   final Color? color;
 
   const NutritionCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.value,
     required this.icon,
     this.color,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -115,11 +114,11 @@ class FrameGuideline extends StatelessWidget {
   final Color color;
 
   const FrameGuideline({
-    Key? key,
+    super.key,
     required this.size,
     this.strokeWidth = 3.0,
     this.color = Colors.white,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -141,9 +140,9 @@ class LoadingIndicator extends StatelessWidget {
   final String message;
 
   const LoadingIndicator({
-    Key? key,
+    super.key,
     required this.message,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -172,14 +171,14 @@ class FoodItemCard extends StatelessWidget {
   final String? timeFormat;
 
   const FoodItemCard({
-    Key? key,
+    super.key,
     required this.item,
     this.onDelete,
     this.showDeleteButton = false,
     this.showMass = true,
     this.showNutrientChips = true,
     this.timeFormat,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -243,7 +242,7 @@ class FoodItemCard extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.red[900]?.withOpacity(0.3) : Colors.red[50],
+                              color: isDark ? Colors.red[900]?.withValues(alpha: 0.3) : Colors.red[50],
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: isDark ? Colors.red[600]! : Colors.red[200]!,
@@ -265,7 +264,7 @@ class FoodItemCard extends StatelessWidget {
                   Text(
                     showMass ? '$timeString · ${mass.toInt()}${'g'.tr()}' : timeString,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                   ),
                   
@@ -311,7 +310,7 @@ class FoodItemCard extends StatelessWidget {
                           Text(
                             'kcal'.tr(),
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                 ),
                           ),
                         ],
@@ -331,7 +330,7 @@ class FoodItemCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(

@@ -7,9 +7,6 @@ class AppTheme {
   static const _secondaryColorLight = Color(0xFF2196F3);
   static const _secondaryColorDark = Color(0xFF1976D2);
   static const _errorColor = Color(0xFFE57373);
-  static const _successColor = Color(0xFF81C784);
-  static const _warningColor = Color(0xFFFFD54F);
-  static const _infoColor = Color(0xFF64B5F6);
   static const _surfaceLight = Color(0xFFFAFAFA);
   static const _surfaceDark = Color(0xFF121212);
   static const _backgroundLight = Color(0xFFFFFFFF);
@@ -23,8 +20,7 @@ class AppTheme {
       primary: _primaryColorLight,
       secondary: _secondaryColorLight,
       error: _errorColor,
-      surface: _surfaceLight,
-      background: _backgroundLight,
+      surface: _backgroundLight,
     ),
     textTheme: GoogleFonts.poppinsTextTheme(ThemeData.light().textTheme),
     appBarTheme: AppBarTheme(
@@ -75,8 +71,7 @@ class AppTheme {
       primary: _primaryColorDark,
       secondary: _secondaryColorDark,
       error: _errorColor,
-      surface: _surfaceDark,
-      background: _backgroundDark,
+      surface: _backgroundDark,
     ),
     textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
     appBarTheme: AppBarTheme(
