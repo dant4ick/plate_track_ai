@@ -74,7 +74,7 @@ jobs:
           storePassword=$KEYSTORE_PASSWORD
           keyPassword=$KEY_PASSWORD
           keyAlias=upload
-          storeFile=app/upload-keystore.jks
+          storeFile=upload-keystore.jks
           EOF
       
       # Build APK for direct installation
