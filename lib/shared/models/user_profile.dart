@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:hive/hive.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 
 @HiveType(typeId: 2)
 class UserProfile extends Equatable {
@@ -180,15 +179,15 @@ enum ActivityLevel {
   double get multiplier {
     switch (this) {
       case ActivityLevel.sedentary:
-        return 1.2;
+        return 1.40;
       case ActivityLevel.lightlyActive:
-        return 1.375;
-      case ActivityLevel.moderatelyActive:
         return 1.55;
+      case ActivityLevel.moderatelyActive:
+        return 1.70;
       case ActivityLevel.veryActive:
-        return 1.725;
+        return 1.95;
       case ActivityLevel.extremelyActive:
-        return 1.9;
+        return 2.20;
     }
   }
 }
