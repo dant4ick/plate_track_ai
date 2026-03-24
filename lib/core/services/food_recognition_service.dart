@@ -85,8 +85,11 @@ class FoodRecognitionService {
   /// Decode, crop, resize, and flatten the image into a Float32List
   Future<Float32List> _preprocessImage(File imageFile) async {
     final imageBytes = await imageFile.readAsBytes();
-    final image = img.decodeImage(imageBytes);
-    if (image == null) throw Exception('Failed to decode image');
+    final decoded = img.decodeImage(imageBytes);
+    if (decoded == null) throw Exception('Failed to decode image');
+
+    // Respect EXIF orientation so crop/resize always run on upright pixels.
+    final image = img.bakeOrientation(decoded);
 
     final width = image.width;
     final height = image.height;

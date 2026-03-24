@@ -1,0 +1,1 @@
+Verified from assets/ml/image2nutrition.tflite flatbuffer: input tensor is FLOAT32 shape [1,224,224,3], output FLOAT32 [1,5]. Model graph starts with MUL by 0.0039215689 (1/255), then SUB mean [0.485,0.456,0.406], then MUL by reciprocal std [4.3668,4.4643,4.4444]. Therefore app should feed raw RGB 0..255 values in NHWC order; additional external normalization would be incorrect.
