@@ -1,4 +1,4 @@
-package ru.dant4ick.plate_track_ai
+package io.github.dant4ick.plate_track_ai
 
 import io.flutter.embedding.android.FlutterActivity
 
