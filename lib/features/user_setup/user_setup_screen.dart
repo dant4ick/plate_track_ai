@@ -451,35 +451,30 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                   ),
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: RadioListTile<Gender>(
-                    title: Text(Gender.male.displayName),
-                    value: Gender.male,
-                    groupValue: _selectedGender,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedGender = value!;
-                        _calculateBMR();
-                      });
-                    },
+            RadioGroup<Gender>(
+              groupValue: _selectedGender,
+              onChanged: (value) {
+                setState(() {
+                  _selectedGender = value!;
+                  _calculateBMR();
+                });
+              },
+              child: Row(
+                children: [
+                  Expanded(
+                    child: RadioListTile<Gender>(
+                      title: Text(Gender.male.displayName),
+                      value: Gender.male,
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: RadioListTile<Gender>(
-                    title: Text(Gender.female.displayName),
-                    value: Gender.female,
-                    groupValue: _selectedGender,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedGender = value!;
-                        _calculateBMR();
-                      });
-                    },
+                  Expanded(
+                    child: RadioListTile<Gender>(
+                      title: Text(Gender.female.displayName),
+                      value: Gender.female,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -514,7 +509,18 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
             ),
             const SizedBox(height: 16),
             
-            ...ActivityLevel.values.map((level) => _buildActivityLevelTile(level)),
+            RadioGroup<ActivityLevel>(
+              groupValue: _selectedActivityLevel,
+              onChanged: (value) {
+                setState(() {
+                  _selectedActivityLevel = value!;
+                  _calculateBMR();
+                });
+              },
+              child: Column(
+                children: ActivityLevel.values.map((level) => _buildActivityLevelTile(level)).toList(),
+              ),
+            ),
           ],
         ),
       ),
@@ -550,13 +556,6 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               ),
         ),
         value: level,
-        groupValue: _selectedActivityLevel,
-        onChanged: (value) {
-          setState(() {
-            _selectedActivityLevel = value!;
-            _calculateBMR();
-          });
-        },
       ),
     );
   }
