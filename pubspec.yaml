@@ -2,7 +2,7 @@ name: plate_track_ai
 description: "An app for tracking food nutrition using AI image recognition."
 publish_to: 'none'
 
-version: 0.2.2+1
+version: 0.3.0+2
 
 environment:
   sdk: ^3.7.2
