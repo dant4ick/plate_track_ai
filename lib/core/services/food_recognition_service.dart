@@ -45,10 +45,10 @@ class FoodRecognitionService {
     }
 
     // 1. Preprocess image into a flat Float32List
-    final flatInput = await _preprocessImage(imageFile); // length = 224*224*3
+    final flatInput = await _preprocessImage(imageFile); // length = 256*256*3
 
-    // 2. Manually reshape into [1, 224, 224, 3]
-    const int height = 224, width = 224, channels = 3;
+    // 2. Manually reshape into [1, 256, 256, 3]
+    const int height = 256, width = 256, channels = 3;
     final inputTensor = <List<List<List<double>>>>[
       List.generate(height, (y) {
         return List.generate(width, (x) {
@@ -62,23 +62,24 @@ class FoodRecognitionService {
       }),
     ];
 
-    // 3. Prepare output buffer of shape [1, 5]
-    final output = List.filled(5, 0.0).reshape([1, 5]);
+    // Five separate float32 outputs, each with shape [1, 1].
+    // Tensor order: mass, carbs, protein, calories, fat (see assets/ml/README.md).
+    final outputBuffers = List.generate(
+      5,
+      (_) => <List<double>>[<double>[0.0]],
+    );
+    final outputs = <int, Object>{
+      for (int i = 0; i < outputBuffers.length; i++) i: outputBuffers[i],
+    };
+    _nutritionInterpreter!.runForMultipleInputs([inputTensor], outputs);
 
-    // 4. Run inference
-    _nutritionInterpreter!.run(inputTensor, output);
-
-    // 5. Return results
-    final mass = output[0][1];
-
-    // Return raw values per 100g now (except mass)
-    // Total values will be calculated in UI based on actual mass
+    // Nutrition values are per 100 g; the UI calculates portion totals.
     return {
-      'calories': output[0][0], // calories per 100g
-      'mass': mass, // actual mass in grams
-      'fat': output[0][2], // fat per 100g
-      'carbs': output[0][3], // carbs per 100g
-      'protein': output[0][4], // protein per 100g
+      'calories': outputBuffers[3][0][0],
+      'mass': outputBuffers[0][0][0],
+      'fat': outputBuffers[4][0][0],
+      'carbs': outputBuffers[1][0][0],
+      'protein': outputBuffers[2][0][0],
     };
   }
 
@@ -104,16 +105,21 @@ class FoodRecognitionService {
       width: cropSize,
       height: cropSize,
     );
-    final resized = img.copyResize(cropped, width: 224, height: 224);
+    final resized = img.copyResize(
+      cropped,
+      width: 256,
+      height: 256,
+      interpolation: img.Interpolation.cubic,
+    );
 
-    final input = Float32List(224 * 224 * 3);
+    final input = Float32List(256 * 256 * 3);
     int idx = 0;
-    for (int y = 0; y < 224; y++) {
-      for (int x = 0; x < 224; x++) {
+    for (int y = 0; y < 256; y++) {
+      for (int x = 0; x < 256; x++) {
         final pixel = resized.getPixel(x, y);
-        input[idx++] = pixel.r.toDouble();
-        input[idx++] = pixel.g.toDouble();
-        input[idx++] = pixel.b.toDouble();
+        input[idx++] = pixel.r.toDouble() / 255.0;
+        input[idx++] = pixel.g.toDouble() / 255.0;
+        input[idx++] = pixel.b.toDouble() / 255.0;
       }
     }
     return input;
