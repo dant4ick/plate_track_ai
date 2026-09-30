@@ -100,20 +100,24 @@ An intelligent Flutter-based nutrition tracking app that uses AI-powered image r
 
 4. **Run the app**
    ```bash
-   flutter run
+   flutter run --flavor dev
    ```
 
 ### Build for Production
 
 **Android APK:**
 ```bash
-flutter build apk --release
+flutter build apk --release --flavor prod
 ```
 
 **iOS (requires macOS):**
 ```bash
 flutter build ios --release
 ```
+
+Android development builds use `flutter build apk --release --flavor dev` and
+install as **LOOK! Food Dev** alongside **LOOK! Food**. See the
+[nightly build guide](docs/nightly.md) for scheduled builds and manual publishing.
 
 ## 🏗️ Project Structure
 

@@ -1,0 +1,132 @@
+name: LOOK! Food Android Nightly
+
+on:
+  schedule:
+    - cron: '17 0 * * *' # 03:17 Europe/Moscow
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Rebuild even if the current dev commit was already published
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: look-food-nightly
+  cancel-in-progress: false
+
+env:
+  FLUTTER_VERSION: '3.41.5'
+  JAVA_VERSION: '17'
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      sha: ${{ steps.prepare.outputs.sha }}
+      build: ${{ steps.prepare.outputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test publication logic
+        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
+      - name: Resolve dev and skip an already published commit
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force || false }}
+        run: python3 .github/scripts/nightly.py prepare
+      - name: Check publication credentials
+        if: steps.prepare.outputs.build == 'true'
+        env:
+          NIGHTLY_RELEASE_TOKEN: ${{ secrets.NIGHTLY_RELEASE_TOKEN }}
+        run: |
+          if [ -z "$NIGHTLY_RELEASE_TOKEN" ]; then
+            echo '::error::Add NIGHTLY_RELEASE_TOKEN with Contents and Workflows write permissions. See docs/nightly.md.'
+            exit 1
+          fi
+
+  build-and-publish:
+    needs: prepare
+    if: needs.prepare.outputs.build == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      NIGHTLY_SHA: ${{ needs.prepare.outputs.sha }}
+    steps:
+      - name: Checkout the exact dev commit with its model
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          fetch-depth: 0
+          lfs: true
+          persist-credentials: false
+      - name: Verify the model
+        run: git lfs fsck
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - name: Set the dev build version
+        run: |
+          base_version=$(sed -n 's/^version: *\([^+ ]*\).*/\1/p' pubspec.yaml)
+          test -n "$base_version"
+          echo "NIGHTLY_VERSION=${base_version}-dev.${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_ENV"
+          echo "NIGHTLY_BUILD_NUMBER=$((GITHUB_RUN_NUMBER * 100 + GITHUB_RUN_ATTEMPT))" >> "$GITHUB_ENV"
+      - name: Configure release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_BASE64" && test -n "$KEYSTORE_PASSWORD" && test -n "$KEY_PASSWORD"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=upload\nstoreFile=upload-keystore.jks\n' \
+            "$KEYSTORE_PASSWORD" "$KEY_PASSWORD" > android/key.properties
+      - name: Build the optimized dev APK
+        run: >-
+          flutter build apk --release --flavor dev
+          --build-name "$NIGHTLY_VERSION" --build-number "$NIGHTLY_BUILD_NUMBER"
+      - name: Verify the signed APK and packaged model
+        run: |
+          build_tools=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
+          "$build_tools/apksigner" verify build/app/outputs/flutter-apk/app-dev-release.apk
+          "$build_tools/aapt" dump badging build/app/outputs/flutter-apk/app-dev-release.apk > "$RUNNER_TEMP/nightly-badging.txt"
+          grep -F "name='io.github.dant4ick.plate_track_ai.dev'" "$RUNNER_TEMP/nightly-badging.txt"
+          grep -F "application-label:'LOOK! Food Dev'" "$RUNNER_TEMP/nightly-badging.txt"
+          python3 - <<'PY'
+          import hashlib
+          import zipfile
+          from pathlib import Path
+          model = Path('assets/ml/image2nutrition.tflite').read_bytes()
+          assert not model.startswith(b'version https://git-lfs.github.com/spec/v1')
+          with zipfile.ZipFile('build/app/outputs/flutter-apk/app-dev-release.apk') as apk:
+              packaged = apk.read('assets/flutter_assets/assets/ml/image2nutrition.tflite')
+          assert hashlib.sha256(packaged).digest() == hashlib.sha256(model).digest()
+          PY
+      - name: Keep the build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LOOK-Food-Dev-${{ github.run_number }}-${{ github.run_attempt }}
+          path: build/app/outputs/flutter-apk/app-dev-release.apk
+          retention-days: 30
+          if-no-files-found: error
+      - name: Publish the prerelease and retain eight versions
+        env:
+          GH_TOKEN: ${{ secrets.NIGHTLY_RELEASE_TOKEN }}
+        run: python3 .github/scripts/nightly.py publish --apk build/app/outputs/flutter-apk/app-dev-release.apk
+      - name: Remove signing files
+        if: always()
+        run: rm -f android/key.properties android/app/upload-keystore.jks
