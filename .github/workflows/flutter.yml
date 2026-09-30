@@ -20,6 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Fetch all history for proper versioning
+          lfs: true
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -70,10 +71,10 @@ jobs:
           EOF
 
       - name: Build APK
-        run: flutter build apk --release --verbose
+        run: flutter build apk --release --flavor prod --verbose
 
       - name: Build AAB
-        run: flutter build appbundle --release --verbose
+        run: flutter build appbundle --release --flavor prod --verbose
 
       - name: Get release tag
         id: get_tag
@@ -89,19 +90,19 @@ jobs:
           prerelease: ${{ contains(steps.get_tag.outputs.TAG_NAME, 'beta') || contains(steps.get_tag.outputs.TAG_NAME, 'alpha') }}
           generate_release_notes: true
           files: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/bundle/release/app-release.aab
+            build/app/outputs/flutter-apk/app-prod-release.apk
+            build/app/outputs/bundle/prodRelease/app-prod-release.aab
 
       - name: Upload APK as artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk-${{ steps.get_tag.outputs.TAG_NAME }}
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-prod-release.apk
           retention-days: 30
 
       - name: Upload AAB as artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-aab-${{ steps.get_tag.outputs.TAG_NAME }}
-          path: build/app/outputs/bundle/release/app-release.aab
+          path: build/app/outputs/bundle/prodRelease/app-prod-release.aab
           retention-days: 30
