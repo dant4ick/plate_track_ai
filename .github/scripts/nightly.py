@@ -165,7 +165,7 @@ def publish(api, repo, sha, run, attempt, version, apk, run_url):
     )
     ensure_tag(api, tag, sha)
     archive = ensure_release(api, tag, sha, f"LOOK! Food Dev {version}", body)
-    archive_asset = api.upload(archive, apk, name)
+    api.upload(archive, apk, name)
     api.request("PATCH", f"/releases/{archive['id']}", {
         "draft": False, "prerelease": True, "make_latest": "false", "body": body,
     })
@@ -177,7 +177,8 @@ def publish(api, repo, sha, run, attempt, version, apk, run_url):
     api.upload(latest, apk, name)
     ensure_tag(api, "nightly", sha, moving=True)
     latest_body = (
-        f"[Download the latest APK]({archive_asset['browser_download_url']})\n\n"
+        # Draft uploads return a temporary untagged-* URL. Use the final tag URL.
+        f"[Download the latest APK](https://github.com/{repo}/releases/download/{tag}/{name})\n\n"
         + body + f"\n[Archived release](https://github.com/{repo}/releases/tag/{tag})\n"
     )
     api.request("PATCH", f"/releases/{latest['id']}", {

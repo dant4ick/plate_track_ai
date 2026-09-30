@@ -83,7 +83,7 @@ class FakeGitHub:
             "id": self.next_id, "name": name, "state": "uploaded",
             "size": path.stat().st_size,
             "digest": "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest(),
-            "browser_download_url": f"https://github.com/owner/repo/releases/download/{release['tag_name']}/{name}",
+            "browser_download_url": f"https://github.com/owner/repo/releases/download/{'untagged-draft' if release['draft'] else release['tag_name']}/{name}",
         }
         self.next_id += 1
         self.records[release["tag_name"]]["assets"].append(asset)
@@ -134,6 +134,8 @@ class NightlyTests(unittest.TestCase):
         self.assertEqual(self.api.records["v0.3.0"], stable)
         self.assertEqual(self.api.refs["nightly"], SHA)
         self.assertEqual(self.api.refs["nightly-9-1"], SHA)
+        self.assertIn("/releases/download/nightly-9-1/LOOK-Food-Dev-9-1.apk", self.api.records["nightly"]["body"])
+        self.assertNotIn("untagged-", self.api.records["nightly"]["body"])
         self.assertEqual(prepare(self.api)["build"], "false")
         for method, path, body in self.api.calls:
             if method in ("POST", "PATCH") and path.startswith("/releases"):
