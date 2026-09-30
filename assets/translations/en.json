@@ -1,5 +1,5 @@
 {
-  "app_name": "Plate Track AI",
+  "app_name": "LOOK! Food",
   "home_tab": "Home",
   "stats_tab": "History",
   "recommendations_tab": "Recommendations",
@@ -14,7 +14,7 @@
   "analyzing_food": "Analyzing food...",
   "capturing": "Capturing image...",
 
-  "loading_plate_track": "Loading Plate Track AI...",
+  "loading_plate_track": "Loading LOOK! Food...",
 
   "calories": "Calories",
   "carbs": "Carbs",
