@@ -28,6 +28,15 @@ class UserProfile extends Equatable {
   @HiveField(7)
   final DateTime? updatedAt;
 
+  /// Weight when the user started tracking, in kg. Null on profiles created
+  /// before goal tracking existed — [effectiveStartWeight] covers that case.
+  @HiveField(8)
+  final double? startWeight;
+
+  /// Target weight in kg, or null if the user has not set a goal.
+  @HiveField(9)
+  final double? goalWeight;
+
   const UserProfile({
     required this.id,
     required this.age,
@@ -37,7 +46,46 @@ class UserProfile extends Equatable {
     required this.activityLevel,
     required this.createdAt,
     this.updatedAt,
+    this.startWeight,
+    this.goalWeight,
   });
+
+  /// The weight the goal is measured from. Profiles saved before goal tracking
+  /// have no recorded start, so today's weight stands in and progress reads 0
+  /// rather than being unavailable.
+  double get effectiveStartWeight => startWeight ?? weight;
+
+  /// How far the user is from [effectiveStartWeight] to [goalWeight], in 0..1.
+  ///
+  /// Null when there is nothing to measure: no goal set, or a goal equal to the
+  /// start (which would divide by zero). Works in both directions — losing and
+  /// gaining — because it is the *travelled* fraction of the total distance,
+  /// not a comparison of magnitudes.
+  double? get weightProgress {
+    final goal = goalWeight;
+    if (goal == null) return null;
+
+    final start = effectiveStartWeight;
+    final distance = goal - start;
+    if (distance == 0) return null;
+
+    return ((weight - start) / distance).clamp(0.0, 1.0);
+  }
+
+  /// Body mass index, kg/m².
+  double get bmi => weight / ((height / 100) * (height / 100));
+
+  /// The lowest weight that still counts as a healthy BMI (18.5) at [heightCm].
+  ///
+  /// Used as the floor for goal weights: a target below this would be a target
+  /// for being underweight, which the app should not help set.
+  static double minimumHealthyWeight(double heightCm) {
+    final metres = heightCm / 100;
+    return 18.5 * metres * metres;
+  }
+
+  /// [minimumHealthyWeight] at this profile's height.
+  double get minimumGoalWeight => minimumHealthyWeight(height);
 
   // Calculate BMR (Basal Metabolic Rate) using the provided formulas
   double calculateBMR() {
@@ -64,6 +112,9 @@ class UserProfile extends Equatable {
     ActivityLevel? activityLevel,
     DateTime? createdAt,
     DateTime? updatedAt,
+    double? startWeight,
+    double? goalWeight,
+    bool clearGoalWeight = false,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -74,6 +125,11 @@ class UserProfile extends Equatable {
       activityLevel: activityLevel ?? this.activityLevel,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      startWeight: startWeight ?? this.startWeight,
+      // A null `goalWeight` means "leave it alone", which is what every other
+      // field here means too — so removing a goal needs its own flag rather
+      // than being expressible as a null argument.
+      goalWeight: clearGoalWeight ? null : (goalWeight ?? this.goalWeight),
     );
   }
 
@@ -87,6 +143,8 @@ class UserProfile extends Equatable {
         activityLevel,
         createdAt,
         updatedAt,
+        startWeight,
+        goalWeight,
       ];
 
   Map<String, dynamic> toJson() {
@@ -99,6 +157,8 @@ class UserProfile extends Equatable {
       'activityLevel': activityLevel.name,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
+      'startWeight': startWeight,
+      'goalWeight': goalWeight,
     };
   }
 
@@ -112,6 +172,8 @@ class UserProfile extends Equatable {
       activityLevel: ActivityLevel.values.firstWhere((e) => e.name == json['activityLevel']),
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      startWeight: (json['startWeight'] as num?)?.toDouble(),
+      goalWeight: (json['goalWeight'] as num?)?.toDouble(),
     );
   }
 }

@@ -5,8 +5,10 @@ import 'package:plate_track_ai/shared/models/user_profile.dart';
 import 'package:plate_track_ai/features/user_setup/user_setup_screen.dart';
 import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
+import 'package:plate_track_ai/shared/widgets/theme_picker.dart';
 import 'package:plate_track_ai/main.dart';
 import 'package:plate_track_ai/core/themes/app_colors.dart';
+import 'package:plate_track_ai/core/themes/app_dimens.dart';
 
 class ProfileManagementScreen extends StatefulWidget {
   const ProfileManagementScreen({super.key});
@@ -182,7 +184,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
     final targets = _userProfileService.getNutritionTargets();
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: AppDimens.pagePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -204,6 +206,11 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
           // Nutrition Targets Section
           if (targets != null) _buildNutritionTargetsSection(targets),
 
+          const SizedBox(height: 24),
+
+          // Appearance Section
+          const ThemePicker(),
+
           const SizedBox(height: 32),
 
           // Action Buttons
@@ -216,7 +223,6 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
   Widget _buildProfileHeader() {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Row(
@@ -270,7 +276,6 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
   Widget _buildPersonalInfoSection(UserProfile profile) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -294,6 +299,14 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
               'weight'.tr(),
               '${profile.weight} ${'kg'.tr()}',
             ),
+            if (profile.goalWeight != null) ...[
+              const SizedBox(height: 12),
+              _buildInfoRow(
+                Icons.flag_outlined,
+                'goal_weight'.tr(),
+                '${profile.goalWeight} ${'kg'.tr()}',
+              ),
+            ],
             const SizedBox(height: 12),
             _buildInfoRow(Icons.height, 'height'.tr(), '${profile.height} ${'cm'.tr()}'),
             const SizedBox(height: 12),
@@ -311,7 +324,6 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
   Widget _buildCalculatedValuesSection(double bmr, double tdee) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -352,7 +364,6 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
   Widget _buildNutritionTargetsSection(Map<String, double> targets) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

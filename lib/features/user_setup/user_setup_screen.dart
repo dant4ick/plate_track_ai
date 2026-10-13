@@ -6,6 +6,7 @@ import 'package:plate_track_ai/shared/models/user_profile.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
 import 'package:plate_track_ai/core/themes/app_colors.dart';
+import 'package:plate_track_ai/core/themes/app_dimens.dart';
 
 class UserSetupScreen extends StatefulWidget {
   final bool isEditing;
@@ -29,6 +30,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
   final _ageController = TextEditingController();
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
+  final _goalWeightController = TextEditingController();
   
   // Form state
   Gender _selectedGender = Gender.male;
@@ -48,6 +50,9 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     _ageController.addListener(_calculateBMR);
     _weightController.addListener(_calculateBMR);
     _heightController.addListener(_calculateBMR);
+    // The goal field's helper text quotes the healthy minimum for the height
+    // typed so far, so it has to follow the height field keystroke by keystroke.
+    _heightController.addListener(() => setState(() {}));
   }
 
   @override
@@ -69,11 +74,30 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
         _ageController.text = profile.age.toString();
         _weightController.text = profile.weight.toString();
         _heightController.text = profile.height.toString();
+        _goalWeightController.text = _formatKg(profile.goalWeight);
         _selectedGender = profile.gender;
         _selectedActivityLevel = profile.activityLevel;
       });
       _calculateBMR();
     }
+  }
+
+  /// "67" for a whole number, "67.5" otherwise, "" for none.
+  static String _formatKg(double? kg) {
+    if (kg == null) return '';
+    return kg % 1 == 0 ? kg.toStringAsFixed(0) : kg.toStringAsFixed(1);
+  }
+
+  /// Accepts `70.5` and `70,5`: the numeric keyboard offers a comma as the
+  /// decimal separator in the Russian locale the app ships.
+  static double? _parseKg(String raw) =>
+      double.tryParse(raw.trim().replaceAll(',', '.'));
+
+  /// The floor for the goal field, or null until a valid height is entered.
+  double? get _minimumGoalWeight {
+    final height = double.tryParse(_heightController.text);
+    if (height == null || height < 100 || height > 250) return null;
+    return UserProfile.minimumHealthyWeight(height);
   }
 
   void _calculateBMR() {
@@ -110,7 +134,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
       final age = int.parse(_ageController.text);
       final weight = double.parse(_weightController.text);
       final height = double.parse(_heightController.text);
-
+      final goalWeight = _parseKg(_goalWeightController.text);
 
       if (widget.isEditing) {
         await _userProfileService.updateProfile(
@@ -119,6 +143,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
           height: height,
           gender: _selectedGender,
           activityLevel: _selectedActivityLevel,
+          goalWeight: goalWeight,
         );
       } else {
         await _userProfileService.createProfile(
@@ -127,6 +152,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
           height: height,
           gender: _selectedGender,
           activityLevel: _selectedActivityLevel,
+          goalWeight: goalWeight,
         );
       }
 
@@ -198,6 +224,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     _ageController.dispose();
     _weightController.dispose();
     _heightController.dispose();
+    _goalWeightController.dispose();
     super.dispose();
   }
 
@@ -209,7 +236,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
         showLogo: false,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: AppDimens.pagePadding(context),
         child: Form(
           key: _formKey,
           child: Column(
@@ -260,7 +287,6 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
   Widget _buildLanguageSection() {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -335,7 +361,6 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
   Widget _buildPersonalInfoSection() {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -441,7 +466,11 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 return null;
               },
             ),
-            
+
+            const SizedBox(height: 16),
+
+            _buildGoalWeightField(),
+
             const SizedBox(height: 16),
             
             // Gender selection
@@ -483,10 +512,52 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     );
   }
 
+  /// Target weight. Required, and floored at the healthy-BMI weight for the
+  /// entered height — the app will not help set a goal of being underweight.
+  Widget _buildGoalWeightField() {
+    final minimum = _minimumGoalWeight;
+
+    return TextFormField(
+      controller: _goalWeightController,
+      decoration: InputDecoration(
+        labelText: 'goal_weight'.tr(),
+        suffixText: 'kg'.tr(),
+        helperText: minimum == null
+            ? 'enter_height_for_goal_hint'.tr()
+            : 'min_healthy_weight_hint'.tr(
+                namedArgs: {'min': minimum.toStringAsFixed(1)},
+              ),
+        helperMaxLines: 2,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        prefixIcon: const Icon(Icons.flag_outlined),
+      ),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+      ],
+      validator: (value) {
+        final raw = (value ?? '').trim();
+        if (raw.isEmpty) return 'please_enter_your_goal_weight'.tr();
+        final goal = _parseKg(raw);
+        if (goal == null || goal < 20 || goal > 300) {
+          return 'please_enter_valid_goal_weight'.tr();
+        }
+        final floor = _minimumGoalWeight;
+        if (floor != null && goal < floor) {
+          return 'goal_weight_below_minimum'.tr(
+            namedArgs: {'min': floor.toStringAsFixed(1)},
+          );
+        }
+        return null;
+      },
+    );
+  }
+
   Widget _buildActivityLevelSection() {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -564,7 +635,6 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
   Widget _buildBMRResultsSection() {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(

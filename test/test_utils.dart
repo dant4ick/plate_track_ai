@@ -38,6 +38,8 @@ class TestDataFactory {
     ActivityLevel? activityLevel,
     DateTime? createdAt,
     DateTime? updatedAt,
+    double? startWeight,
+    double? goalWeight,
   }) {
     return UserProfile(
       id: id ?? 'test-profile-id',
@@ -48,6 +50,8 @@ class TestDataFactory {
       activityLevel: activityLevel ?? ActivityLevel.moderatelyActive,
       createdAt: createdAt ?? DateTime.now(),
       updatedAt: updatedAt,
+      startWeight: startWeight,
+      goalWeight: goalWeight,
     );
   }
 

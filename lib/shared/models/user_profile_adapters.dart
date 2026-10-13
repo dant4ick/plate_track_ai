@@ -21,12 +21,17 @@ class UserProfileAdapter extends TypeAdapter<UserProfile> {
       activityLevel: fields[5] as ActivityLevel,
       createdAt: fields[6] as DateTime,
       updatedAt: fields[7] as DateTime?,
+      // Fields 8 and 9 postdate the first release. Records written before goal
+      // tracking simply do not carry those bytes, so `fields[...]` is absent
+      // and reads as null — which is exactly the "no goal set" state.
+      startWeight: fields[8] as double?,
+      goalWeight: fields[9] as double?,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserProfile obj) {
-    writer.writeByte(8);
+    writer.writeByte(10);
     writer.writeByte(0);
     writer.write(obj.id);
     writer.writeByte(1);
@@ -43,6 +48,10 @@ class UserProfileAdapter extends TypeAdapter<UserProfile> {
     writer.write(obj.createdAt);
     writer.writeByte(7);
     writer.write(obj.updatedAt);
+    writer.writeByte(8);
+    writer.write(obj.startWeight);
+    writer.writeByte(9);
+    writer.write(obj.goalWeight);
   }
 }
 
