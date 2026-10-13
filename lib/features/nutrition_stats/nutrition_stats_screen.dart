@@ -4,9 +4,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
+import 'package:plate_track_ai/shared/models/week_summary.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
+import 'package:plate_track_ai/shared/widgets/weekly_averages.dart';
+import 'package:plate_track_ai/shared/widgets/weekly_calories_chart.dart';
 import 'package:plate_track_ai/shared/widgets/food_items.dart';
 import 'package:plate_track_ai/core/themes/app_colors.dart';
+import 'package:plate_track_ai/core/themes/app_dimens.dart';
 
 class NutritionStatsScreen extends StatefulWidget {
   const NutritionStatsScreen({super.key});
@@ -24,6 +28,10 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
   // Data states
   List<FoodItem> _todaysFoodItems = [];
   List<List<FoodItem>> _weeklyFoodItems = [];
+
+  /// Derived from [_weeklyFoodItems]; the weekly chart and averages read this
+  /// rather than recomputing the same sums twice.
+  WeekSummary _week = WeekSummary.empty();
   bool _isLoading = true;
 
   // Nutrition summary
@@ -77,10 +85,12 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
         final items = await _storageService.getFoodItemsByDate(date);
         _weeklyFoodItems.add(items);
       }
+      _week = WeekSummary.fromDays(_weeklyFoodItems);
     } catch (e) {
       // Use sample data as fallback
       _todaysFoodItems = [];
       _weeklyFoodItems = List.generate(7, (_) => []);
+      _week = WeekSummary.empty();
       _totalCalories = 0;
       _totalProtein = 0;
       _totalCarbs = 0;
@@ -154,7 +164,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
       onRefresh: _loadFoodData,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16.0),
+        padding: AppDimens.pagePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -200,7 +210,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
       onRefresh: _loadFoodData,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16.0),
+        padding: AppDimens.pagePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -212,7 +222,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            _buildWeeklyCalorieChart(),
+            WeeklyCaloriesChart(summary: _week),
 
             const SizedBox(height: 24),
 
@@ -224,7 +234,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            _buildWeeklyAveragesCards(),
+            WeeklyAverages(summary: _week),
           ],
         ),
       ),
@@ -238,7 +248,6 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -477,272 +486,6 @@ Widget _buildFoodItemsList() {
   );
 }
 
-  Widget _buildWeeklyCalorieChart() {
-    // Calculate weekly calorie data
-    final List<double> calorieData = [];
-    for (final dailyItems in _weeklyFoodItems) {
-      double dailyCalories = 0;
-      for (final item in dailyItems) {
-        // Calculate actual calories based on per 100g value and mass
-        final double mass = item.nutritionFacts.mass ?? 100.0;
-        dailyCalories += (item.calories * mass) / 100.0;
-      }
-      calorieData.add(dailyCalories);
-    }
-
-    // Get day names for the last 7 days
-    final weekDays = [];
-    final today = DateTime.now();
-    for (int i = 6; i >= 0; i--) {
-      final date = DateTime(today.year, today.month, today.day - i);
-      weekDays.add(DateFormat('E', context.locale.toString()).format(date)); // Localized day names
-    }
-
-    return Container(
-      height: 240,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppPalette.of(context).shadow,
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: BarChart(
-        BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-          maxY: _calculateMaxY(calorieData),
-          minY: 0,
-          barGroups: List.generate(7, (index) {
-            return BarChartGroupData(
-              x: index,
-              barRods: [
-                BarChartRodData(
-                  toY: calorieData[index],
-                  color:
-                      index == 6
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(
-                            context,
-                          ).colorScheme.secondary.withValues(alpha: 0.7),
-                  width: 20,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(4),
-                    topRight: Radius.circular(4),
-                  ),
-                ),
-              ],
-            );
-          }),
-          titlesData: FlTitlesData(
-            show: true,
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 28,
-                getTitlesWidget: (value, meta) {
-                  return SideTitleWidget(
-                    meta: meta,
-                    child: Text(
-                      weekDays[value.toInt()],
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  );
-                },
-              ),
-            ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 40,
-                getTitlesWidget: (value, meta) {
-                  if (value % 500 != 0) return const SizedBox();
-                  return SideTitleWidget(
-                    meta: meta,
-                    child: Text(
-                      value.toInt().toString(),
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  );
-                },
-              ),
-            ),
-            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          ),
-          gridData: FlGridData(
-            show: true,
-            horizontalInterval: 500,
-            getDrawingHorizontalLine: (value) {
-              return FlLine(
-                color: AppPalette.of(context).chartGrid,
-                strokeWidth: 1,
-              );
-            },
-            drawVerticalLine: false,
-          ),
-          borderData: FlBorderData(show: false),
-        ),
-      ),
-    );
-  }
-
-  double _calculateMaxY(List<double> values) {
-    double max = 0;
-    for (final value in values) {
-      if (value > max) max = value;
-    }
-    // Round up to nearest 500 and add some padding
-    return ((max / 500).ceil() * 500 + 500).clamp(1000, 5000).toDouble();
-  }
-
-  Widget _buildWeeklyAveragesCards() {
-    // Calculate weekly averages
-    double avgCalories = 0;
-    double avgProtein = 0;
-    double avgCarbs = 0;
-    double avgFat = 0;
-    int daysWithData = 0;
-
-    for (final dailyItems in _weeklyFoodItems) {
-      if (dailyItems.isNotEmpty) {
-        daysWithData++;
-        double dailyCalories = 0;
-        double dailyProtein = 0;
-        double dailyCarbs = 0;
-        double dailyFat = 0;
-
-        for (final item in dailyItems) {
-          // Calculate based on per 100g values and mass
-          final double mass = item.nutritionFacts.mass ?? 100.0;
-          dailyCalories += (item.calories * mass) / 100.0;
-          dailyProtein += (item.nutritionFacts.protein * mass) / 100.0;
-          dailyCarbs += (item.nutritionFacts.carbs * mass) / 100.0;
-          dailyFat += (item.nutritionFacts.fat * mass) / 100.0;
-        }
-
-        avgCalories += dailyCalories;
-        avgProtein += dailyProtein;
-        avgCarbs += dailyCarbs;
-        avgFat += dailyFat;
-      }
-    }
-
-    // Calculate averages only if we have data
-    if (daysWithData > 0) {
-      avgCalories /= daysWithData;
-      avgProtein /= daysWithData;
-      avgCarbs /= daysWithData;
-      avgFat /= daysWithData;
-    }
-
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildAverageCard(
-                'calories'.tr(),
-                avgCalories.toInt().toString(),
-                '${'kcal'.tr()}/${'day'.tr()}',
-                AppPalette.of(context).calories,
-                Icons.local_fire_department,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildAverageCard(
-                'protein'.tr(),
-                avgProtein.toInt().toString(),
-                '${'g'.tr()}/${'day'.tr()}',
-                AppColors.protein,
-                Icons.fitness_center,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildAverageCard(
-                'carbs'.tr(),
-                avgCarbs.toInt().toString(),
-                '${'g'.tr()}/${'day'.tr()}',
-                AppColors.carbs,
-                Icons.grain,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildAverageCard(
-                'fat'.tr(),
-                avgFat.toInt().toString(),
-                '${'g'.tr()}/${'day'.tr()}',
-                AppColors.fat,
-                Icons.opacity,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAverageCard(
-    String title,
-    String value,
-    String unit,
-    Color color,
-    IconData icon,
-  ) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            Text(
-              unit,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(
-        color: AppPalette.of(context).textSecondary,
-      ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildHeaderSection() {
     String message;
     IconData icon;
@@ -763,7 +506,6 @@ Widget _buildFoodItemsList() {
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
