@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:uuid/uuid.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/shared/models/cached_barcode_product.dart';
+import 'package:plate_track_ai/shared/widgets/bottom_action_bar.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
 import 'package:plate_track_ai/core/services/barcode_cache_service.dart';
@@ -464,7 +465,6 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -647,7 +647,7 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
                 label: 'protein'.tr(),
                 icon: Icons.fitness_center,
                 suffix: 'g'.tr(),
-                color: AppColors.protein,
+                color: AppPalette.of(context).proteinInk,
                 highlighted: highlightAll,
               ),
             ),
@@ -662,7 +662,7 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
                 label: 'carbs'.tr(),
                 icon: Icons.grain,
                 suffix: 'g'.tr(),
-                color: AppColors.carbs,
+                color: AppPalette.of(context).carbsInk,
                 highlighted: highlightAll,
               ),
             ),
@@ -673,7 +673,7 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
                 label: 'fat'.tr(),
                 icon: Icons.opacity,
                 suffix: 'g'.tr(),
-                color: AppColors.fat,
+                color: AppPalette.of(context).fatInk,
                 highlighted: highlightAll,
               ),
             ),
@@ -775,28 +775,20 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
   }
 
   Widget _buildBottomBar() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Expanded(
-            child: AppButton(
-              text: 'cancel'.tr(),
-              onPressed: () => Navigator.pop(context),
-              isSecondary: true,
-              icon: Icons.close,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: AppButton(
-              text: 'save_result'.tr(),
-              onPressed: _saveFoodItem,
-              icon: Icons.save_alt,
-            ),
-          ),
-        ],
-      ),
+    return BottomActionBar(
+      children: [
+        AppButton(
+          text: 'cancel'.tr(),
+          onPressed: () => Navigator.pop(context),
+          isSecondary: true,
+          icon: Icons.close,
+        ),
+        AppButton(
+          text: 'save_result'.tr(),
+          onPressed: _saveFoodItem,
+          icon: Icons.save_alt,
+        ),
+      ],
     );
   }
 }

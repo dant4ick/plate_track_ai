@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
+import 'app_dimens.dart';
 
 class AppTheme {
   AppTheme._();
@@ -47,21 +48,30 @@ class AppTheme {
     cardTheme: CardThemeData(
       color: AppColors.surfaceLight,
       elevation: 2,
-      shadowColor: AppColors.shadowSoft,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shadowColor: AppColors.shadowSubtle,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+      ),
     ),
     dividerColor: AppColors.borderLight,
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         foregroundColor: AppColors.onAccent,
         backgroundColor: _primaryLight,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       ),
     ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: _primaryLight,
       foregroundColor: AppColors.onAccent,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimens.radiusSquircle),
+      ),
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: _primaryLight,
@@ -75,11 +85,11 @@ class AppTheme {
       filled: true,
       fillColor: AppColors.fieldLight,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimens.radiusControl),
         borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimens.radiusControl),
         borderSide: const BorderSide(color: _primaryLight, width: 2),
       ),
     ),
@@ -118,21 +128,30 @@ class AppTheme {
     cardTheme: CardThemeData(
       color: AppColors.surfaceDark,
       elevation: 2,
-      shadowColor: AppColors.shadowMedium,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shadowColor: AppColors.shadowStrong,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+      ),
     ),
     dividerColor: AppColors.borderDark,
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         foregroundColor: AppColors.onAccent,
         backgroundColor: _primaryDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       ),
     ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: _primaryDark,
       foregroundColor: AppColors.onAccent,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimens.radiusSquircle),
+      ),
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: _primaryDark,
@@ -146,11 +165,11 @@ class AppTheme {
       filled: true,
       fillColor: AppColors.fieldDark,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimens.radiusControl),
         borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimens.radiusControl),
         borderSide: const BorderSide(color: _primaryDark, width: 2),
       ),
     ),
@@ -174,7 +193,9 @@ class AppTheme {
       primary: AppColors.pick,
       onPrimary: AppColors.onAccent,
       secondary: AppColors.secondShade,
-      onSecondary: AppColors.onAccent,
+      // Dark ink, not white: this secondary is the lime shade, and white on it
+      // is 1.70:1. Matches what the dark theme already does with its lime.
+      onSecondary: AppColors.textPrimaryLight,
       tertiary: AppColors.tri,
       onTertiary: AppColors.onAccent,
       error: AppColors.dangerLight,
@@ -197,21 +218,30 @@ class AppTheme {
     cardTheme: CardThemeData(
       color: AppColors.surfaceLight,
       elevation: 2,
-      shadowColor: AppColors.shadowSoft,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shadowColor: AppColors.shadowSubtle,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+      ),
     ),
     dividerColor: AppColors.borderLight,
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         foregroundColor: AppColors.onAccent,
         backgroundColor: AppColors.pick,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       ),
     ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: AppColors.secondShade,
       foregroundColor: AppColors.onAccent,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimens.radiusSquircle),
+      ),
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: AppColors.pickCalories,
@@ -225,11 +255,11 @@ class AppTheme {
       filled: true,
       fillColor: AppColors.fieldLight,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimens.radiusControl),
         borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimens.radiusControl),
         borderSide: const BorderSide(color: AppColors.pick, width: 2),
       ),
     ),

@@ -446,11 +446,14 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
             left: 0,
             right: 0,
             child: Container(
-              padding: const EdgeInsets.only(
-                left: 24, 
-                right: 24, 
-                top: 20, 
-                bottom: 36
+              // The panel floats over the camera preview, so nothing above it
+              // has reserved the navigation inset — it adds its own on top of
+              // the 36 the design asks for.
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 20,
+                bottom: 36 + MediaQuery.paddingOf(context).bottom,
               ),
               decoration: const BoxDecoration(
                 color: AppColors.cameraMask,

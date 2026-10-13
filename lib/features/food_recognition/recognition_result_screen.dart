@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
+import 'package:plate_track_ai/shared/widgets/bottom_action_bar.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
@@ -301,7 +302,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                           label: 'protein'.tr(),
                           icon: Icons.fitness_center,
                           suffix: 'g'.tr(),
-                          color: AppColors.protein,
+                          color: AppPalette.of(context).proteinInk,
                         ),
                       ),
                     ],
@@ -316,7 +317,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                           label: 'carbs'.tr(),
                           icon: Icons.grain,
                           suffix: 'g'.tr(),
-                          color: AppColors.carbs,
+                          color: AppPalette.of(context).carbsInk,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -326,7 +327,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                           label: 'fat'.tr(),
                           icon: Icons.opacity,
                           suffix: 'g'.tr(),
-                          color: AppColors.fat,
+                          color: AppPalette.of(context).fatInk,
                         ),
                       ),
                     ],
@@ -382,28 +383,20 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: AppButton(
-                text: 'retake'.tr(),
-                onPressed: () => Navigator.pop(context, true),
-                isSecondary: true,
-                icon: Icons.replay,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: AppButton(
-                text: 'save_result'.tr(),
-                onPressed: _saveFoodItem,
-                icon: Icons.save_alt,
-              ),
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomActionBar(
+        children: [
+          AppButton(
+            text: 'retake'.tr(),
+            onPressed: () => Navigator.pop(context, true),
+            isSecondary: true,
+            icon: Icons.replay,
+          ),
+          AppButton(
+            text: 'save_result'.tr(),
+            onPressed: _saveFoodItem,
+            icon: Icons.save_alt,
+          ),
+        ],
       ),
     );
   }
@@ -532,7 +525,6 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
   Widget _buildStatusCard(BuildContext context) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(

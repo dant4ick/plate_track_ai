@@ -153,7 +153,9 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 48),
+        padding: EdgeInsets.only(
+          bottom: 48 + MediaQuery.paddingOf(context).bottom,
+        ),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(

@@ -18,8 +18,7 @@ Future<void> showDeleteConfirmationDialog({
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
+          title: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
@@ -34,9 +33,13 @@ Future<void> showDeleteConfirmationDialog({
               ),
             ),
             const SizedBox(width: 12),
-            Text(
-              'delete_food_item'.tr(),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            // Expanded so a long title (or a long translation) wraps instead of
+            // running out of the dialog.
+            Expanded(
+              child: Text(
+                'delete_food_item'.tr(),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -105,7 +108,7 @@ Future<void> showDeleteConfirmationDialog({
                         Icon(Icons.check_circle,
                             color: AppColors.onAccent, size: 20),
                         const SizedBox(width: 8),
-                        Text(successMessageKey),
+                        Expanded(child: Text(successMessageKey)),
                       ],
                     ),
                     backgroundColor: AppColors.successLight,

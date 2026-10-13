@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:easy_localization/easy_localization.dart';
 
+import 'package:plate_track_ai/core/themes/app_colors.dart';
+
 class AppLogo extends StatelessWidget {
   final double size;
   final Color? color;
@@ -25,6 +27,29 @@ class AppLogo extends StatelessWidget {
   }
 }
 
+/// The brand mark as a filled squircle tile: the glyph knocked out in white on
+/// the brand colour, rather than tinted onto the page.
+class AppLogoMark extends StatelessWidget {
+  const AppLogoMark({super.key, this.size = 34});
+
+  /// Outer edge of the tile. The glyph is inset within it.
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary,
+        borderRadius: BorderRadius.circular(size * 0.3),
+      ),
+      alignment: Alignment.center,
+      child: AppLogo(size: size * 0.62, color: AppColors.onAccent),
+    );
+  }
+}
+
 class AppLogoWithText extends StatelessWidget {
   final double logoSize;
   final double fontSize;
@@ -43,7 +68,12 @@ class AppLogoWithText extends StatelessWidget {
     this.text = 'app_name',
     this.fontWeight = FontWeight.w600,
     this.alignment = MainAxisAlignment.center,
+    this.boxed = true,
   });
+
+  /// Render the glyph as a filled [AppLogoMark] tile (the design's treatment)
+  /// rather than a bare tinted glyph.
+  final bool boxed;
 
   @override
   Widget build(BuildContext context) {
@@ -51,13 +81,17 @@ class AppLogoWithText extends StatelessWidget {
       mainAxisAlignment: alignment,
       mainAxisSize: MainAxisSize.min,
       children: [
-        AppLogo(size: logoSize, color: logoColor),
-        const SizedBox(width: 8),
+        if (boxed && logoColor == null)
+          AppLogoMark(size: logoSize * 1.25)
+        else
+          AppLogo(size: logoSize, color: logoColor),
+        const SizedBox(width: 10),
         Text(
           text.tr(),
           style: TextStyle(
             fontSize: fontSize,
             fontWeight: fontWeight,
+            letterSpacing: -0.3,
             color: textColor ?? Theme.of(context).colorScheme.onSurface,
           ),
         ),

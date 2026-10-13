@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_theme.dart';
 
@@ -11,14 +12,37 @@ enum ThemePreference { system, light, dark, pickMe }
 
 /// Which theme is currently showing.
 ///
-/// Deliberately minimal: a plain [ValueNotifier] with no persistence, so the
-/// choice resets on restart. It exists so the three design themes can be
-/// eyeballed on a device without building a settings screen first. When theme
-/// choice becomes a real user-facing feature, back this with a stored
-/// preference (Hive is already set up) and drive it from the profile screen.
+/// A plain [ValueNotifier]; persistence is attached by [initThemePreference]
+/// at startup rather than baked in here, so widget tests can drive the value
+/// directly without mocking storage.
 final ValueNotifier<ThemePreference> themePreference = ValueNotifier(
   ThemePreference.system,
 );
+
+const _themePreferenceKey = 'theme_preference';
+
+bool _persistenceAttached = false;
+
+/// Restores the stored theme choice and starts persisting future changes.
+///
+/// Called once from `main()` before `runApp`. Idempotent: a second call
+/// re-reads storage but never attaches a second listener. The stored value is
+/// the enum's name, so an unrecognised value (say, from a downgrade after a
+/// theme was removed) falls back to following the OS rather than throwing.
+Future<void> initThemePreference() async {
+  final prefs = await SharedPreferences.getInstance();
+  final stored = prefs.getString(_themePreferenceKey);
+
+  themePreference.value = ThemePreference.values.asNameMap()[stored] ??
+      ThemePreference.system;
+
+  if (_persistenceAttached) return;
+  _persistenceAttached = true;
+  themePreference.addListener(() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_themePreferenceKey, themePreference.value.name);
+  });
+}
 
 /// Maps a preference onto the pair of values `MaterialApp` needs.
 ///

@@ -73,39 +73,78 @@ class AppColors {
   // ───────────────────────────────────────────────────────────────────────────
   // Macronutrients
   // ───────────────────────────────────────────────────────────────────────────
-  // The `...Soft` values are the Figma pastel variables. They are fills only —
-  // far too light to read as text or as a pie slice — so each has a matching
-  // accent in the same hue for foreground use.
+  // Each macro carries three roles, because one hue cannot serve all of them:
+  //
+  //  * plain name  — the *graphic* colour: bars, gauge segments, pie slices,
+  //    legend swatches. Tuned for vividness to match the design, and never
+  //    used for text: at these luminances the pastel-adjacent hues would fail
+  //    contrast on a white card.
+  //  * `...Ink`    — the *text* colour: chip labels, figures, anything read as
+  //    type. Every Ink/Soft pair clears 4.5:1, in both brightnesses.
+  //  * `...Soft`   — the pale chip/pill fill the matching Ink sits on.
+  //
+  // Bars deliberately do not clear 3:1 against a white card: every bar in the
+  // design prints its gram value directly above it, so the bar is redundant
+  // decoration rather than the sole carrier of the value.
 
-  /// Protein fill (Figma variable).
-  static const Color proteinSoft = Color(0xFFFEEEB2);
+  /// Protein graphic — bars, slices, swatches.
+  static const Color protein = Color(0xFFD14FDE);
 
-  /// Protein accent — text, icons, chart slices.
-  static const Color protein = Color(0xFFB98900);
+  /// Protein text on [proteinSoft] or a light card.
+  static const Color proteinInk = Color(0xFFA32DB4);
 
-  /// Carbohydrate fill (Figma variable).
-  static const Color carbsSoft = Color(0xFFF9D9DA);
+  /// Protein text on [proteinSoftDark] or a dark card.
+  static const Color proteinInkDark = Color(0xFFE68BEF);
 
-  /// Carbohydrate accent — text, icons, chart slices.
-  static const Color carbs = Color(0xFFCE5A63);
+  /// Protein chip fill (light).
+  static const Color proteinSoft = Color(0xFFFBE7FD);
 
-  /// Fat fill (Figma variable).
-  static const Color fatSoft = Color(0xFFC8EBFF);
+  /// Carbohydrate graphic — bars, slices, swatches.
+  static const Color carbs = Color(0xFFF5A623);
 
-  /// Fat accent — text, icons, chart slices.
-  static const Color fat = Color(0xFF2E86C1);
+  /// Carbohydrate text on [carbsSoft] or a light card.
+  static const Color carbsInk = Color(0xFF9A6200);
 
-  /// Calories accent — the coral of the dashboard progress bar.
+  /// Carbohydrate text on [carbsSoftDark] or a dark card.
+  static const Color carbsInkDark = Color(0xFFF0A62E);
+
+  /// Carbohydrate chip fill (light).
+  static const Color carbsSoft = Color(0xFFFFF3E0);
+
+  /// Fat graphic — bars, slices, swatches.
+  static const Color fat = Color(0xFF46A6E8);
+
+  /// Fat text on [fatSoft] or a light card.
+  static const Color fatInk = Color(0xFF16719F);
+
+  /// Fat text on [fatSoftDark] or a dark card.
+  static const Color fatInkDark = Color(0xFF58B4F5);
+
+  /// Fat chip fill (light).
+  static const Color fatSoft = Color(0xFFE4F2FD);
+
+  /// Calories graphic — the coral of the dashboard gauge.
   static const Color calories = Color(0xFFE8615A);
 
-  /// Calories accent on dark surfaces.
+  /// Calories graphic on dark surfaces.
   static const Color caloriesDark = Color(0xFFE8446B);
 
-  // The pastel fills above are tuned for light surfaces. On dark cards they
-  // read as bright patches, so each fill has a muted dark counterpart.
-  static const Color proteinSoftDark = Color(0x33B98900);
-  static const Color carbsSoftDark = Color(0x33CE5A63);
-  static const Color fatSoftDark = Color(0x332E86C1);
+  /// Calories text on [caloriesSoft] or a light card.
+  static const Color caloriesInk = Color(0xFFC0342D);
+
+  /// Calories text on a dark card.
+  static const Color caloriesInkDark = Color(0xFFFC8C86);
+
+  /// Calories chip fill (light).
+  static const Color caloriesSoft = Color(0xFFFDECEC);
+
+  // The pale fills above are tuned for light surfaces. On a dark card they read
+  // as bright patches, so each is replaced by an 18% wash of its own graphic
+  // colour — the value the matching `...InkDark` was contrast-checked against.
+  static const Color proteinSoftDark = Color(0x2ED14FDE);
+  static const Color carbsSoftDark = Color(0x2EF5A623);
+  static const Color fatSoftDark = Color(0x2E46A6E8);
+  static const Color caloriesSoftDark = Color(0x2EE8615A);
 
   // ───────────────────────────────────────────────────────────────────────────
   // Status
@@ -209,8 +248,41 @@ class AppColors {
 
   static const Color shadowStrong = Color(0x33000000);
 
+  /// Card lift. Two layers: a wide ambient wash plus a tight contact shadow.
+  /// Kept separate from [shadowSubtle] because a wide blur needs more alpha than
+  /// a tight one to register at all.
+  static const Color shadowCardAmbient = Color(0x14000000);
+  static const Color shadowCardContact = Color(0x0F000000);
+
+  /// The same pair on a dark scaffold, where the card is lighter than the page
+  /// and the shadow has to work harder to separate them.
+  static const Color shadowCardAmbientDark = Color(0x5C000000);
+  static const Color shadowCardContactDark = Color(0x3D000000);
+
   /// Full-screen dim behind the expanded speed-dial.
   static const Color scrim = Color(0x73000000);
+}
+
+/// The four tracked quantities that carry their own hue.
+enum Macro { protein, carbs, fat, calories }
+
+/// The three colour roles one [Macro] plays, already resolved for a theme.
+@immutable
+class MacroStyle {
+  const MacroStyle({
+    required this.graphic,
+    required this.ink,
+    required this.fill,
+  });
+
+  /// Bars, gauge segments, pie slices, legend swatches.
+  final Color graphic;
+
+  /// Anything read as type. Clears 4.5:1 against [fill].
+  final Color ink;
+
+  /// The pale pill/chip background [ink] sits on.
+  final Color fill;
 }
 
 /// The brand identities the app ships. [AppFlavor.light] and [AppFlavor.dark]
@@ -309,12 +381,47 @@ class AppPalette {
     AppFlavor.pickMe => AppColors.pickCalories,
   };
 
-  // Macronutrient chip/card fills for the current theme. The accents
-  // (`AppColors.protein` and friends) are brightness-independent.
+  // Macronutrient chip/card fills for the current theme. The graphic colours
+  // (`AppColors.protein` and friends) are brightness-independent; the Ink
+  // colours are not, so they resolve through here.
   Color get proteinFill =>
       isDark ? AppColors.proteinSoftDark : AppColors.proteinSoft;
   Color get carbsFill => isDark ? AppColors.carbsSoftDark : AppColors.carbsSoft;
   Color get fatFill => isDark ? AppColors.fatSoftDark : AppColors.fatSoft;
+  Color get caloriesFill =>
+      isDark ? AppColors.caloriesSoftDark : AppColors.caloriesSoft;
+
+  // Macronutrient text colours for the current theme. Use these wherever the
+  // macro colour is read as type; use the `AppColors` graphic tokens for bars,
+  // slices and swatches.
+  Color get proteinInk =>
+      isDark ? AppColors.proteinInkDark : AppColors.proteinInk;
+  Color get carbsInk => isDark ? AppColors.carbsInkDark : AppColors.carbsInk;
+  Color get fatInk => isDark ? AppColors.fatInkDark : AppColors.fatInk;
+  Color get caloriesInk =>
+      isDark ? AppColors.caloriesInkDark : AppColors.caloriesInk;
+
+  /// The three roles of one macro, resolved for the current theme, so a caller
+  /// that renders a bar *and* its label does not have to pick two tokens by
+  /// hand and risk mismatching them.
+  MacroStyle styleOf(Macro macro) => switch (macro) {
+    Macro.protein => MacroStyle(
+      graphic: AppColors.protein,
+      ink: proteinInk,
+      fill: proteinFill,
+    ),
+    Macro.carbs => MacroStyle(
+      graphic: AppColors.carbs,
+      ink: carbsInk,
+      fill: carbsFill,
+    ),
+    Macro.fat => MacroStyle(graphic: AppColors.fat, ink: fatInk, fill: fatFill),
+    Macro.calories => MacroStyle(
+      graphic: calories,
+      ink: caloriesInk,
+      fill: caloriesFill,
+    ),
+  };
 
   // Content
   Color get textSecondary =>
@@ -344,6 +451,16 @@ class AppPalette {
 
   /// Drop shadow under cards and floating surfaces.
   Color get shadow => isDark ? AppColors.shadowStrong : AppColors.shadowSubtle;
+
+  /// Wide ambient half of the card lift.
+  Color get shadowCardAmbient => isDark
+      ? AppColors.shadowCardAmbientDark
+      : AppColors.shadowCardAmbient;
+
+  /// Tight contact half of the card lift.
+  Color get shadowCardContact => isDark
+      ? AppColors.shadowCardContactDark
+      : AppColors.shadowCardContact;
 
   /// Gridlines and other faint chart chrome.
   Color get chartGrid => isDark ? AppColors.borderDark : AppColors.borderLight;
