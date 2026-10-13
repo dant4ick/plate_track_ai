@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 Future<void> showDeleteConfirmationDialog({
   required BuildContext context,
@@ -11,7 +12,7 @@ Future<void> showDeleteConfirmationDialog({
   required String successMessageKey,
   required String deleteButtonTextKey,
 }) async {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final palette = AppPalette.of(context);
 
   return showDialog(
     context: context,
@@ -23,12 +24,12 @@ Future<void> showDeleteConfirmationDialog({
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isDark ? Colors.red[900]?.withValues(alpha: 0.3) : Colors.red[50],
+                color: palette.dangerSoft,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 Icons.delete_outline,
-                color: isDark ? Colors.red[300] : Colors.red[400],
+                color: palette.danger,
                 size: 24,
               ),
             ),
@@ -51,17 +52,17 @@ Future<void> showDeleteConfirmationDialog({
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isDark ? Colors.orange[900]?.withValues(alpha: 0.3) : Colors.orange[50],
+                color: palette.warningSoft,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: isDark ? Colors.orange[600]! : Colors.orange[200]!,
+                  color: palette.warningBorder,
                 ),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.warning_amber_rounded,
-                    color: isDark ? Colors.orange[300] : Colors.orange[600],
+                    color: palette.warning,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -69,7 +70,7 @@ Future<void> showDeleteConfirmationDialog({
                     child: Text(
                       undoWarningTextKey,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: isDark ? Colors.orange[200] : Colors.orange[700],
+                        color: palette.warningText,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -101,12 +102,13 @@ Future<void> showDeleteConfirmationDialog({
                   SnackBar(
                     content: Row(
                       children: [
-                        Icon(Icons.check_circle, color: Colors.green[400], size: 20),
+                        Icon(Icons.check_circle,
+                            color: AppColors.onAccent, size: 20),
                         const SizedBox(width: 8),
                         Text(successMessageKey),
                       ],
                     ),
-                    backgroundColor: Colors.green[600],
+                    backgroundColor: AppColors.successLight,
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -116,8 +118,8 @@ Future<void> showDeleteConfirmationDialog({
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[400],
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.dangerLight,
+              foregroundColor: AppColors.onAccent,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),

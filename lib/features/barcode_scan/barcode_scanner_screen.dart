@@ -6,6 +6,7 @@ import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/core/services/barcode_cache_service.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/features/barcode_scan/barcode_result_screen.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 class BarcodeScannerScreen extends StatefulWidget {
   const BarcodeScannerScreen({super.key});
@@ -86,10 +87,10 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.cameraBackdrop,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.cameraBackdrop,
+        foregroundColor: AppColors.cameraForeground,
         title: Text('barcode_scanner'.tr()),
         elevation: 0,
       ),
@@ -156,13 +157,13 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.6),
+            color: AppColors.cameraPanel,
             borderRadius: BorderRadius.circular(24),
           ),
           child: Text(
             'barcode_scanner_hint'.tr(),
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.cameraForeground,
               fontSize: 14,
             ),
           ),
@@ -179,7 +180,7 @@ class _ScanOverlayPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.black.withValues(alpha: 0.55);
+    final paint = Paint()..color = AppColors.cameraMask;
 
     // Draw dark regions around the scan rect
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, scanRect.top), paint);
@@ -192,7 +193,7 @@ class _ScanOverlayPainter extends CustomPainter {
 
     // Draw corner brackets
     final cornerPaint = Paint()
-      ..color = Colors.white
+      ..color = AppColors.cameraForeground
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;

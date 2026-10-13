@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 import 'package:plate_track_ai/core/themes/app_theme.dart';
+import 'package:plate_track_ai/core/themes/theme_controller.dart';
 import 'package:plate_track_ai/features/dashboard/dashboard_screen.dart';
 import 'package:plate_track_ai/features/nutrition_stats/nutrition_stats_screen.dart';
 import 'package:plate_track_ai/features/recommendations/recommendations_screen.dart';
@@ -93,16 +95,21 @@ class PlateTrackApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'app_name'.tr(),
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system, // Uses the device's theme settings
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      home: const AppInitializer(),
+    return ValueListenableBuilder<ThemePreference>(
+      valueListenable: themePreference,
+      builder: (context, preference, _) {
+        return MaterialApp(
+          title: 'app_name'.tr(),
+          debugShowCheckedModeBanner: false,
+          theme: preference.theme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: preference.mode,
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          locale: context.locale,
+          home: const AppInitializer(),
+        );
+      },
     );
   }
 }
@@ -302,6 +309,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = index == _selectedIndex;
+    final palette = AppPalette.of(context);
     return Expanded(
       flex: 2,
       child: InkWell(
@@ -314,18 +322,14 @@ class _HomeScreenState extends State<HomeScreen>
             children: [
               Icon(
                 icon,
-                color: isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.grey,
+                color: isSelected ? palette.navActive : palette.navInactive,
                 size: 28,
               ),
               const SizedBox(height: 6),
               Text(
                 label,
                 style: TextStyle(
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.grey,
+                  color: isSelected ? palette.navActive : palette.navInactive,
                   fontSize: 13,
                   fontWeight:
                       isSelected ? FontWeight.w600 : FontWeight.normal,
@@ -359,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen>
               child: Icon(
                 _showCloseIcon ? Icons.close : Icons.camera_alt,
                 key: ValueKey(_showCloseIcon),
-                color: Colors.white,
+                color: AppColors.onAccent,
                 size: 32,
               ),
             ),
@@ -407,7 +411,7 @@ class _HomeScreenState extends State<HomeScreen>
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
+                      color: AppColors.shadowMedium,
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -433,7 +437,7 @@ class _HomeScreenState extends State<HomeScreen>
                   child: SizedBox(
                     width: 48,
                     height: 48,
-                    child: Icon(icon, color: Colors.white, size: 22),
+                    child: Icon(icon, color: AppColors.onAccent, size: 22),
                   ),
                 ),
               ),
@@ -460,7 +464,7 @@ class _HomeScreenState extends State<HomeScreen>
         color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: AppColors.shadowSoft,
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -508,7 +512,7 @@ class _HomeScreenState extends State<HomeScreen>
               behavior: HitTestBehavior.opaque,
               child: FadeTransition(
                 opacity: _overlayAnim,
-                child: Container(color: Colors.black.withValues(alpha: 0.45)),
+                child: Container(color: AppColors.scrim),
               ),
             ),
           ),

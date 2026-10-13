@@ -4,6 +4,7 @@ import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 class RecommendationsScreen extends StatefulWidget {
   const RecommendationsScreen({super.key});
@@ -140,7 +141,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
           },
         ),
         'icon': Icons.add_circle,
-        'color': Colors.orange[700],
+        'color': AppColors.warningLight,
       });
     } else if (_avgCalories > _targetCalories * 1.2) {
       _recommendations.add({
@@ -152,7 +153,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
           },
         ),
         'icon': Icons.remove_circle,
-        'color': Colors.red[700],
+        'color': AppColors.dangerLight,
       });
     }
 
@@ -162,7 +163,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
         'title': 'increase_protein_intake'.tr(),
         'description': 'increase_protein_intake_desc'.tr(),
         'icon': Icons.fitness_center,
-        'color': Colors.purple[700],
+        'color': AppColors.protein,
       });
     }
 
@@ -173,7 +174,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
         'title': 'reduce_simple_carbs'.tr(),
         'description': 'reduce_simple_carbs_desc'.tr(),
         'icon': Icons.grain,
-        'color': Colors.amber[700],
+        'color': AppColors.carbs,
       });
     }
 
@@ -183,7 +184,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
         'title': 'monitor_fat_intake'.tr(),
         'description': 'monitor_fat_intake_desc'.tr(),
         'icon': Icons.opacity,
-        'color': Colors.blue[700],
+        'color': AppColors.fat,
       });
     }
 
@@ -192,7 +193,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
       'title': 'stay_hydrated'.tr(),
       'description': 'stay_hydrated_desc'.tr(),
       'icon': Icons.water_drop,
-      'color': Colors.blue[700],
+      'color': AppColors.fat,
     });
 
     // If no specific recommendations, add some general ones
@@ -201,14 +202,14 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
         'title': 'eat_variety_of_foods'.tr(),
         'description': 'eat_variety_of_foods_desc'.tr(),
         'icon': Icons.diversity_1,
-        'color': Colors.teal[700],
+        'color': AppColors.triShade,
       });
 
       _recommendations.add({
         'title': 'regular_meal_pattern'.tr(),
         'description': 'regular_meal_pattern_desc'.tr(),
         'icon': Icons.schedule,
-        'color': Colors.indigo[700],
+        'color': AppColors.prime,
       });
     }
   }
@@ -219,25 +220,25 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
         'title': 'balance_macronutrients'.tr(),
         'description': 'balance_macronutrients_desc'.tr(),
         'icon': Icons.balance,
-        'color': Colors.purple[700],
+        'color': AppColors.protein,
       },
       {
         'title': 'stay_hydrated'.tr(),
         'description': 'stay_hydrated_desc'.tr(),
         'icon': Icons.water_drop,
-        'color': Colors.blue[700],
+        'color': AppColors.fat,
       },
       {
         'title': 'portion_control'.tr(),
         'description': 'portion_control_desc'.tr(),
         'icon': Icons.pie_chart,
-        'color': Colors.orange[700],
+        'color': AppColors.warningLight,
       },
       {
         'title': 'eat_more_whole_foods'.tr(),
         'description': 'eat_more_whole_foods_desc'.tr(),
         'icon': Icons.restaurant,
-        'color': Colors.green[700],
+        'color': AppColors.successLight,
       },
     ];
   }
@@ -309,19 +310,19 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
     if (_avgCalories == 0) {
       message = 'start_tracking_meals'.tr();
       icon = Icons.restaurant_menu;
-      iconColor = Colors.blue[400]!;
+      iconColor = AppPalette.of(context).info;
     } else if (_avgCalories < _targetCalories * 0.8) {
       message = 'nutrition_data_good'.tr();
       icon = Icons.trending_up;
-      iconColor = Colors.green[400]!;
+      iconColor = AppPalette.of(context).success;
     } else if (_avgCalories > _targetCalories * 1.2) {
       message = 'moderate_calorie_intake'.tr();
       icon = Icons.info;
-      iconColor = Colors.orange[400]!;
+      iconColor = AppPalette.of(context).warning;
     } else {
       message = 'nutrition_tracking_great'.tr();
       icon = Icons.check_circle;
-      iconColor = Colors.green[400]!;
+      iconColor = AppPalette.of(context).success;
     }
 
     return Card(
@@ -366,7 +367,9 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
                       message,
                       style: Theme.of(
                         context,
-                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                      ).textTheme.bodyMedium?.copyWith(
+                        color: AppPalette.of(context).textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -414,7 +417,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               'protein'.tr(),
               proteinPercentage,
               '${(proteinPercentage * 100).toInt()}% ${'of_goal'.tr()}',
-              Colors.purple[400]!,
+              AppColors.protein,
             ),
             const SizedBox(height: 12),
 
@@ -423,7 +426,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               'carbs'.tr(),
               carbsPercentage,
               '${(carbsPercentage * 100).toInt()}% ${'of_goal'.tr()}',
-              Colors.amber[700]!,
+              AppColors.carbs,
             ),
             const SizedBox(height: 12),
 
@@ -432,7 +435,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               'fat'.tr(),
               fatPercentage,
               '${(fatPercentage * 100).toInt()}% ${'of_goal'.tr()}',
-              Colors.blue[400]!,
+              AppColors.fat,
             ),
 
             const SizedBox(height: 16),
@@ -462,10 +465,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
     return RichText(
       text: TextSpan(
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color:
-              Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey[200]
-                  : Colors.grey[800],
+          color: Theme.of(context).colorScheme.onSurface,
         ),
         children: [
           TextSpan(
@@ -506,7 +506,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
           child: LinearProgressIndicator(
             value: progress,
             minHeight: 8,
-            backgroundColor: Colors.grey[200],
+            backgroundColor: AppPalette.of(context).track,
             valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),

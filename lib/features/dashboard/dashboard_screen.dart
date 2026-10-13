@@ -8,6 +8,7 @@ import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'dart:async';
 
 import 'package:plate_track_ai/shared/widgets/food_items.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -233,7 +234,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     '$_todayItemsCount',
                     'tracked'.tr(),
                     Icons.restaurant,
-                    Colors.green[400]!,
+                    AppPalette.of(context).success,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -244,8 +245,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     'completed'.tr(),
                     Icons.track_changes,
                     calorieProgress >= 1.0
-                        ? Colors.green[400]!
-                        : Colors.orange[400]!,
+                        ? AppPalette.of(context).success
+                        : AppPalette.of(context).warning,
                   ),
                 ),
               ],
@@ -287,7 +288,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               context,
             ).colorScheme.onSurface.withValues(alpha: 0.1),
             valueColor: AlwaysStoppedAnimation<Color>(
-              progress >= 1.0 ? Colors.green[400]! : Colors.red[400]!,
+              progress >= 1.0
+                  ? AppPalette.of(context).success
+                  : AppPalette.of(context).calories,
             ),
           ),
         ),

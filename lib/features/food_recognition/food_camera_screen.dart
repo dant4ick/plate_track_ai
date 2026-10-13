@@ -9,6 +9,7 @@ import 'package:plate_track_ai/features/food_recognition/recognition_result_scre
 import 'package:plate_track_ai/core/services/food_recognition_service.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 class FoodCameraScreen extends StatefulWidget {
   const FoodCameraScreen({super.key});
@@ -355,8 +356,8 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
       appBar: StandardAppBar(
         titleText: 'food_scanner'.tr(),
         showLogo: false,
-        backgroundColor: Colors.black54,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.cameraPanel,
+        foregroundColor: AppColors.cameraForeground,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -385,13 +386,13 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
             right: 20,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.black54,
+                color: AppColors.cameraPanel,
                 borderRadius: BorderRadius.circular(30),
               ),
               child: IconButton(
                 icon: Icon(
                   _getFlashIcon(),
-                  color: Colors.white,
+                  color: AppColors.cameraForeground,
                   size: 24,
                 ),
                 onPressed: () {
@@ -413,13 +414,13 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.black54,
+                  color: AppColors.cameraPanel,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   _isCapturing ? "capturing".tr() : 'frame_your_food'.tr(),
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.cameraForeground,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
@@ -431,10 +432,10 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
           // Capturing indicator overlay
           if (_isCapturing)
             Container(
-              color: Colors.black26,
+              color: AppColors.cameraPanelSoft,
               child: const Center(
                 child: CircularProgressIndicator(
-                  color: Colors.white,
+                  color: AppColors.cameraForeground,
                 ),
               ),
             ),
@@ -452,7 +453,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                 bottom: 36
               ),
               decoration: const BoxDecoration(
-                color: Colors.black45,
+                color: AppColors.cameraMask,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(24),
                   topRight: Radius.circular(24),

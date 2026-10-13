@@ -6,6 +6,7 @@ import 'package:plate_track_ai/features/user_setup/user_setup_screen.dart';
 import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
 import 'package:plate_track_ai/main.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 class ProfileManagementScreen extends StatefulWidget {
   const ProfileManagementScreen({super.key});
@@ -46,7 +47,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${'error_loading_profile'.tr()}: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.dangerLight,
           ),
         );
       }
@@ -79,7 +80,9 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.dangerLight,
+            ),
             child: Text('reset'.tr()),
           ),
         ],
@@ -103,7 +106,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('${'error_resetting_profile'.tr()}: ${e.toString()}'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.dangerLight,
             ),
           );
         }
@@ -131,20 +134,28 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.person_off, size: 64, color: Colors.grey[400]),
+          Icon(
+            Icons.person_off,
+            size: 64,
+            color: AppPalette.of(context).placeholderIcon,
+          ),
           const SizedBox(height: 16),
           Text(
             'no_profile_found'.tr(),
             style: Theme.of(
               context,
-            ).textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
+            ).textTheme.headlineSmall?.copyWith(
+              color: AppPalette.of(context).textSecondary,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'create_profile_description'.tr(),
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
+            ).textTheme.bodyMedium?.copyWith(
+              color: AppPalette.of(context).textTertiary,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -238,7 +249,9 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
                     '${_currentProfile!.age} ${'years'.tr()} • ${_currentProfile!.gender == Gender.male ? 'male'.tr() : 'female'.tr()}',
                     style: Theme.of(
                       context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                    ).textTheme.bodyMedium?.copyWith(
+              color: AppPalette.of(context).textSecondary,
+            ),
                   ),
                 ],
               ),
@@ -326,7 +339,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
             Text(
               'tdee_description'.tr(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
+                color: AppPalette.of(context).textSecondary,
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -379,7 +392,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
             Text(
               'macro_distribution_description'.tr(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
+                color: AppPalette.of(context).textSecondary,
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -392,7 +405,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.grey[600]),
+        Icon(icon, size: 20, color: AppPalette.of(context).textSecondary),
         const SizedBox(width: 12),
         Expanded(
           child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
@@ -429,8 +442,8 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
             icon: const Icon(Icons.refresh),
             label: Text('reset_profile'.tr()),
             style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.red,
-              side: const BorderSide(color: Colors.red),
+              foregroundColor: AppColors.dangerLight,
+              side: const BorderSide(color: AppColors.dangerLight),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
           ),

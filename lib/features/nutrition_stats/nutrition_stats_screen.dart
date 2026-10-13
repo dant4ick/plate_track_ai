@@ -6,6 +6,7 @@ import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
 import 'package:plate_track_ai/shared/widgets/food_items.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 class NutritionStatsScreen extends StatefulWidget {
   const NutritionStatsScreen({super.key});
@@ -248,12 +249,12 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red[400]!.withValues(alpha: 0.1),
+                    color: AppPalette.of(context).fillOf(AppPalette.of(context).calories),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     Icons.local_fire_department,
-                    color: Colors.red[400]!,
+                    color: AppPalette.of(context).calories,
                     size: 28,
                   ),
                 ),
@@ -274,7 +275,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
                           context,
                         ).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.red[400],
+                          color: AppPalette.of(context).calories,
                         ),
                       ),
                     ],
@@ -288,11 +289,10 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
               child: LinearProgressIndicator(
                 value: progressPercentage.clamp(0.0, 1.0),
                 minHeight: 12,
-                backgroundColor:
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Colors.grey[700]
-                        : Colors.grey[200],
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.red[400]!),
+                backgroundColor: AppPalette.of(context).track,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  AppPalette.of(context).calories,
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -302,7 +302,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
                 Text(
                   '${(progressPercentage * 100).toInt()}% ${'of_goal'.tr()}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
+                    color: AppPalette.of(context).textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -314,8 +314,10 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
                   decoration: BoxDecoration(
                     color:
                         progressPercentage >= 1.0
-                            ? Colors.green[400]!.withValues(alpha: 0.1)
-                            : Colors.orange[400]!.withValues(alpha: 0.1),
+                            ? AppPalette.of(context)
+                                .fillOf(AppPalette.of(context).success)
+                            : AppPalette.of(context)
+                                .fillOf(AppPalette.of(context).warning),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -325,8 +327,8 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color:
                           progressPercentage >= 1.0
-                              ? Colors.green[600]
-                              : Colors.orange[600],
+                              ? AppPalette.of(context).success
+                              : AppPalette.of(context).warning,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -343,36 +345,36 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
     // Real nutrient data
     final nutrientData = [
       PieChartSectionData(
-        color: Colors.purple[400]!,
+        color: AppColors.protein,
         value: _totalProtein,
         title: '${_totalProtein.toInt()}${'g'.tr()}',
         radius: 50,
         titleStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: AppColors.onAccent,
         ),
       ),
       PieChartSectionData(
-        color: Colors.amber[700]!,
+        color: AppColors.carbs,
         value: _totalCarbs,
         title: '${_totalCarbs.toInt()}${'g'.tr()}',
         radius: 50,
         titleStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: AppColors.onAccent,
         ),
       ),
       PieChartSectionData(
-        color: Colors.blue[400]!,
+        color: AppColors.fat,
         value: _totalFat,
         title: '${_totalFat.toInt()}${'g'.tr()}',
         radius: 50,
         titleStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: AppColors.onAccent,
         ),
       ),
     ];
@@ -385,10 +387,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color:
-                Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black.withValues(alpha: 0.2)
-                    : Colors.grey.withValues(alpha: 0.1),
+            color: AppPalette.of(context).shadow,
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 1),
@@ -411,7 +410,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
                       child: Text(
                         'no_nutrition_data_today'.tr(),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
+                          color: AppPalette.of(context).textSecondary,
                         ),
                       ),
                     ),
@@ -422,19 +421,19 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildLegendItem(
-                Colors.purple[400]!,
+                AppColors.protein,
                 'protein'.tr(),
                 '${_totalProtein.toInt()}${'g'.tr()}',
               ),
               const SizedBox(height: 12),
               _buildLegendItem(
-                Colors.amber[700]!,
+                AppColors.carbs,
                 'carbs'.tr(),
                 '${_totalCarbs.toInt()}${'g'.tr()}',
               ),
               const SizedBox(height: 12),
               _buildLegendItem(
-                Colors.blue[400]!,
+                AppColors.fat,
                 'fat'.tr(),
                 '${_totalFat.toInt()}${'g'.tr()}',
               ),
@@ -507,10 +506,7 @@ Widget _buildFoodItemsList() {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color:
-                Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black.withValues(alpha: 0.2)
-                    : Colors.grey.withValues(alpha: 0.1),
+            color: AppPalette.of(context).shadow,
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 1),
@@ -584,10 +580,7 @@ Widget _buildFoodItemsList() {
             horizontalInterval: 500,
             getDrawingHorizontalLine: (value) {
               return FlLine(
-                color:
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Colors.grey[600]
-                        : Colors.grey[300],
+                color: AppPalette.of(context).chartGrid,
                 strokeWidth: 1,
               );
             },
@@ -657,7 +650,7 @@ Widget _buildFoodItemsList() {
                 'calories'.tr(),
                 avgCalories.toInt().toString(),
                 '${'kcal'.tr()}/${'day'.tr()}',
-                Colors.red[400]!,
+                AppPalette.of(context).calories,
                 Icons.local_fire_department,
               ),
             ),
@@ -667,7 +660,7 @@ Widget _buildFoodItemsList() {
                 'protein'.tr(),
                 avgProtein.toInt().toString(),
                 '${'g'.tr()}/${'day'.tr()}',
-                Colors.purple[400]!,
+                AppColors.protein,
                 Icons.fitness_center,
               ),
             ),
@@ -681,7 +674,7 @@ Widget _buildFoodItemsList() {
                 'carbs'.tr(),
                 avgCarbs.toInt().toString(),
                 '${'g'.tr()}/${'day'.tr()}',
-                Colors.amber[700]!,
+                AppColors.carbs,
                 Icons.grain,
               ),
             ),
@@ -691,7 +684,7 @@ Widget _buildFoodItemsList() {
                 'fat'.tr(),
                 avgFat.toInt().toString(),
                 '${'g'.tr()}/${'day'.tr()}',
-                Colors.blue[400]!,
+                AppColors.fat,
                 Icons.opacity,
               ),
             ),
@@ -740,7 +733,9 @@ Widget _buildFoodItemsList() {
               unit,
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+              ).textTheme.bodySmall?.copyWith(
+        color: AppPalette.of(context).textSecondary,
+      ),
             ),
           ],
         ),
@@ -815,7 +810,9 @@ Widget _buildFoodItemsList() {
                       message,
                       style: Theme.of(
                         context,
-                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                      ).textTheme.bodyMedium?.copyWith(
+        color: AppPalette.of(context).textSecondary,
+      ),
                     ),
                   ],
                 ),

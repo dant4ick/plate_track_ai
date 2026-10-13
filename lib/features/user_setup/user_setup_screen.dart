@@ -5,6 +5,7 @@ import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/models/user_profile.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 class UserSetupScreen extends StatefulWidget {
   final bool isEditing;
@@ -133,7 +134,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(widget.isEditing ? 'profile_updated_successfully'.tr() : 'profile_created_successfully'.tr()),
-            backgroundColor: Colors.green[600],
+            backgroundColor: AppColors.successLight,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
@@ -158,7 +159,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('error_saving_profile'.tr(namedArgs: {'error': e.toString()})),
-            backgroundColor: Colors.red[600],
+            backgroundColor: AppColors.dangerLight,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
@@ -184,7 +185,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('language_changed'.tr()),
-          backgroundColor: Colors.green[600],
+          backgroundColor: AppColors.successLight,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
@@ -302,7 +303,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
         border: Border.all(
           color: isSelected 
             ? Theme.of(context).colorScheme.primary 
-            : Colors.grey[300]!,
+            : AppPalette.of(context).border,
           width: isSelected ? 2 : 1,
         ),
         color: isSelected 
@@ -535,7 +536,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
         border: Border.all(
           color: _selectedActivityLevel == level 
             ? Theme.of(context).colorScheme.primary 
-            : Colors.grey[300]!,
+            : AppPalette.of(context).border,
           width: _selectedActivityLevel == level ? 2 : 1,
         ),
         color: _selectedActivityLevel == level 
@@ -552,7 +553,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
         subtitle: Text(
           '${level.description} (${level.multiplier}x)',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
+                color: AppPalette.of(context).textSecondary,
               ),
         ),
         value: level,
@@ -593,7 +594,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 '${_calculatedBMR.toInt()} ${'kcal'.tr()}/${'day'.tr()}',
                 'bmr_description'.tr(),
                 Icons.local_fire_department,
-                Colors.orange[400]!,
+                AppPalette.of(context).warning,
               ),
               
               const SizedBox(height: 12),
@@ -603,27 +604,27 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 '${_calculatedTDEE.toInt()} ${'kcal'.tr()}/${'day'.tr()}',
                 'tdee_description'.tr(),
                 Icons.restaurant,
-                Colors.green[400]!,
+                AppPalette.of(context).success,
               ),
             ] else ...[
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: AppPalette.of(context).placeholder,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: Colors.grey[600],
+                      color: AppPalette.of(context).textSecondary,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'enter_info_to_see_bmr'.tr(),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
+                              color: AppPalette.of(context).textSecondary,
                             ),
                       ),
                     ),
@@ -681,7 +682,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 Text(
                   subtitle,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
+                        color: AppPalette.of(context).textSecondary,
                       ),
                 ),
               ],

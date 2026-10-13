@@ -4,13 +4,14 @@ import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/delete_food.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 Widget buildFoodItemSection({
   required BuildContext context,
   required List<FoodItem> items,
   required VoidCallback refreshCallback,
 }) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final palette = AppPalette.of(context);
 
   if (items.isEmpty) {
     return Card(
@@ -23,15 +24,13 @@ Widget buildFoodItemSection({
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.grey[700]!.withValues(alpha: 0.2)
-                    : Colors.grey[400]!.withValues(alpha: 0.1),
+                color: palette.placeholder,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 Icons.restaurant_menu,
                 size: 48,
-                color: isDark ? Colors.grey[400] : Colors.grey[500],
+                color: palette.placeholderIcon,
               ),
             ),
             const SizedBox(height: 16),

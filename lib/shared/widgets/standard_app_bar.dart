@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/shared/widgets/app_logo.dart';
+import 'package:plate_track_ai/shared/widgets/theme_switcher_button.dart';
 
 class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? titleText;
@@ -44,6 +46,12 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
     // Add any additional actions
     if (actions != null) {
       appBarActions.addAll(actions!);
+    }
+
+    // Debug-only theme switcher. Inserted ahead of the real actions so refresh
+    // keeps the trailing edge it has in the design.
+    if (kDebugMode) {
+      appBarActions.insert(0, const ThemeSwitcherButton());
     }
 
     return AppBar(

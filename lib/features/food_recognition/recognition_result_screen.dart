@@ -5,6 +5,7 @@ import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 class RecognitionResultScreen extends StatefulWidget {
   final File imageFile;
@@ -150,7 +151,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
+                      color: AppColors.shadowSoft,
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -274,7 +275,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                   Text(
                     'values_calculated_based_on_portion_size'.tr(),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
+                          color: AppPalette.of(context).textSecondary,
                           fontStyle: FontStyle.italic,
                         ),
                   ),
@@ -290,7 +291,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                           label: 'calories'.tr(),
                           icon: Icons.local_fire_department,
                           suffix: 'kcal'.tr(),
-                          color: Colors.red[400]!,
+                          color: AppPalette.of(context).calories,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -300,7 +301,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                           label: 'protein'.tr(),
                           icon: Icons.fitness_center,
                           suffix: 'g'.tr(),
-                          color: Colors.purple[400]!,
+                          color: AppColors.protein,
                         ),
                       ),
                     ],
@@ -315,7 +316,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                           label: 'carbs'.tr(),
                           icon: Icons.grain,
                           suffix: 'g'.tr(),
-                          color: Colors.amber[700]!,
+                          color: AppColors.carbs,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -325,7 +326,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                           label: 'fat'.tr(),
                           icon: Icons.opacity,
                           suffix: 'g'.tr(),
-                          color: Colors.blue[400]!,
+                          color: AppColors.fat,
                         ),
                       ),
                     ],
@@ -441,7 +442,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                   child: Text(
                     label,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
+                          color: AppPalette.of(context).textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
                   ),
@@ -465,7 +466,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                   child: Text(
                     suffix,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
+                          color: AppPalette.of(context).textSecondary,
                         ),
                   ),
                 ),
@@ -522,7 +523,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
         SnackBar(
             content: Text('${'error_saving_food_item'.tr()}: ${e.toString()}'),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.dangerLight,
         ),
       );
     }
@@ -576,7 +577,7 @@ class _RecognitionResultScreenState extends State<RecognitionResultScreen> {
                     Text(
                         'review_and_adjust_nutrition'.tr(),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
+                            color: AppPalette.of(context).textSecondary,
                           ),
                     ),
                   ],

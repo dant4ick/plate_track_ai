@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 class AppButton extends StatelessWidget {
   final String text;
@@ -35,7 +36,7 @@ class AppButton extends StatelessWidget {
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
-                color: Colors.white,
+                color: AppColors.onAccent,
                 strokeWidth: 2.0,
               ),
             )
@@ -117,7 +118,7 @@ class FrameGuideline extends StatelessWidget {
     super.key,
     required this.size,
     this.strokeWidth = 3.0,
-    this.color = Colors.white,
+    this.color = AppColors.cameraForeground,
   });
 
   @override
@@ -187,7 +188,7 @@ class FoodItemCard extends StatelessWidget {
         : DateFormat('MMM d, h:mm a', context.locale.toString()).format(item.timestamp);
     final double mass = item.nutritionFacts.mass ?? 100.0;
     final int actualCalories = ((item.calories * mass) / 100.0).toInt();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final palette = AppPalette.of(context);
     
     return Card(
       elevation: 1,
@@ -202,7 +203,7 @@ class FoodItemCard extends StatelessWidget {
               height: 50,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: isDark ? Colors.grey[800] : Colors.grey[200],
+                color: palette.placeholder,
               ),
               child: item.imagePath != null
                   ? ClipRRect(
@@ -214,7 +215,7 @@ class FoodItemCard extends StatelessWidget {
                     )
                   : Icon(
                       Icons.restaurant,
-                      color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      color: palette.placeholderIcon,
                     ),
             ),
             const SizedBox(width: 12),
@@ -242,17 +243,17 @@ class FoodItemCard extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.red[900]?.withValues(alpha: 0.3) : Colors.red[50],
+                              color: palette.dangerSoft,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isDark ? Colors.red[600]! : Colors.red[200]!,
+                                color: palette.dangerBorder,
                                 width: 1,
                               ),
                             ),
                             child: Icon(
                               Icons.delete_outline,
                               size: 16,
-                              color: isDark ? Colors.red[300] : Colors.red[400],
+                              color: palette.danger,
                             ),
                           ),
                         ),
@@ -280,15 +281,18 @@ class FoodItemCard extends StatelessWidget {
                         children: [
                           _buildNutrientChip(
                           '${'protein_short'.tr()}: ${((item.nutritionFacts.protein * mass) / 100).toInt()}${'g'.tr()}',
-                          Colors.purple[400]!,
+                          AppColors.protein,
+                          palette.proteinFill,
                           ),
                           _buildNutrientChip(
                           '${'carbs_short'.tr()}: ${((item.nutritionFacts.carbs * mass) / 100).toInt()}${'g'.tr()}',
-                          Colors.amber[600]!,
+                          AppColors.carbs,
+                          palette.carbsFill,
                           ),
                           _buildNutrientChip(
                           '${'fat_short'.tr()}: ${((item.nutritionFacts.fat * mass) / 100).toInt()}${'g'.tr()}',
-                          Colors.blue[400]!,
+                          AppColors.fat,
+                          palette.fatFill,
                           ),
                         ],
                         ),
@@ -304,7 +308,7 @@ class FoodItemCard extends StatelessWidget {
                             '$actualCalories',
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: isDark ? Colors.red[300] : Colors.red[400],
+                                  color: palette.calories,
                                 ),
                           ),
                           Text(
@@ -326,11 +330,11 @@ class FoodItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildNutrientChip(String text, Color color) {
+  Widget _buildNutrientChip(String text, Color color, Color fill) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: fill,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
