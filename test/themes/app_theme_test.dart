@@ -76,7 +76,7 @@ void main() {
 
       expect(theme.colorScheme.primary, AppColors.pick);
       expect(theme.scaffoldBackgroundColor, AppColors.scaffoldPick);
-      expect(theme.appBarTheme.backgroundColor, AppColors.pickBar);
+      expect(theme.appBarTheme.backgroundColor, Colors.transparent);
     });
 
     test('keeps the lime FAB and app-bar icons from the frame', () {

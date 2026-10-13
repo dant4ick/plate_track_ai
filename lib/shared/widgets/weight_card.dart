@@ -20,7 +20,6 @@ class WeightCard extends StatelessWidget {
     this.start,
     this.goal,
     this.progress,
-    this.onEdit,
     this.onTap,
   });
 
@@ -36,9 +35,7 @@ class WeightCard extends StatelessWidget {
   /// Travelled fraction from [start] to [goal], 0..1, or null if unmeasurable.
   final double? progress;
 
-  final VoidCallback? onEdit;
-
-  /// Opens the weight history when the card body is tapped.
+  /// Fired when the card body is tapped.
   final VoidCallback? onTap;
 
   /// Trims a trailing `.0` so 67.0 kg reads as "67" but 67.5 keeps its half.
@@ -53,57 +50,25 @@ class WeightCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return SoftCard(
       onTap: onTap,
-      // The edit control is pulled into the card's own padding to reach the
-      // corner, so the Stack must be allowed to paint outside its bounds.
-      child: Stack(
-        clipBehavior: Clip.none,
+      child: Row(
         children: [
-          Padding(
-            // The edit control owns the top-right corner, so the content row
-            // gives up a strip on its right rather than letting the ring slide
-            // underneath the pencil.
-            padding: EdgeInsets.only(right: onEdit == null ? 0 : 30),
-            child: Row(
-              children: [
-                Expanded(
-                  child: goal == null
-                      ? _NoGoal(current: current)
-                      : _GoalTriplet(
-                          current: current,
-                          start: start,
-                          goal: goal!,
-                        ),
-                ),
-                if (progress != null) ...[
-                  const SizedBox(width: 12),
-                  ProgressRing(
-                    progress: progress!,
-                    child: Text(
-                      '${(progress! * 100).round()}%',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
+          Expanded(
+            child: goal == null
+                ? _NoGoal(current: current)
+                : _GoalTriplet(current: current, start: start, goal: goal!),
           ),
-          if (onEdit != null)
-            // Top-right corner of the card, as drawn. Offset negatively so the
-            // glyph reaches the corner while the button keeps a 44dp target.
-            Positioned(
-              top: -10,
-              right: -10,
-              child: IconButton(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit_outlined, size: 20),
-                color: Theme.of(context).colorScheme.primary,
-                tooltip: 'update_weight'.tr(),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+          if (progress != null) ...[
+            const SizedBox(width: 12),
+            ProgressRing(
+              progress: progress!,
+              child: Text(
+                '${(progress! * 100).round()}%',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
+          ],
         ],
       ),
     );

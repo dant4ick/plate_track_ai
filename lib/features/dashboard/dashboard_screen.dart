@@ -8,7 +8,6 @@ import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/core/themes/app_colors.dart';
 import 'package:plate_track_ai/core/themes/app_dimens.dart';
-import 'package:plate_track_ai/features/dashboard/edit_weight.dart';
 import 'package:plate_track_ai/features/meals/meal_history_screen.dart';
 import 'package:plate_track_ai/features/nutrition_stats/nutrition_stats_screen.dart';
 import 'package:plate_track_ai/features/profile/profile_management_screen.dart';
@@ -92,8 +91,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final allItems = await _storageService.getAllFoodItems();
       allItems.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
-      _recentFoodItems =
-          allItems.take(DashboardScreen.recentMealCount).toList();
+      _recentFoodItems = allItems
+          .take(DashboardScreen.recentMealCount)
+          .toList();
       _today = DayTotals.of(todaysItems);
       _profile = _userProfileService.currentProfile;
       _targets = _userProfileService.getNutritionTargets();
@@ -102,11 +102,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  Future<void> _editWeight() async {
-    final saved = await editWeightAndGoal(context, _userProfileService);
-    if (saved && mounted) await _loadDashboardData();
   }
 
   void _push(Widget screen) {
@@ -155,7 +150,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         start: _profile!.effectiveStartWeight,
                         goal: _profile!.goalWeight,
                         progress: _profile!.weightProgress,
-                        onEdit: _editWeight,
                         onTap: _openWeightHistory,
                       ),
                       const SizedBox(height: AppDimens.sectionGap),
@@ -193,11 +187,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 /// The gauge-and-macros panel.
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
-    required this.totals,
-    required this.targets,
-    this.onTap,
-  });
+  const _SummaryCard({required this.totals, required this.targets, this.onTap});
 
   final DayTotals totals;
   final Map<String, double>? targets;

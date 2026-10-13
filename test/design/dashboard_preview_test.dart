@@ -158,12 +158,7 @@ class _DashboardPreview extends StatelessWidget {
     FoodItem(
       name: 'Overnight oats',
       calories: 289,
-      nutritionFacts: NutritionFacts(
-        protein: 11,
-        carbs: 44,
-        fat: 7,
-        mass: 100,
-      ),
+      nutritionFacts: NutritionFacts(protein: 11, carbs: 44, fat: 7, mass: 100),
       timestamp: DateTime(2026, 8, 18, 8, 5),
     ),
   ];
@@ -196,13 +191,7 @@ class _DashboardPreview extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionHeader('your_weight'.tr(), trailing: const _SeeAllStub()),
-            WeightCard(
-              current: 67,
-              start: 70,
-              goal: 50,
-              progress: 0.15,
-              onEdit: () {},
-            ),
+            const WeightCard(current: 67, start: 70, goal: 50, progress: 0.15),
             const SizedBox(height: AppDimens.sectionGap),
             SectionHeader('todays_summary'.tr(), trailing: const _SeeAllStub()),
             SoftCard(
@@ -221,7 +210,11 @@ class _DashboardPreview extends StatelessWidget {
                         grams: 112,
                         target: 150,
                       ),
-                      MacroProgress(macro: Macro.carbs, grams: 112, target: 250),
+                      MacroProgress(
+                        macro: Macro.carbs,
+                        grams: 112,
+                        target: 250,
+                      ),
                       MacroProgress(macro: Macro.fat, grams: 112, target: 70),
                     ],
                   ),

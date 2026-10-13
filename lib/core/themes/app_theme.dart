@@ -36,8 +36,10 @@ class AppTheme {
     ),
     textTheme: GoogleFonts.poppinsTextTheme(ThemeData.light().textTheme),
     appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.appBarLight,
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
+      scrolledUnderElevation: 0,
       iconTheme: const IconThemeData(color: _primaryLight),
       titleTextStyle: GoogleFonts.poppins(
         color: AppColors.textPrimaryLight,
@@ -116,8 +118,10 @@ class AppTheme {
     ),
     textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
     appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.appBarDark,
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
+      scrolledUnderElevation: 0,
       iconTheme: const IconThemeData(color: _primaryDark),
       titleTextStyle: GoogleFonts.poppins(
         color: AppColors.textPrimaryDark,
@@ -180,10 +184,8 @@ class AppTheme {
   // the OS setting: pass it to `MaterialApp.theme` directly from a stored user
   // preference.
   //
-  // Two deviations from the pattern the other two follow, both taken from the
-  // design frame rather than inferred:
-  //  * the app bar is tinted rather than flush with the scaffold;
-  //  * the FAB and app-bar icons stay lime, not pink.
+  // One deviation from the pattern the other two follow, taken from the design
+  // frame rather than inferred: the FAB and app-bar icons stay lime, not pink.
   static final ThemeData pickMeTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
@@ -206,11 +208,15 @@ class AppTheme {
     ),
     textTheme: GoogleFonts.poppinsTextTheme(ThemeData.light().textTheme),
     appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.pickBar,
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
+      scrolledUnderElevation: 0,
       iconTheme: const IconThemeData(color: AppColors.secondShade),
       titleTextStyle: GoogleFonts.poppins(
-        color: AppColors.onAccent,
+        // The bar is transparent, so the title sits on the pale pink scaffold:
+        // white would vanish there. Ink, like the other two themes use.
+        color: AppColors.textPrimaryLight,
         fontSize: 20.0,
         fontWeight: FontWeight.w500,
       ),

@@ -63,10 +63,6 @@ class AppColors {
   /// Pink tint used as a card/banner fill in the pick-me theme.
   static const Color pickSoft = Color(0xFFFADCE6);
 
-  /// Filled app-bar band. Light and dark keep a flat surface here; pink
-  /// tints it, so the app bar is the one surface that is not theme-neutral.
-  static const Color pickBar = Color(0xFFF9C8DA);
-
   /// Calorie progress fill in the pick-me theme.
   static const Color pickCalories = Color(0xFFF04A78);
 
@@ -186,9 +182,6 @@ class AppColors {
 
   static const Color surfaceLight = Color(0xFFFFFFFF);
   static const Color surfaceDark = Color(0xFF2A2A2A);
-
-  static const Color appBarLight = Color(0xFFFCFCFC);
-  static const Color appBarDark = Color(0xFF0D0D14);
 
   /// Fill for inputs and other inset "well" areas.
   static const Color fieldLight = Color(0xFFF4F5F7);

@@ -43,10 +43,7 @@ void main() {
 
   group('CalorieGauge', () {
     testWidgets('shows what is left when under the target', (tester) async {
-      await pumpInApp(
-        tester,
-        const CalorieGauge(consumed: 1500, target: 2000),
-      );
+      await pumpInApp(tester, const CalorieGauge(consumed: 1500, target: 2000));
 
       expect(find.text('500'), findsOneWidget);
       expect(find.text('calories_left'), findsOneWidget);
@@ -56,10 +53,7 @@ void main() {
     testWidgets('flips to "over" past the target and stays positive', (
       tester,
     ) async {
-      await pumpInApp(
-        tester,
-        const CalorieGauge(consumed: 2300, target: 2000),
-      );
+      await pumpInApp(tester, const CalorieGauge(consumed: 2300, target: 2000));
 
       // 300 over, not -300.
       expect(find.text('300'), findsOneWidget);
@@ -123,12 +117,7 @@ void main() {
     ) async {
       await pumpInApp(
         tester,
-        const WeightCard(
-          current: 67,
-          start: 70,
-          goal: 50,
-          progress: 0.15,
-        ),
+        const WeightCard(current: 67, start: 70, goal: 50, progress: 0.15),
       );
 
       expect(find.text('70'), findsOneWidget);
@@ -207,32 +196,7 @@ void main() {
       );
     });
 
-    testWidgets('anchors the edit control to the top-right corner', (
-      tester,
-    ) async {
-      await pumpInApp(
-        tester,
-        WeightCard(
-          current: 67,
-          start: 70,
-          goal: 50,
-          progress: 0.15,
-          onEdit: () {},
-        ),
-      );
-
-      final card = tester.getRect(find.byType(WeightCard));
-      final pencil = tester.getCenter(find.byIcon(Icons.edit_outlined));
-      final ring = tester.getRect(find.byType(ProgressRing));
-
-      // Top-right corner of the card...
-      expect(pencil.dx, greaterThan(card.right - 56));
-      expect(pencil.dy, lessThan(card.top + 56));
-      // ...and above the ring rather than in the row beside it.
-      expect(pencil.dy, lessThan(ring.center.dy));
-    });
-
-    testWidgets('fires onEdit', (tester) async {
+    testWidgets('fires onTap', (tester) async {
       var tapped = false;
       await pumpInApp(
         tester,
@@ -241,11 +205,11 @@ void main() {
           start: 70,
           goal: 50,
           progress: 0.15,
-          onEdit: () => tapped = true,
+          onTap: () => tapped = true,
         ),
       );
 
-      await tester.tap(find.byIcon(Icons.edit_outlined));
+      await tester.tap(find.byType(WeightCard));
       expect(tapped, isTrue);
     });
 
@@ -298,28 +262,30 @@ void main() {
       AppTheme.lightTheme: false,
       AppTheme.darkTheme: true,
     }.entries) {
-      testWidgets('pairs each macro ink with its own fill (dark=${entry.value})',
-          (tester) async {
-        late AppPalette palette;
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: entry.key,
-            home: Builder(
-              builder: (context) {
-                palette = AppPalette.of(context);
-                return const SizedBox();
-              },
+      testWidgets(
+        'pairs each macro ink with its own fill (dark=${entry.value})',
+        (tester) async {
+          late AppPalette palette;
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: entry.key,
+              home: Builder(
+                builder: (context) {
+                  palette = AppPalette.of(context);
+                  return const SizedBox();
+                },
+              ),
             ),
-          ),
-        );
+          );
 
-        expect(palette.isDark, entry.value);
-        for (final macro in Macro.values) {
-          final style = palette.styleOf(macro);
-          expect(style.ink, isNot(style.fill));
-          expect(style.ink, isNot(style.graphic));
-        }
-      });
+          expect(palette.isDark, entry.value);
+          for (final macro in Macro.values) {
+            final style = palette.styleOf(macro);
+            expect(style.ink, isNot(style.fill));
+            expect(style.ink, isNot(style.graphic));
+          }
+        },
+      );
     }
   });
 }
@@ -371,4 +337,3 @@ double _contrast(Color a, Color b) {
   final hi = math.max(la, lb), lo = math.min(la, lb);
   return (hi + 0.05) / (lo + 0.05);
 }
-

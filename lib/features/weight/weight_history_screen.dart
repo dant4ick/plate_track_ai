@@ -63,35 +63,32 @@ class _WeightHistoryScreenState extends State<WeightHistoryScreen> {
     final profile = _profile;
 
     return Scaffold(
-      appBar: StandardAppBar(
-        titleText: 'weight_history'.tr(),
-        showLogo: false,
-      ),
+      appBar: StandardAppBar(titleText: 'weight_history'.tr(), showLogo: false),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : profile == null
-              ? Center(child: Text('no_profile_found'.tr()))
-              : SingleChildScrollView(
-                  padding: AppDimens.pagePadding(context),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SectionHeader('your_weight'.tr()),
-                      WeightCard(
-                        current: profile.weight,
-                        start: profile.effectiveStartWeight,
-                        goal: profile.goalWeight,
-                        progress: profile.weightProgress,
-                        onEdit: _edit,
-                      ),
-                      const SizedBox(height: AppDimens.sectionGap),
-                      SectionHeader('weight_history'.tr()),
-                      WeightChart(series: _series, goal: profile.goalWeight),
-                      const SizedBox(height: AppDimens.sectionGap),
-                      _EntryList(series: _series),
-                    ],
+          ? Center(child: Text('no_profile_found'.tr()))
+          : SingleChildScrollView(
+              padding: AppDimens.pagePadding(context),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SectionHeader('your_weight'.tr()),
+                  WeightCard(
+                    current: profile.weight,
+                    start: profile.effectiveStartWeight,
+                    goal: profile.goalWeight,
+                    progress: profile.weightProgress,
+                    onTap: _edit,
                   ),
-                ),
+                  const SizedBox(height: AppDimens.sectionGap),
+                  SectionHeader('weight_history'.tr()),
+                  WeightChart(series: _series, goal: profile.goalWeight),
+                  const SizedBox(height: AppDimens.sectionGap),
+                  _EntryList(series: _series),
+                ],
+              ),
+            ),
     );
   }
 }
@@ -167,7 +164,8 @@ class WeightChart extends StatelessWidget {
                         radius: 4,
                         color: theme.colorScheme.primary,
                         strokeWidth: 2,
-                        strokeColor: theme.cardTheme.color ?? AppColors.surfaceLight,
+                        strokeColor:
+                            theme.cardTheme.color ?? AppColors.surfaceLight,
                       ),
                 ),
                 belowBarData: BarAreaData(
@@ -212,7 +210,10 @@ class WeightChart extends StatelessWidget {
                     final entry = value == 0 ? series.first : series.last;
                     return SideTitleWidget(
                       meta: meta,
-                      child: Text(dateFormat.format(entry.date), style: labelStyle),
+                      child: Text(
+                        dateFormat.format(entry.date),
+                        style: labelStyle,
+                      ),
                     );
                   },
                 ),
@@ -227,10 +228,7 @@ class WeightChart extends StatelessWidget {
                     }
                     return SideTitleWidget(
                       meta: meta,
-                      child: Text(
-                        value.toInt().toString(),
-                        style: labelStyle,
-                      ),
+                      child: Text(value.toInt().toString(), style: labelStyle),
                     );
                   },
                 ),
@@ -290,7 +288,12 @@ class _EntryList extends StatelessWidget {
         children: [
           for (var i = series.length - 1; i >= 0; i--) ...[
             if (i < series.length - 1)
-              Divider(height: 1, color: palette.border, indent: 18, endIndent: 18),
+              Divider(
+                height: 1,
+                color: palette.border,
+                indent: 18,
+                endIndent: 18,
+              ),
             _EntryRow(
               entry: series[i],
               previous: i > 0 ? series[i - 1] : null,
