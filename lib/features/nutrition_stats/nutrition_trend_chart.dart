@@ -112,9 +112,11 @@ class NutritionTrendChart extends StatelessWidget {
                                                 constraints.maxHeight,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: i == selectedIndex
-                                                ? palette.caloriesInk
-                                                : palette.calories,
+                                            color: palette.calories,
+                                            border: Border.all(
+                                              color: palette.caloriesInk,
+                                              width: i == selectedIndex ? 2 : 1,
+                                            ),
                                             borderRadius:
                                                 const BorderRadius.vertical(
                                                   top: Radius.circular(6),

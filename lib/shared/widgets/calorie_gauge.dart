@@ -11,7 +11,7 @@ import 'package:plate_track_ai/core/themes/app_dimens.dart';
 /// printed in the well.
 ///
 /// Going over the target does not overflow the arc — it fills completely and
-/// switches to the danger colour, and the caption flips from "left" to "over",
+/// keeps the theme primary. The caption flips from "left" to "over",
 /// so the number under the arc is always a positive quantity with its own unit.
 class CalorieGauge extends StatelessWidget {
   const CalorieGauge({super.key, required this.consumed, required this.target});
@@ -37,7 +37,7 @@ class CalorieGauge extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = AppPalette.of(context);
     final theme = Theme.of(context);
-    final fill = _isOver ? palette.danger : palette.calories;
+    final fill = palette.calories;
 
     return LayoutBuilder(
       builder: (context, constraints) {

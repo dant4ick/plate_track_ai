@@ -60,14 +60,14 @@ void main() {
         for (final group in data.barGroups) {
           for (var rodIndex = 0; rodIndex < group.barRods.length; rodIndex++) {
             final rod = group.barRods[rodIndex];
+            expect(rod.color, theme.colorScheme.primary);
             expect(
-              rod.color,
-              group.x == data.barGroups.last.x
-                  ? palette.styleOf(Macro.calories).ink
-                  : palette.styleOf(Macro.calories).graphic,
+              rod.borderSide.width,
+              group.x == data.barGroups.last.x ? 2 : 1,
             );
+            expect(rod.borderSide.color, palette.caloriesInk);
             expect(
-              contrastOn(rod.color!, theme.colorScheme.surface),
+              contrastOn(rod.borderSide.color, theme.colorScheme.surface),
               greaterThanOrEqualTo(3),
             );
             final item = tooltip.getTooltipItem(group, group.x, rod, rodIndex)!;

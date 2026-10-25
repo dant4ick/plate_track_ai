@@ -23,8 +23,11 @@ class AppColors {
   /// Primary brand color. Drives the dark theme (FAB, headings, accents).
   static const Color prime = Color(0xFF4D55F5);
 
-  /// Secondary accent (lime). Drives the light theme.
+  /// Pale lime accent of the dark theme and glyph on the blue logo.
   static const Color second = Color(0xFFDAFF7C);
+
+  /// Light theme primary, matching the green Figma logo tile.
+  static const Color secondLight = Color(0xFFB0DD4E);
 
   /// Tertiary accent.
   static const Color tri = Color(0xFFCA7FFE);
@@ -43,10 +46,7 @@ class AppColors {
   // Third brand hue, driving the pink theme frame.
 
   /// Primary of the pick-me theme — headings, section labels, calorie figures.
-  static const Color pick = Color(0xFFF2557B);
-
-  /// Calorie progress fill in the pick-me theme.
-  static const Color pickCalories = pick;
+  static const Color pick = Color(0xFFFF7AB5);
 
   // ───────────────────────────────────────────────────────────────────────────
   // Macronutrients
@@ -66,63 +66,47 @@ class AppColors {
   // decoration rather than the sole carrier of the value.
 
   /// Protein graphic — bars, slices, swatches.
-  static const Color protein = Color(0xFFD14FDE);
+  static const Color protein = Color(0xFFFF7777);
 
   /// Protein text on [proteinSoft] or a light card.
-  static const Color proteinInk = Color(0xFFA32DB4);
+  static const Color proteinInk = Color(0xFFB83F3F);
 
   /// Protein text on [proteinSoftDark] or a dark card.
-  static const Color proteinInkDark = Color(0xFFE68BEF);
+  static const Color proteinInkDark = Color(0xFFFF9C9C);
 
   /// Protein chip fill (light).
-  static const Color proteinSoft = Color(0xFFFBE7FD);
+  static const Color proteinSoft = Color(0xFFFFF0F0);
 
   /// Carbohydrate graphic — bars, slices, swatches.
-  static const Color carbs = Color(0xFFF5A623);
+  static const Color carbs = Color(0xFFFFCC77);
 
   /// Carbohydrate text on [carbsSoft] or a light card.
   static const Color carbsInk = Color(0xFF9A6200);
 
   /// Carbohydrate text on [carbsSoftDark] or a dark card.
-  static const Color carbsInkDark = Color(0xFFF0A62E);
+  static const Color carbsInkDark = Color(0xFFFFD493);
 
   /// Carbohydrate chip fill (light).
   static const Color carbsSoft = Color(0xFFFFF3E0);
 
   /// Fat graphic — bars, slices, swatches.
-  static const Color fat = Color(0xFF46A6E8);
+  static const Color fat = Color(0xFFAF5BD0);
 
   /// Fat text on [fatSoft] or a light card.
-  static const Color fatInk = Color(0xFF16719F);
+  static const Color fatInk = Color(0xFF853CA3);
 
   /// Fat text on [fatSoftDark] or a dark card.
-  static const Color fatInkDark = Color(0xFF58B4F5);
+  static const Color fatInkDark = Color(0xFFD5A0ED);
 
   /// Fat chip fill (light).
-  static const Color fatSoft = Color(0xFFE4F2FD);
-
-  /// Calories graphic — the coral of the dashboard gauge.
-  static const Color calories = Color(0xFFE8615A);
-
-  /// Calories graphic on dark surfaces.
-  static const Color caloriesDark = Color(0xFFE8446B);
-
-  /// Calories text on [caloriesSoft] or a light card.
-  static const Color caloriesInk = Color(0xFFC0342D);
-
-  /// Calories text on a dark card.
-  static const Color caloriesInkDark = Color(0xFFFC8C86);
-
-  /// Calories chip fill (light).
-  static const Color caloriesSoft = Color(0xFFFDECEC);
+  static const Color fatSoft = Color(0xFFF4E8FA);
 
   // The pale fills above are tuned for light surfaces. On a dark card they read
   // as bright patches, so each is replaced by an 18% wash of its own graphic
   // colour — the value the matching `...InkDark` was contrast-checked against.
-  static const Color proteinSoftDark = Color(0x2ED14FDE);
-  static const Color carbsSoftDark = Color(0x2EF5A623);
-  static const Color fatSoftDark = Color(0x2E46A6E8);
-  static const Color caloriesSoftDark = Color(0x2EE8615A);
+  static const Color proteinSoftDark = Color(0x2EFF7777);
+  static const Color carbsSoftDark = Color(0x2EFFCC77);
+  static const Color fatSoftDark = Color(0x2EAF5BD0);
 
   // ───────────────────────────────────────────────────────────────────────────
   // Status
@@ -153,10 +137,10 @@ class AppColors {
   // ───────────────────────────────────────────────────────────────────────────
 
   static const Color scaffoldLight = Color(0xFFFFFFFF);
-  static const Color scaffoldDark = Color(0xFF0D0D14);
+  static const Color scaffoldDark = Color(0xFF1A191F);
 
   /// Faintly pink page background — the pick-me theme's scaffold is not white.
-  static const Color scaffoldPick = Color(0xFFFDF5F8);
+  static const Color scaffoldPick = Color(0xFFFFF6F9);
 
   static const Color surfaceLight = Color(0xFFFFFFFF);
   static const Color surfaceDark = Color(0xFF2A2A2A);
@@ -286,7 +270,7 @@ class AppFlavorTag extends ThemeExtension<AppFlavorTag> {
 /// pick-me theme inherits the light value. Only tokens the pink frame actually
 /// restyles switch on [flavor].
 class AppPalette {
-  const AppPalette._(this.flavor);
+  const AppPalette._(this.flavor, this._scheme);
 
   /// Reads the active flavor off the theme, falling back to brightness for any
   /// [ThemeData] built without an [AppFlavorTag].
@@ -298,10 +282,13 @@ class AppPalette {
           (theme.brightness == Brightness.dark
               ? AppFlavor.dark
               : AppFlavor.light),
+      theme.colorScheme,
     );
   }
 
   final AppFlavor flavor;
+
+  final ColorScheme _scheme;
 
   bool get isDark => flavor == AppFlavor.dark;
 
@@ -340,12 +327,8 @@ class AppPalette {
 
   Color get info => isDark ? AppColors.infoDark : AppColors.infoLight;
 
-  /// Calories accent for the current theme.
-  Color get calories => switch (flavor) {
-    AppFlavor.light => AppColors.calories,
-    AppFlavor.dark => AppColors.caloriesDark,
-    AppFlavor.pickMe => AppColors.pickCalories,
-  };
+  /// Calorie graphics follow the actual theme primary, including transitions.
+  Color get calories => _scheme.primary;
 
   // Macronutrient chip/card fills for the current theme. The graphic colours
   // (`AppColors.protein` and friends) are brightness-independent; the Ink
@@ -354,8 +337,7 @@ class AppPalette {
       isDark ? AppColors.proteinSoftDark : AppColors.proteinSoft;
   Color get carbsFill => isDark ? AppColors.carbsSoftDark : AppColors.carbsSoft;
   Color get fatFill => isDark ? AppColors.fatSoftDark : AppColors.fatSoft;
-  Color get caloriesFill =>
-      isDark ? AppColors.caloriesSoftDark : AppColors.caloriesSoft;
+  Color get caloriesFill => fillOf(calories);
 
   // Macronutrient text colours for the current theme. Use these wherever the
   // macro colour is read as type; use the `AppColors` graphic tokens for bars,
@@ -364,8 +346,9 @@ class AppPalette {
       isDark ? AppColors.proteinInkDark : AppColors.proteinInk;
   Color get carbsInk => isDark ? AppColors.carbsInkDark : AppColors.carbsInk;
   Color get fatInk => isDark ? AppColors.fatInkDark : AppColors.fatInk;
-  Color get caloriesInk =>
-      isDark ? AppColors.caloriesInkDark : AppColors.caloriesInk;
+
+  /// Calorie numbers remain neutral and readable on cards and tinted fills.
+  Color get caloriesInk => _scheme.onSurface;
 
   /// The three roles of one macro, resolved for the current theme, so a caller
   /// that renders a bar *and* its label does not have to pick two tokens by

@@ -6,8 +6,8 @@ import 'package:plate_track_ai/core/themes/app_colors.dart';
 import 'package:plate_track_ai/shared/models/week_summary.dart';
 import 'package:plate_track_ai/shared/widgets/soft_card.dart';
 
-/// Seven days of calorie totals in the same calorie palette as the gauge and
-/// nutrient cards. Today uses the stronger ink; earlier days use graphic.
+/// Seven days of calorie totals in the theme primary, with readable outlines.
+/// Today has a stronger outline rather than a different fill colour.
 ///
 /// Shared by the dashboard and the stats screen so the two cannot drift apart.
 class WeeklyCaloriesChart extends StatelessWidget {
@@ -82,11 +82,11 @@ class WeeklyCaloriesChart extends StatelessWidget {
                   barRods: [
                     BarChartRodData(
                       toY: calories[i],
-                      // Keep the calorie hue across all days. Ink emphasises
-                      // today without introducing a separate chart accent.
-                      color: i == calories.length - 1
-                          ? palette.caloriesInk
-                          : palette.calories,
+                      color: palette.calories,
+                      borderSide: BorderSide(
+                        color: palette.caloriesInk,
+                        width: i == calories.length - 1 ? 2 : 1,
+                      ),
                       width: 18,
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(6),

@@ -34,10 +34,9 @@ class AppTheme {
         }),
       );
 
-  // The design frames give each brightness a different brand hue: the light
-  // theme is driven by the lime `second` token, the dark theme by the indigo
-  // `prime` token. Each is the other's secondary.
-  static const _primaryLight = AppColors.secondShade;
+  // Light uses the green logo's background; dark uses the blue logo's background
+  // with its pale lime glyph as the secondary accent.
+  static const _primaryLight = AppColors.secondLight;
   static const _primaryDark = AppColors.prime;
   static const _secondaryLight = AppColors.prime;
   static const _secondaryDark = AppColors.second;
