@@ -63,9 +63,13 @@ dev_dependencies:
 
 flutter_launcher_icons:
   android: true
-  ios: true
+  # This repository currently contains only the Android platform project.
+  ios: false
   remove_alpha_ios: true
   image_path: "assets/icons/app_icon_color.png"
+  adaptive_icon_background: "#4D55F5"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+  adaptive_icon_foreground_inset: 16
 
 flutter:
   uses-material-design: true

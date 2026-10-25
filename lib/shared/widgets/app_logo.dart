@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 class AppLogo extends StatelessWidget {
   final double size;
@@ -24,28 +25,21 @@ class AppLogo extends StatelessWidget {
   }
 }
 
-/// The brand mark as a filled squircle tile with a paired foreground.
+/// The designer's complete tile, including its own padding and brand colours.
 class AppLogoMark extends StatelessWidget {
   const AppLogoMark({super.key, this.size = 34});
 
-  /// Outer edge of the tile. The glyph is inset within it.
+  /// Outer edge of the tile. Insets and corner shapes are part of the SVG.
   final double size;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(size * 0.3),
-      ),
-      alignment: Alignment.center,
-      child: AppLogo(
-        size: size * 0.62,
-        color: Theme.of(context).colorScheme.onPrimary,
-      ),
-    );
+    final asset = switch (AppPalette.of(context).flavor) {
+      AppFlavor.dark => 'assets/icons/app_icon_color.svg',
+      AppFlavor.light => 'assets/icons/app_icon_light.svg',
+      AppFlavor.pickMe => 'assets/icons/app_icon_pick_me.svg',
+    };
+    return SvgPicture.asset(asset, width: size, height: size);
   }
 }
 

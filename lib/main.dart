@@ -178,7 +178,7 @@ class _AppInitializerState extends State<AppInitializer> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AppLogo(size: 64, color: Theme.of(context).colorScheme.primary),
+              const AppLogoMark(size: 80),
               const SizedBox(height: 24),
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
