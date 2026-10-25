@@ -53,6 +53,17 @@
   "yesterday": "Yesterday",
   "logged_at": "Logged",
 
+  "stats_day": "Day",
+  "stats_macros": "Macros",
+  "stats_macros_daily": "Eaten / daily target",
+  "stats_macros_average": "Daily average / daily target",
+  "stats_macros_daily_no_goal": "Daily intake",
+  "stats_macros_average_no_goal": "Daily average",
+  "stats_month": "Month",
+  "stats_week": "Week",
+  "no_nutrition_data_period": "No meals logged for this period",
+  "stats_load_error": "Could not load statistics",
+
   "daily_stats": "Daily stats",
   "weekly_stats": "Weekly stats",
   "nutrition_overview": "Nutrition overview",
@@ -200,6 +211,7 @@
   "language_changed": "Language changed successfully",
 
   "your_weight": "Your weight",
+  "your_calories": "Your calories",
   "start": "start",
   "goal_lower": "goal",
   "goal_weight": "Goal weight",

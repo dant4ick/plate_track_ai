@@ -25,12 +25,12 @@ import 'package:plate_track_ai/shared/widgets/weight_card.dart';
 
 /// The home screen: weight, today's intake, and the last few meals. Each
 /// section is a door to the screen that holds the detail — weight history,
-/// the stats tabs, the full meal list.
+/// calorie history, the full meal list.
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   /// How many meals the dashboard shows before pointing at the full list.
-  static const int recentMealCount = 5;
+  static const int recentMealCount = 3;
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -155,10 +155,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: AppDimens.sectionGap),
                     ],
 
-                    // The stats screen behind this holds the per-day tabs, the
-                    // macro pie and the weekly chart and averages.
+                    // Calorie history lives behind the same card and link.
                     SectionHeader(
-                      'todays_summary'.tr(),
+                      'your_calories'.tr(),
                       trailing: SeeAllLink(onTap: _openStats),
                     ),
                     _SummaryCard(

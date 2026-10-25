@@ -93,7 +93,7 @@ void main() {
 
     // Both columns render, hence two of everything.
     expect(find.text('Your weight'), findsNWidgets(2));
-    expect(find.text("Today's summary"), findsNWidgets(2));
+    expect(find.text('Your calories'), findsNWidgets(2));
     expect(find.text('Recent meals'), findsNWidgets(2));
     expect(find.text('67'), findsNWidgets(2));
     expect(find.text('15%'), findsNWidgets(2));
@@ -101,7 +101,7 @@ void main() {
     expect(find.byType(CalorieGauge), findsNWidgets(2));
     expect(find.text('calories left'), findsNWidgets(2));
     // The weekly sections and the advice moved off the dashboard: weekly stats
-    // live behind "Today's summary", and the tips section was removed.
+    // live behind "Your calories", and the tips section was removed.
     expect(find.text('Weekly calories'), findsNothing);
     expect(find.text('Improve your nutrition'), findsNothing);
     // Recent meals no longer carry a date — the detail screen does.
@@ -193,7 +193,7 @@ class _DashboardPreview extends StatelessWidget {
             SectionHeader('your_weight'.tr(), trailing: const _SeeAllStub()),
             const WeightCard(current: 67, start: 70, goal: 50, progress: 0.15),
             const SizedBox(height: AppDimens.sectionGap),
-            SectionHeader('todays_summary'.tr(), trailing: const _SeeAllStub()),
+            SectionHeader('your_calories'.tr(), trailing: const _SeeAllStub()),
             SoftCard(
               padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
               child: Column(

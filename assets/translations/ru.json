@@ -53,6 +53,17 @@
     "yesterday": "Вчера",
     "logged_at": "Добавлено",
 
+    "stats_day": "День",
+    "stats_macros": "БЖУ",
+    "stats_macros_daily": "Съедено / дневная норма",
+    "stats_macros_average": "В среднем за день / дневная норма",
+    "stats_macros_daily_no_goal": "Съедено за день",
+    "stats_macros_average_no_goal": "В среднем за день",
+    "stats_month": "Месяц",
+    "stats_week": "Неделя",
+    "no_nutrition_data_period": "За этот период пока нет записей о еде",
+    "stats_load_error": "Не удалось загрузить статистику",
+
     "daily_stats": "Ежедневная статистика",
     "weekly_stats": "Еженедельная статистика",
     "nutrition_overview": "Обзор питания",
@@ -200,6 +211,7 @@
     "language_changed": "Язык успешно изменен",
 
     "your_weight": "Ваш вес",
+    "your_calories": "Ваши калории",
     "start": "начало",
     "goal_lower": "цель",
     "goal_weight": "Целевой вес",

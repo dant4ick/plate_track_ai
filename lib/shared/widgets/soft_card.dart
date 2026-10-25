@@ -48,7 +48,7 @@ class SoftCard extends StatelessWidget {
   }
 }
 
-/// The label that sits above a card — "Your weight", "Today's summary".
+/// The label that sits above a card — "Your weight", "Your calories".
 class SectionHeader extends StatelessWidget {
   const SectionHeader(this.label, {super.key, this.trailing});
 
