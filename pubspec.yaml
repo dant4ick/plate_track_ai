@@ -75,7 +75,10 @@ flutter:
   uses-material-design: true
   
   assets:
-    - assets/icons/
+    - assets/icons/app_icon.svg
+    - assets/icons/app_icon_color.svg
+    - assets/icons/app_icon_light.svg
+    - assets/icons/app_icon_pick_me.svg
     - assets/ml/
     - assets/translations/
     - assets/fonts/Montserrat/OFL.txt

@@ -118,6 +118,9 @@ Pick me — `#FF7AB5 / #F9D9DA`. Контуры, отступы и скругл�
 
 ## Проверка
 
+Команды ниже выполняются внутри проектного Podman-контейнера, а не на хосте.
+Вход в контейнер и настройка Flutter SDK в PATH описаны в [branding.md](branding.md#генерация).
+
 ```bash
 flutter analyze
 flutter test

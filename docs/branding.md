@@ -18,16 +18,29 @@
 
 ## Генерация
 
-Команды проекта выполняются в существующем Podman-контейнере `plate-dev`.
-Для Python-генератора нужен CairoSVG; он не является runtime-зависимостью
-приложения. В текущем контейнере установлен пакет `python3-cairosvg`.
+Команды проекта выполняются внутри существующего Podman-окружения разработки.
+Укажите имя своего контейнера (в локальной конфигурации — `plate-dev`). Репозиторий
+должен быть доступен в контейнере по тому же пути, что и на хосте; иначе замените
+`-w "$PWD"` на путь репозитория внутри контейнера. Выполняйте команды от своего
+UID, а не от root.
 
 ```bash
-podman exec --user "$(id -u)" -w "$PWD" plate-dev \
-  python3 tool/branding/generate_logos.py
-podman exec --user "$(id -u)" -w "$PWD" plate-dev \
-  /home/dant4ick/development/flutter/bin/dart run flutter_launcher_icons
+PROJECT_CONTAINER=plate-dev
+podman exec --user "$(id -u)" -w "$PWD" -it "$PROJECT_CONTAINER" bash
 ```
+
+Далее — внутри контейнера. Путь SDK берётся из локального, не коммитящегося
+`android/local.properties`, который создаётся при настройке Flutter/Android:
+
+```bash
+FLUTTER_SDK="$(python3 -c 'from pathlib import Path; print(dict(line.split("=", 1) for line in Path("android/local.properties").read_text().splitlines() if "=" in line)["flutter.sdk"])')"
+export PATH="$FLUTTER_SDK/bin:$PATH"
+python3 tool/branding/generate_logos.py
+dart run flutter_launcher_icons
+```
+
+Для Python-генератора нужен CairoSVG (например, пакет `python3-cairosvg`
+в Debian/Ubuntu-контейнере); он не является runtime-зависимостью приложения.
 
 Генератор разделяет экспорт на три SVG по границам плашек, сохраняя значения
 `d` и `fill` каждого path без изменений. Из синего варианта создаёт:
@@ -37,6 +50,9 @@ podman exec --user "$(id -u)" -w "$PWD" plate-dev \
 - `assets/icons/app_icon_foreground.png` — лаймовый знак на прозрачном фоне
   для adaptive icon.
 
+PNG-мастера остаются в Git для генерации native-ресурсов, но не включены во
+Flutter bundle: в `pubspec.yaml` явно перечислены только используемые SVG.
+
 `flutter_launcher_icons` создаёт Android legacy-иконки пяти плотностей,
 adaptive foreground и XML с постоянным синим фоном. Отступ adaptive foreground
 задан явно (16%), чтобы знак помещался в безопасную область системных масок.
@@ -45,9 +61,10 @@ adaptive foreground и XML с постоянным синим фоном. Отс
 
 ## Проверка и превью
 
+Запустите в том же контейнере с настроенным PATH:
+
 ```bash
-podman exec --user "$(id -u)" -e LOGO_PREVIEW=1 -w "$PWD" plate-dev \
-  /home/dant4ick/development/flutter/bin/flutter test \
+LOGO_PREVIEW=1 flutter test \
   test/widgets/app_logo_test.dart test/design/logo_preview_test.dart
 ```
 

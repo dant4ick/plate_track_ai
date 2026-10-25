@@ -22,18 +22,18 @@ void main() {
     final previousShadows = debugDisableShadows;
     debugDisableShadows = false;
     try {
-      const family = 'PalettePreview';
-      for (final path in [
-        '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
-        '/System/Library/Fonts/Supplemental/Arial.ttf',
-      ]) {
-        if (!File(path).existsSync()) continue;
-        final bytes = await tester.runAsync(() => File(path).readAsBytes());
-        await (FontLoader(
-          family,
-        )..addFont(Future.value(ByteData.sublistView(bytes!)))).load();
-        break;
-      }
+      await tester.runAsync(() async {
+        await (FontLoader(AppTheme.fontFamily)..addFont(
+              rootBundle.load('assets/fonts/Montserrat/Montserrat-Regular.ttf'),
+            ))
+            .load();
+        await (FontLoader(AppTheme.fontFamily)..addFont(
+              rootBundle.load(
+                'assets/fonts/Montserrat/Montserrat-SemiBold.ttf',
+              ),
+            ))
+            .load();
+      });
 
       final iconFile = File(
         '${Platform.resolvedExecutable.split('/artifacts/').first}'
@@ -62,15 +62,7 @@ void main() {
                   Expanded(
                     child: MaterialApp(
                       debugShowCheckedModeBanner: false,
-                      theme: entry.value.copyWith(
-                        textTheme: entry.value.textTheme.apply(
-                          fontFamily: family,
-                        ),
-                        appBarTheme: entry.value.appBarTheme.copyWith(
-                          titleTextStyle: entry.value.appBarTheme.titleTextStyle
-                              ?.copyWith(fontFamily: family),
-                        ),
-                      ),
+                      theme: entry.value,
                       home: Scaffold(
                         appBar: AppBar(
                           title: Text(entry.key),

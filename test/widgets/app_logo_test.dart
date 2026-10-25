@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
@@ -8,6 +9,26 @@ import 'package:plate_track_ai/core/themes/app_theme.dart';
 import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 
 void main() {
+  testWidgets('launcher masters are not bundled as Flutter runtime assets', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      final assets = (await AssetManifest.loadFromAssetBundle(
+        rootBundle,
+      )).listAssets();
+      expect(assets, isNot(contains('assets/icons/app_icon_color.png')));
+      expect(assets, isNot(contains('assets/icons/app_icon_foreground.png')));
+      for (final name in [
+        'app_icon',
+        'app_icon_color',
+        'app_icon_light',
+        'app_icon_pick_me',
+      ]) {
+        expect(assets, contains('assets/icons/$name.svg'));
+      }
+    });
+  });
+
   test('launcher images keep the blue identity and adaptive transparency', () {
     final paths = [
       'assets/icons/app_icon_color.png',
