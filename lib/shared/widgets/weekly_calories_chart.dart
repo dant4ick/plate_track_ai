@@ -6,8 +6,8 @@ import 'package:plate_track_ai/core/themes/app_colors.dart';
 import 'package:plate_track_ai/shared/models/week_summary.dart';
 import 'package:plate_track_ai/shared/widgets/soft_card.dart';
 
-/// Seven days of calorie totals as a bar chart, today highlighted in the brand
-/// colour and the preceding six in a muted secondary.
+/// Seven days of calorie totals in the same calorie palette as the gauge and
+/// nutrient cards. Today uses the stronger ink; earlier days use graphic.
 ///
 /// Shared by the dashboard and the stats screen so the two cannot drift apart.
 class WeeklyCaloriesChart extends StatelessWidget {
@@ -35,7 +35,9 @@ class WeeklyCaloriesChart extends StatelessWidget {
   /// Rounds the axis up to the next 500 so gridlines land on round numbers, with
   /// one interval of headroom above the tallest bar.
   static double _maxY(List<double> values) {
-    final tallest = values.isEmpty ? 0.0 : values.reduce((a, b) => a > b ? a : b);
+    final tallest = values.isEmpty
+        ? 0.0
+        : values.reduce((a, b) => a > b ? a : b);
     return ((tallest / 500).ceil() * 500 + 500).clamp(1000, 5000).toDouble();
   }
 
@@ -47,7 +49,7 @@ class WeeklyCaloriesChart extends StatelessWidget {
     final labels = _weekdayLabels(context, DateTime.now());
 
     final labelStyle = theme.textTheme.bodySmall?.copyWith(
-      color: palette.textTertiary,
+      color: palette.textSecondary,
     );
 
     return SoftCard(
@@ -58,6 +60,21 @@ class WeeklyCaloriesChart extends StatelessWidget {
             alignment: BarChartAlignment.spaceAround,
             maxY: _maxY(calories),
             minY: 0,
+            barTouchData: BarTouchData(
+              touchTooltipData: BarTouchTooltipData(
+                getTooltipColor: (_) => theme.colorScheme.inverseSurface,
+                getTooltipItem: (group, groupIndex, rod, rodIndex) =>
+                    BarTooltipItem(
+                      rod.toY.toString(),
+                      theme.textTheme.bodySmall!.copyWith(
+                        color: theme.colorScheme.onInverseSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                fitInsideHorizontally: true,
+                fitInsideVertically: true,
+              ),
+            ),
             barGroups: [
               for (var i = 0; i < calories.length; i++)
                 BarChartGroupData(
@@ -65,15 +82,11 @@ class WeeklyCaloriesChart extends StatelessWidget {
                   barRods: [
                     BarChartRodData(
                       toY: calories[i],
-                      // Today reads at full strength; earlier days recede but
-                      // stay legible. The light theme's primary is already a
-                      // pale lime, so it needs a higher alpha than a dark
-                      // theme's saturated indigo to register against the card.
+                      // Keep the calorie hue across all days. Ink emphasises
+                      // today without introducing a separate chart accent.
                       color: i == calories.length - 1
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.primary.withValues(
-                              alpha: palette.isDark ? 0.42 : 0.55,
-                            ),
+                          ? palette.caloriesInk
+                          : palette.calories,
                       width: 18,
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(6),

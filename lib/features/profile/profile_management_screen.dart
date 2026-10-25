@@ -6,6 +6,7 @@ import 'package:plate_track_ai/features/user_setup/user_setup_screen.dart';
 import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
 import 'package:plate_track_ai/shared/widgets/theme_picker.dart';
+import 'package:plate_track_ai/shared/widgets/status_snack_bar.dart';
 import 'package:plate_track_ai/main.dart';
 import 'package:plate_track_ai/core/themes/app_colors.dart';
 import 'package:plate_track_ai/core/themes/app_dimens.dart';
@@ -47,9 +48,9 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${'error_loading_profile'.tr()}: ${e.toString()}'),
-            backgroundColor: AppColors.dangerLight,
+          StatusSnackBar.error(
+            context,
+            message: '${'error_loading_profile'.tr()}: ${e.toString()}',
           ),
         );
       }
@@ -83,7 +84,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.dangerLight,
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
             ),
             child: Text('reset'.tr()),
           ),
@@ -97,18 +98,16 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
         if (mounted) {
           // Navigate back to AppInitializer to properly handle the flow
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (context) => const AppInitializer(),
-            ),
+            MaterialPageRoute(builder: (context) => const AppInitializer()),
             (route) => false,
           );
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${'error_resetting_profile'.tr()}: ${e.toString()}'),
-              backgroundColor: AppColors.dangerLight,
+            StatusSnackBar.error(
+              context,
+              message: '${'error_resetting_profile'.tr()}: ${e.toString()}',
             ),
           );
         }
@@ -119,15 +118,12 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: StandardAppBar(
-        onRefresh: _loadUserProfile,
-      ),
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _currentProfile == null
-              ? _buildNoProfileView()
-              : _buildProfileView(),
+      appBar: StandardAppBar(onRefresh: _loadUserProfile),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _currentProfile == null
+          ? _buildNoProfileView()
+          : _buildProfileView(),
     );
   }
 
@@ -144,19 +140,15 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
           const SizedBox(height: 16),
           Text(
             'no_profile_found'.tr(),
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: AppPalette.of(context).textSecondary,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'create_profile_description'.tr(),
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(
-              color: AppPalette.of(context).textTertiary,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppPalette.of(context).textSecondary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -231,12 +223,14 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(32),
               ),
               child: AppLogo(
                 size: 32,
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(width: 16),
@@ -253,11 +247,9 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
                   const SizedBox(height: 4),
                   Text(
                     '${_currentProfile!.age} ${'years'.tr()} • ${_currentProfile!.gender == Gender.male ? 'male'.tr() : 'female'.tr()}',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(
-              color: AppPalette.of(context).textSecondary,
-            ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppPalette.of(context).textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -308,7 +300,11 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
               ),
             ],
             const SizedBox(height: 12),
-            _buildInfoRow(Icons.height, 'height'.tr(), '${profile.height} ${'cm'.tr()}'),
+            _buildInfoRow(
+              Icons.height,
+              'height'.tr(),
+              '${profile.height} ${'cm'.tr()}',
+            ),
             const SizedBox(height: 12),
             _buildInfoRow(
               Icons.directions_run,
@@ -450,11 +446,11 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: _resetProfile,
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: AppPalette.of(context).danger),
             label: Text('reset_profile'.tr()),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.dangerLight,
-              side: const BorderSide(color: AppColors.dangerLight),
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
+              side: BorderSide(color: AppPalette.of(context).danger),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
           ),

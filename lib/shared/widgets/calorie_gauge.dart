@@ -14,11 +14,7 @@ import 'package:plate_track_ai/core/themes/app_dimens.dart';
 /// switches to the danger colour, and the caption flips from "left" to "over",
 /// so the number under the arc is always a positive quantity with its own unit.
 class CalorieGauge extends StatelessWidget {
-  const CalorieGauge({
-    super.key,
-    required this.consumed,
-    required this.target,
-  });
+  const CalorieGauge({super.key, required this.consumed, required this.target});
 
   /// Calories eaten today.
   final double consumed;
@@ -89,7 +85,7 @@ class CalorieGauge extends StatelessWidget {
                                 : 'calories_left'.tr())
                           : 'calories_consumed'.tr(),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: palette.textTertiary,
+                        color: palette.textSecondary,
                       ),
                     ),
                     SizedBox(height: stroke * 0.5),

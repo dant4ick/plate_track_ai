@@ -92,12 +92,12 @@ class _GoalTriplet extends StatelessWidget {
     final theme = Theme.of(context);
 
     final flankStyle = theme.textTheme.headlineSmall?.copyWith(
-      color: palette.textTertiary,
+      color: palette.textSecondary,
       fontWeight: FontWeight.w400,
       height: 1.0,
     );
     final footStyle = theme.textTheme.bodySmall?.copyWith(
-      color: palette.textTertiary,
+      color: palette.textSecondary,
     );
 
     // A Table, not a Row of Columns: the three figures have to sit on one shared
@@ -138,7 +138,7 @@ class _GoalTriplet extends StatelessWidget {
                   child: Container(
                     height: 5,
                     decoration: BoxDecoration(
-                      color: AppColors.secondShade,
+                      color: palette.weightAccent,
                       borderRadius: BorderRadius.circular(AppDimens.radiusPill),
                     ),
                   ),
@@ -189,7 +189,7 @@ class _NoGoal extends StatelessWidget {
             Text(
               'kg'.tr(),
               style: theme.textTheme.titleMedium?.copyWith(
-                color: palette.textTertiary,
+                color: palette.textSecondary,
               ),
             ),
           ],
@@ -198,7 +198,7 @@ class _NoGoal extends StatelessWidget {
         Text(
           'goal_weight_hint'.tr(),
           style: theme.textTheme.bodySmall?.copyWith(
-            color: palette.textTertiary,
+            color: palette.textSecondary,
           ),
         ),
       ],

@@ -143,7 +143,7 @@ class _DaySection extends StatelessWidget {
               Text(
                 '${day.totals.calories.round()} ${'kcal'.tr()}',
                 style: theme.textTheme.labelMedium?.copyWith(
-                  color: palette.textTertiary,
+                  color: palette.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),

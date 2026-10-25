@@ -28,8 +28,11 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final titleStyle =
+        Theme.of(context).appBarTheme.titleTextStyle ??
+        Theme.of(context).textTheme.titleLarge;
     List<Widget> appBarActions = [];
-    
+
     // Add refresh button if callback is provided
     if (onRefresh != null) {
       appBarActions.add(
@@ -40,7 +43,7 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       );
     }
-    
+
     // Add any additional actions
     if (actions != null) {
       appBarActions.addAll(actions!);
@@ -49,14 +52,10 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       titleSpacing: 16,
       scrolledUnderElevation: 0,
-      title: showLogo 
-          ? (titleText != null 
-              ? AppLogoWithText(
-                  text: titleText!,
-                  logoSize: 24,
-                  fontSize: 18,
-                )
-              : const AppLogoWithText())
+      title: showLogo
+          ? (titleText != null
+                ? AppLogoWithText(text: titleText!, logoSize: 24, fontSize: 18)
+                : const AppLogoWithText())
           : (titleText != null ? Text(titleText!) : null),
       elevation: 0,
       actions: appBarActions.isNotEmpty ? appBarActions : null,
@@ -64,12 +63,22 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: automaticallyImplyLeading,
       backgroundColor: backgroundColor,
       foregroundColor: foregroundColor,
+      // Explicit chrome colours (camera panels) must override every inherited
+      // foreground role: AppBar.foregroundColor alone is only a fallback.
+      titleTextStyle: foregroundColor == null
+          ? null
+          : titleStyle?.copyWith(color: foregroundColor),
+      iconTheme: foregroundColor == null
+          ? null
+          : IconThemeData(color: foregroundColor),
+      actionsIconTheme: foregroundColor == null
+          ? null
+          : IconThemeData(color: foregroundColor),
       bottom: bottom,
     );
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(
-    kToolbarHeight + (bottom?.preferredSize.height ?? 0.0),
-  );
+  Size get preferredSize =>
+      Size.fromHeight(kToolbarHeight + (bottom?.preferredSize.height ?? 0.0));
 }

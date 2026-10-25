@@ -21,13 +21,87 @@ Future<AppPalette> paletteUnder(WidgetTester tester, ThemeData theme) async {
 }
 
 void main() {
+  for (final entry in {
+    'light': AppTheme.lightTheme,
+    'dark': AppTheme.darkTheme,
+    'pick-me': AppTheme.pickMeTheme,
+  }.entries) {
+    test(
+      '${entry.key} default typography uses the active primary text colour',
+      () {
+        final theme = entry.value;
+        for (final style in [
+          theme.textTheme.displayLarge,
+          theme.textTheme.displayMedium,
+          theme.textTheme.displaySmall,
+          theme.textTheme.headlineLarge,
+          theme.textTheme.headlineMedium,
+          theme.textTheme.headlineSmall,
+          theme.textTheme.titleLarge,
+          theme.textTheme.titleMedium,
+          theme.textTheme.titleSmall,
+          theme.textTheme.bodyLarge,
+          theme.textTheme.bodyMedium,
+          theme.textTheme.bodySmall,
+          theme.textTheme.labelLarge,
+          theme.textTheme.labelMedium,
+          theme.textTheme.labelSmall,
+        ]) {
+          expect(style!.color, theme.colorScheme.onSurface);
+        }
+      },
+    );
+
+    test('${entry.key} filled controls have readable foregrounds', () {
+      final theme = entry.value;
+      final scheme = theme.colorScheme;
+      for (final pair in [
+        (scheme.onPrimary, scheme.primary),
+        (scheme.onSecondary, scheme.secondary),
+        (scheme.onTertiary, scheme.tertiary),
+        (scheme.onError, scheme.error),
+        (
+          theme.floatingActionButtonTheme.foregroundColor!,
+          theme.floatingActionButtonTheme.backgroundColor!,
+        ),
+        (
+          theme.elevatedButtonTheme.style!.foregroundColor!.resolve({})!,
+          theme.elevatedButtonTheme.style!.backgroundColor!.resolve({})!,
+        ),
+      ]) {
+        expect(_contrast(pair.$1, pair.$2), greaterThanOrEqualTo(4.5));
+      }
+    });
+
+    testWidgets('${entry.key} advice accent is readable on its tinted tile', (
+      tester,
+    ) async {
+      final palette = await paletteUnder(tester, entry.value);
+      final tile = Color.alphaBlend(
+        palette.fillOf(palette.accentInk),
+        entry.value.colorScheme.surface,
+      );
+      expect(_contrast(palette.accentInk, tile), greaterThanOrEqualTo(3));
+      for (final macro in Macro.values) {
+        final style = palette.styleOf(macro);
+        expect(
+          _contrast(palette.foregroundOn(style.graphic), style.graphic),
+          greaterThanOrEqualTo(4.5),
+        );
+        expect(
+          _contrast(style.ink, entry.value.colorScheme.surface),
+          greaterThanOrEqualTo(4.5),
+        );
+      }
+    });
+  }
+
   group('AppPalette flavor resolution', () {
     testWidgets('light theme resolves the light flavor', (tester) async {
       final palette = await paletteUnder(tester, AppTheme.lightTheme);
 
       expect(palette.flavor, AppFlavor.light);
       expect(palette.isDark, isFalse);
-      expect(palette.brandSoft, AppColors.secondSoft);
       expect(palette.calories, AppColors.calories);
     });
 
@@ -36,7 +110,6 @@ void main() {
 
       expect(palette.flavor, AppFlavor.dark);
       expect(palette.isDark, isTrue);
-      expect(palette.brandSoft, AppColors.primeSoft);
       expect(palette.calories, AppColors.caloriesDark);
     });
 
@@ -46,7 +119,6 @@ void main() {
 
       expect(palette.flavor, AppFlavor.pickMe);
       expect(palette.isDark, isFalse);
-      expect(palette.brandSoft, AppColors.pickSoft);
       expect(palette.calories, AppColors.pickCalories);
     });
 
@@ -62,9 +134,10 @@ void main() {
     });
 
     testWidgets('an untagged theme falls back to brightness', (tester) async {
-      final palette = await paletteUnder(tester, ThemeData(
-        brightness: Brightness.dark,
-      ));
+      final palette = await paletteUnder(
+        tester,
+        ThemeData(brightness: Brightness.dark),
+      );
 
       expect(palette.flavor, AppFlavor.dark);
     });
@@ -79,14 +152,22 @@ void main() {
       expect(theme.appBarTheme.backgroundColor, Colors.transparent);
     });
 
-    test('keeps the lime FAB and app-bar icons from the frame', () {
+    test('keeps the lime FAB with readable navigation icons', () {
       final theme = AppTheme.pickMeTheme;
 
       expect(
         theme.floatingActionButtonTheme.backgroundColor,
         AppColors.secondShade,
       );
-      expect(theme.appBarTheme.iconTheme?.color, AppColors.secondShade);
+      expect(theme.appBarTheme.iconTheme?.color, theme.colorScheme.onSurface);
     });
   });
+}
+
+double _contrast(Color foreground, Color background) {
+  final ink = Color.alphaBlend(foreground, background).computeLuminance();
+  final surface = background.computeLuminance();
+  return ink > surface
+      ? (ink + 0.05) / (surface + 0.05)
+      : (surface + 0.05) / (ink + 0.05);
 }

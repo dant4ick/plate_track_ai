@@ -132,9 +132,12 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
           onRefresh: _loadFoodData,
           bottom: TabBar(
             controller: _tabController,
-            tabs: [Tab(text: 'daily_stats'.tr()), Tab(text: 'weekly_stats'.tr())],
-            indicatorColor: Theme.of(context).colorScheme.primary,
-            labelColor: Theme.of(context).colorScheme.primary,
+            tabs: [
+              Tab(text: 'daily_stats'.tr()),
+              Tab(text: 'weekly_stats'.tr()),
+            ],
+            indicatorColor: Theme.of(context).colorScheme.onSurface,
+            labelColor: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -146,9 +149,12 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
         onRefresh: _loadFoodData,
         bottom: TabBar(
           controller: _tabController,
-          tabs: [Tab(text: 'daily_stats'.tr()), Tab(text: 'weekly_stats'.tr())],
-          indicatorColor: Theme.of(context).colorScheme.primary,
-          labelColor: Theme.of(context).colorScheme.primary,
+          tabs: [
+            Tab(text: 'daily_stats'.tr()),
+            Tab(text: 'weekly_stats'.tr()),
+          ],
+          indicatorColor: Theme.of(context).colorScheme.onSurface,
+          labelColor: Theme.of(context).colorScheme.onSurface,
         ),
       ),
       body: TabBarView(
@@ -258,7 +264,9 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppPalette.of(context).fillOf(AppPalette.of(context).calories),
+                    color: AppPalette.of(
+                      context,
+                    ).fillOf(AppPalette.of(context).calories),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -280,12 +288,11 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
                       const SizedBox(height: 4),
                       Text(
                         '${consumedCalories.toInt().toString()} / ${targetCalories.toInt().toString()} ${'kcal'.tr()}',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppPalette.of(context).calories,
-                        ),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppPalette.of(context).caloriesInk,
+                            ),
                       ),
                     ],
                   ),
@@ -321,12 +328,13 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color:
-                        progressPercentage >= 1.0
-                            ? AppPalette.of(context)
-                                .fillOf(AppPalette.of(context).success)
-                            : AppPalette.of(context)
-                                .fillOf(AppPalette.of(context).warning),
+                    color: progressPercentage >= 1.0
+                        ? AppPalette.of(
+                            context,
+                          ).fillOf(AppPalette.of(context).success)
+                        : AppPalette.of(
+                            context,
+                          ).fillOf(AppPalette.of(context).warning),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -334,10 +342,9 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
                         ? 'goal_reached'.tr()
                         : 'keep_going'.tr(),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color:
-                          progressPercentage >= 1.0
-                              ? AppPalette.of(context).success
-                              : AppPalette.of(context).warning,
+                      color: progressPercentage >= 1.0
+                          ? Theme.of(context).colorScheme.onSurface
+                          : AppPalette.of(context).warningText,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -358,10 +365,10 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
         value: _totalProtein,
         title: '${_totalProtein.toInt()}${'g'.tr()}',
         radius: 50,
-        titleStyle: const TextStyle(
+        titleStyle: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: AppColors.onAccent,
+          color: AppPalette.of(context).foregroundOn(AppColors.protein),
         ),
       ),
       PieChartSectionData(
@@ -369,10 +376,10 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
         value: _totalCarbs,
         title: '${_totalCarbs.toInt()}${'g'.tr()}',
         radius: 50,
-        titleStyle: const TextStyle(
+        titleStyle: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: AppColors.onAccent,
+          color: AppPalette.of(context).foregroundOn(AppColors.carbs),
         ),
       ),
       PieChartSectionData(
@@ -380,10 +387,10 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
         value: _totalFat,
         title: '${_totalFat.toInt()}${'g'.tr()}',
         radius: 50,
-        titleStyle: const TextStyle(
+        titleStyle: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: AppColors.onAccent,
+          color: AppPalette.of(context).foregroundOn(AppColors.fat),
         ),
       ),
     ];
@@ -406,23 +413,22 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
       child: Row(
         children: [
           Expanded(
-            child:
-                _totalProtein + _totalCarbs + _totalFat > 0
-                    ? PieChart(
-                      PieChartData(
-                        sectionsSpace: 2,
-                        centerSpaceRadius: 30,
-                        sections: nutrientData,
-                      ),
-                    )
-                    : Center(
-                      child: Text(
-                        'no_nutrition_data_today'.tr(),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppPalette.of(context).textSecondary,
-                        ),
+            child: _totalProtein + _totalCarbs + _totalFat > 0
+                ? PieChart(
+                    PieChartData(
+                      sectionsSpace: 2,
+                      centerSpaceRadius: 30,
+                      sections: nutrientData,
+                    ),
+                  )
+                : Center(
+                    child: Text(
+                      'no_nutrition_data_today'.tr(),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppPalette.of(context).textSecondary,
                       ),
                     ),
+                  ),
           ),
           const SizedBox(width: 16),
           Column(
@@ -478,13 +484,13 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
     );
   }
 
-Widget _buildFoodItemsList() {
-  return buildFoodItemSection(
-    context: context,
-    items: _todaysFoodItems,
-    refreshCallback: _loadFoodData,
-  );
-}
+  Widget _buildFoodItemsList() {
+    return buildFoodItemSection(
+      context: context,
+      items: _todaysFoodItems,
+      refreshCallback: _loadFoodData,
+    );
+  }
 
   Widget _buildHeaderSection() {
     String message;
@@ -526,12 +532,14 @@ Widget _buildFoodItemsList() {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   icon,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                   size: 32,
                 ),
               ),
@@ -544,17 +552,15 @@ Widget _buildFoodItemsList() {
                       'nutrition_overview'.tr(),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       message,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(
-        color: AppPalette.of(context).textSecondary,
-      ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                   ],
                 ),

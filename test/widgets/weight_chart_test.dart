@@ -6,6 +6,7 @@ import 'package:plate_track_ai/features/weight/weight_history_screen.dart';
 import 'package:plate_track_ai/shared/models/weight_entry.dart';
 
 import 'localized_pump.dart';
+import '../color_test_utils.dart';
 
 void main() {
   setUpAll(initLocalization);
@@ -15,7 +16,7 @@ void main() {
       WeightEntry(date: DateTime(2026, 8, 1 + i * 4), kg: 72 - i * 0.8),
   ];
 
-  testWidgets('draws one, two and many weigh-ins in both themes', (
+  testWidgets('draws readable series and goals in all three themes', (
     tester,
   ) async {
     await pumpLocalized(
@@ -25,7 +26,11 @@ void main() {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme])
+              for (final theme in [
+                AppTheme.lightTheme,
+                AppTheme.darkTheme,
+                AppTheme.pickMeTheme,
+              ])
                 Theme(
                   data: theme,
                   child: Column(
@@ -45,20 +50,48 @@ void main() {
           ),
         ),
       ),
-      size: const Size(390, 1400),
+      size: const Size(390, 1900),
     );
 
     expect(tester.takeException(), isNull);
-    expect(find.byType(WeightChart), findsNWidgets(6));
+    expect(find.byType(WeightChart), findsNWidgets(9));
     // The goal is drawn as a horizontal rule (painted, so not a Text widget).
     final withGoal = tester
         .widgetList<LineChart>(find.byType(LineChart))
         .where((c) => c.data.extraLinesData.horizontalLines.isNotEmpty)
         .toList();
-    expect(withGoal, hasLength(2));
+    expect(withGoal, hasLength(3));
     expect(withGoal.first.data.extraLinesData.horizontalLines.single.y, 65);
+    final themes = [
+      AppTheme.lightTheme,
+      AppTheme.darkTheme,
+      AppTheme.pickMeTheme,
+    ];
+    for (var i = 0; i < withGoal.length; i++) {
+      final data = withGoal[i].data;
+      final surface = themes[i].colorScheme.surface;
+      expect(
+        contrastOn(data.lineBarsData.single.color!, surface),
+        greaterThanOrEqualTo(3),
+      );
+      final goal = data.extraLinesData.horizontalLines.single;
+      expect(contrastOn(goal.color!, surface), greaterThanOrEqualTo(3));
+      expect(
+        contrastOn(goal.label.style!.color!, surface),
+        greaterThanOrEqualTo(4.5),
+      );
+      // The goal can sit under the series, on top of the tinted plot area.
+      expect(
+        contrastOn(
+          goal.label.style!.color!,
+          data.lineBarsData.single.belowBarData.color!,
+          surface: surface,
+        ),
+        greaterThanOrEqualTo(4.5),
+      );
+    }
     // The ends of the axis carry dates.
     expect(find.text('1 Aug'), findsWidgets);
-    expect(find.text('21 Aug'), findsNWidgets(2));
+    expect(find.text('21 Aug'), findsNWidgets(3));
   });
 }

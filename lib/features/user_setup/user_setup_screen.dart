@@ -5,6 +5,7 @@ import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/models/user_profile.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
+import 'package:plate_track_ai/shared/widgets/status_snack_bar.dart';
 import 'package:plate_track_ai/core/themes/app_colors.dart';
 import 'package:plate_track_ai/core/themes/app_dimens.dart';
 
@@ -12,11 +13,7 @@ class UserSetupScreen extends StatefulWidget {
   final bool isEditing;
   final Future<void> Function()? onComplete;
 
-  const UserSetupScreen({
-    super.key,
-    this.isEditing = false,
-    this.onComplete,
-  });
+  const UserSetupScreen({super.key, this.isEditing = false, this.onComplete});
 
   @override
   State<UserSetupScreen> createState() => _UserSetupScreenState();
@@ -25,18 +22,18 @@ class UserSetupScreen extends StatefulWidget {
 class _UserSetupScreenState extends State<UserSetupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _userProfileService = UserProfileService();
-  
+
   // Form controllers
   final _ageController = TextEditingController();
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
   final _goalWeightController = TextEditingController();
-  
+
   // Form state
   Gender _selectedGender = Gender.male;
   ActivityLevel _selectedActivityLevel = ActivityLevel.moderatelyActive;
   String _selectedLanguage = 'en'; // Default language
-  
+
   bool _isLoading = false;
   double _calculatedBMR = 0;
   double _calculatedTDEE = 0;
@@ -45,7 +42,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
   void initState() {
     super.initState();
     _initializeService();
-    
+
     // Add listeners to recalculate BMR when inputs change
     _ageController.addListener(_calculateBMR);
     _weightController.addListener(_calculateBMR);
@@ -104,16 +101,18 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     final age = int.tryParse(_ageController.text);
     final weight = double.tryParse(_weightController.text);
     final height = double.tryParse(_heightController.text);
-    
+
     if (age != null && weight != null && height != null) {
       setState(() {
         // Calculate BMR using the provided formulas
         switch (_selectedGender) {
           case Gender.male:
-            _calculatedBMR = 260 + (9.65 * weight) + (5.73 * height) - (5.08 * age);
+            _calculatedBMR =
+                260 + (9.65 * weight) + (5.73 * height) - (5.08 * age);
             break;
           case Gender.female:
-            _calculatedBMR = 43 + (7.38 * weight) + (6.07 * height) - (2.31 * age);
+            _calculatedBMR =
+                43 + (7.38 * weight) + (6.07 * height) - (2.31 * age);
             break;
         }
         _calculatedTDEE = _calculatedBMR * _selectedActivityLevel.multiplier;
@@ -158,19 +157,19 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(widget.isEditing ? 'profile_updated_successfully'.tr() : 'profile_created_successfully'.tr()),
-            backgroundColor: AppColors.successLight,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          StatusSnackBar.success(
+            context,
+            message: widget.isEditing
+                ? 'profile_updated_successfully'.tr()
+                : 'profile_created_successfully'.tr(),
           ),
         );
 
         await widget.onComplete?.call();
-        
+
         // Navigation logic based on context
         if (!mounted) return;
-        
+
         if (widget.isEditing) {
           Navigator.of(context).pop(true);
         } else if (widget.onComplete != null) {
@@ -183,11 +182,11 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('error_saving_profile'.tr(namedArgs: {'error': e.toString()})),
-            backgroundColor: AppColors.dangerLight,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          StatusSnackBar.error(
+            context,
+            message: 'error_saving_profile'.tr(
+              namedArgs: {'error': e.toString()},
+            ),
           ),
         );
       }
@@ -206,15 +205,10 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     setState(() {
       _selectedLanguage = languageCode;
     });
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('language_changed'.tr()),
-          backgroundColor: AppColors.successLight,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
+        StatusSnackBar.success(context, message: 'language_changed'.tr()),
       );
     }
   }
@@ -244,34 +238,36 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
             children: [
               // Header card
               // _buildHeaderCard(),
-              
+
               // const SizedBox(height: 24),
-              
+
               // Language Selection section
               _buildLanguageSection(),
-              
+
               const SizedBox(height: 24),
-              
+
               // Personal Information section
               _buildPersonalInfoSection(),
-              
+
               const SizedBox(height: 24),
-              
+
               // Activity Level section
               _buildActivityLevelSection(),
-              
+
               const SizedBox(height: 24),
-              
+
               // BMR Calculation results
               _buildBMRResultsSection(),
-              
+
               const SizedBox(height: 32),
-              
+
               // Save button
               SizedBox(
                 width: double.infinity,
                 child: AppButton(
-                    text: widget.isEditing ? 'update_profile'.tr() : 'complete'.tr(),
+                  text: widget.isEditing
+                      ? 'update_profile'.tr()
+                      : 'complete'.tr(),
                   onPressed: _isLoading ? null : () => _saveProfile(),
                   isLoading: _isLoading,
                   icon: Icons.check,
@@ -296,20 +292,20 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               children: [
                 Icon(
                   Icons.language,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                   size: 24,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'language'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            
+
             // Language selection tiles
             _buildLanguageTile('en', 'english'.tr(), '🇺🇸'),
             const SizedBox(height: 8),
@@ -320,39 +316,40 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     );
   }
 
-  Widget _buildLanguageTile(String languageCode, String languageName, String flag) {
+  Widget _buildLanguageTile(
+    String languageCode,
+    String languageName,
+    String flag,
+  ) {
     final isSelected = _selectedLanguage == languageCode;
-    
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isSelected 
-            ? Theme.of(context).colorScheme.primary 
-            : AppPalette.of(context).border,
+          color: isSelected
+              ? Theme.of(context).colorScheme.onSurface
+              : AppPalette.of(context).border,
           width: isSelected ? 2 : 1,
         ),
-        color: isSelected 
-          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
-          : null,
+        color: isSelected
+            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+            : null,
       ),
       child: ListTile(
-        leading: Text(
-          flag,
-          style: const TextStyle(fontSize: 24),
-        ),
+        leading: Text(flag, style: const TextStyle(fontSize: 24)),
         title: Text(
           languageName,
           style: TextStyle(
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
-        trailing: isSelected 
-          ? Icon(
-              Icons.check_circle,
-              color: Theme.of(context).colorScheme.primary,
-            )
-          : null,
+        trailing: isSelected
+            ? Icon(
+                Icons.check_circle,
+                color: Theme.of(context).colorScheme.onSurface,
+              )
+            : null,
         onTap: () => _changeLanguage(languageCode),
       ),
     );
@@ -370,20 +367,20 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                   size: 24,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'personal_info'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            
+
             // Age field
             TextFormField(
               controller: _ageController,
@@ -399,18 +396,18 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                    return 'please_enter_your_age'.tr();
+                  return 'please_enter_your_age'.tr();
                 }
                 final age = int.tryParse(value);
                 if (age == null || age < 10 || age > 120) {
-                    return 'please_enter_valid_age'.tr();
+                  return 'please_enter_valid_age'.tr();
                 }
                 return null;
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Weight field
             TextFormField(
               controller: _weightController,
@@ -422,24 +419,26 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 ),
                 prefixIcon: const Icon(Icons.monitor_weight),
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
               ],
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                    return 'please_enter_your_weight'.tr();
+                  return 'please_enter_your_weight'.tr();
                 }
                 final weight = double.tryParse(value);
                 if (weight == null || weight < 20 || weight > 300) {
-                    return 'please_enter_valid_weight'.tr();
+                  return 'please_enter_valid_weight'.tr();
                 }
                 return null;
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Height field
             TextFormField(
               controller: _heightController,
@@ -451,17 +450,19 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 ),
                 prefixIcon: const Icon(Icons.height),
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
               ],
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                    return 'please_enter_your_height'.tr();
+                  return 'please_enter_your_height'.tr();
                 }
                 final height = double.tryParse(value);
                 if (height == null || height < 100 || height > 250) {
-                    return 'please_enter_valid_height'.tr();
+                  return 'please_enter_valid_height'.tr();
                 }
                 return null;
               },
@@ -472,13 +473,13 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
             _buildGoalWeightField(),
 
             const SizedBox(height: 16),
-            
+
             // Gender selection
             Text(
               'gender'.tr(),
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             RadioGroup<Gender>(
@@ -528,15 +529,11 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 namedArgs: {'min': minimum.toStringAsFixed(1)},
               ),
         helperMaxLines: 2,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         prefixIcon: const Icon(Icons.flag_outlined),
       ),
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-      ],
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
       validator: (value) {
         final raw = (value ?? '').trim();
         if (raw.isEmpty) return 'please_enter_your_goal_weight'.tr();
@@ -567,20 +564,20 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               children: [
                 Icon(
                   Icons.fitness_center,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                   size: 24,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'activity_level'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            
+
             RadioGroup<ActivityLevel>(
               groupValue: _selectedActivityLevel,
               onChanged: (value) {
@@ -590,7 +587,9 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 });
               },
               child: Column(
-                children: ActivityLevel.values.map((level) => _buildActivityLevelTile(level)).toList(),
+                children: ActivityLevel.values
+                    .map((level) => _buildActivityLevelTile(level))
+                    .toList(),
               ),
             ),
           ],
@@ -605,27 +604,29 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: _selectedActivityLevel == level 
-            ? Theme.of(context).colorScheme.primary 
-            : AppPalette.of(context).border,
+          color: _selectedActivityLevel == level
+              ? Theme.of(context).colorScheme.onSurface
+              : AppPalette.of(context).border,
           width: _selectedActivityLevel == level ? 2 : 1,
         ),
-        color: _selectedActivityLevel == level 
-          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
-          : null,
+        color: _selectedActivityLevel == level
+            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+            : null,
       ),
       child: RadioListTile<ActivityLevel>(
         title: Text(
           level.displayName,
           style: TextStyle(
-            fontWeight: _selectedActivityLevel == level ? FontWeight.bold : FontWeight.normal,
+            fontWeight: _selectedActivityLevel == level
+                ? FontWeight.bold
+                : FontWeight.normal,
           ),
         ),
         subtitle: Text(
           '${level.description} (${level.multiplier}x)',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppPalette.of(context).textSecondary,
-              ),
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
         value: level,
       ),
@@ -644,20 +645,20 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               children: [
                 Icon(
                   Icons.calculate,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                   size: 24,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'bmr_calculation'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            
+
             if (_calculatedBMR > 0) ...[
               _buildResultCard(
                 'bmr_label'.tr(),
@@ -665,16 +666,18 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 'bmr_description'.tr(),
                 Icons.local_fire_department,
                 AppPalette.of(context).warning,
+                ink: AppPalette.of(context).warningText,
               ),
-              
+
               const SizedBox(height: 12),
-              
+
               _buildResultCard(
                 'tdee_label'.tr(),
                 '${_calculatedTDEE.toInt()} ${'kcal'.tr()}/${'day'.tr()}',
                 'tdee_description'.tr(),
                 Icons.restaurant,
                 AppPalette.of(context).success,
+                ink: Theme.of(context).colorScheme.onSurface,
               ),
             ] else ...[
               Container(
@@ -687,15 +690,15 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: AppPalette.of(context).textSecondary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'enter_info_to_see_bmr'.tr(),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppPalette.of(context).textSecondary,
-                            ),
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
                     ),
                   ],
@@ -708,7 +711,14 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     );
   }
 
-  Widget _buildResultCard(String title, String value, String subtitle, IconData icon, Color color) {
+  Widget _buildResultCard(
+    String title,
+    String value,
+    String subtitle,
+    IconData icon,
+    Color color, {
+    required Color ink,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -724,11 +734,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+            child: Icon(icon, color: ink, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -737,23 +743,23 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   value,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: ink,
+                  ),
                 ),
                 Text(
                   subtitle,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppPalette.of(context).textSecondary,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ],
             ),

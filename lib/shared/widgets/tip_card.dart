@@ -23,7 +23,7 @@ class TipCard extends StatelessWidget {
     TipTone.danger => palette.danger,
     TipTone.success => palette.success,
     TipTone.info => palette.info,
-    TipTone.accent => AppColors.triShade,
+    TipTone.accent => palette.accentInk,
   };
 
   @override

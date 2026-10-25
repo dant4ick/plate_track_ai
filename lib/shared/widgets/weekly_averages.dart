@@ -120,7 +120,7 @@ class _Cell extends StatelessWidget {
                 Text(
                   label,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: palette.textTertiary,
+                    color: palette.textSecondary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -128,7 +128,7 @@ class _Cell extends StatelessWidget {
                 Text(
                   unit,
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: palette.textTertiary,
+                    color: palette.textSecondary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -157,9 +157,9 @@ class _NoWeekData extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'no_nutrition_data_today'.tr(),
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: palette.textTertiary,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: palette.textSecondary),
             textAlign: TextAlign.center,
           ),
         ],

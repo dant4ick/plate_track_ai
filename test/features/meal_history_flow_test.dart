@@ -10,6 +10,7 @@ import 'package:plate_track_ai/features/meals/meal_history_screen.dart';
 import 'package:plate_track_ai/shared/models/food_item_adapters.dart';
 
 import '../test_utils.dart';
+import '../color_test_utils.dart';
 import '../widgets/localized_pump.dart';
 
 void main() {
@@ -91,6 +92,24 @@ void main() {
     expect(find.text('Meal details'), findsOneWidget);
     expect(find.text('500 kcal'), findsOneWidget);
     expect(find.text('100 g'), findsOneWidget);
+    final delete = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+    final theme = Theme.of(tester.element(find.byType(ElevatedButton)));
+    final style = theme.elevatedButtonTheme.style!.merge(delete.style);
+    for (final states in [
+      <WidgetState>{},
+      {WidgetState.pressed},
+      {WidgetState.focused},
+    ]) {
+      final background = style.backgroundColor!.resolve(states)!;
+      final overlay = style.overlayColor?.resolve(states);
+      expect(
+        contrastOn(
+          style.foregroundColor!.resolve(states)!,
+          overlay == null ? background : Color.alphaBlend(overlay, background),
+        ),
+        greaterThanOrEqualTo(4.5),
+      );
+    }
 
     // Delete → confirm → back on the list without it.
     await tester.tap(find.widgetWithText(ElevatedButton, 'Delete'));

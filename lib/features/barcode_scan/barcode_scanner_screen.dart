@@ -7,6 +7,7 @@ import 'package:plate_track_ai/core/services/barcode_cache_service.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/features/barcode_scan/barcode_result_screen.dart';
 import 'package:plate_track_ai/core/themes/app_colors.dart';
+import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
 
 class BarcodeScannerScreen extends StatefulWidget {
   const BarcodeScannerScreen({super.key});
@@ -67,10 +68,8 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => BarcodeResultScreen(
-          barcode: rawValue,
-          onSave: _onFoodSaved,
-        ),
+        builder: (_) =>
+            BarcodeResultScreen(barcode: rawValue, onSave: _onFoodSaved),
       ),
     ).then((_) {
       if (mounted) {
@@ -88,18 +87,15 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.cameraBackdrop,
-      appBar: AppBar(
+      appBar: StandardAppBar(
         backgroundColor: AppColors.cameraBackdrop,
         foregroundColor: AppColors.cameraForeground,
-        title: Text('barcode_scanner'.tr()),
-        elevation: 0,
+        titleText: 'barcode_scanner'.tr(),
+        showLogo: false,
       ),
       body: Stack(
         children: [
-          MobileScanner(
-            controller: _controller,
-            onDetect: _onBarcodeDetected,
-          ),
+          MobileScanner(controller: _controller, onDetect: _onBarcodeDetected),
           _buildScanOverlay(),
           _buildHintText(),
         ],
@@ -187,11 +183,27 @@ class _ScanOverlayPainter extends CustomPainter {
     // Draw dark regions around the scan rect
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, scanRect.top), paint);
     canvas.drawRect(
-        Rect.fromLTWH(0, scanRect.bottom, size.width, size.height - scanRect.bottom), paint);
-    canvas.drawRect(Rect.fromLTWH(0, scanRect.top, scanRect.left, scanRect.height), paint);
+      Rect.fromLTWH(
+        0,
+        scanRect.bottom,
+        size.width,
+        size.height - scanRect.bottom,
+      ),
+      paint,
+    );
     canvas.drawRect(
-        Rect.fromLTWH(scanRect.right, scanRect.top, size.width - scanRect.right, scanRect.height),
-        paint);
+      Rect.fromLTWH(0, scanRect.top, scanRect.left, scanRect.height),
+      paint,
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(
+        scanRect.right,
+        scanRect.top,
+        size.width - scanRect.right,
+        scanRect.height,
+      ),
+      paint,
+    );
 
     // Draw corner brackets
     final cornerPaint = Paint()
@@ -205,56 +217,94 @@ class _ScanOverlayPainter extends CustomPainter {
 
     // Top-left
     canvas.drawLine(
-        Offset(scanRect.left + radius, scanRect.top),
-        Offset(scanRect.left + cornerLength, scanRect.top),
-        cornerPaint);
+      Offset(scanRect.left + radius, scanRect.top),
+      Offset(scanRect.left + cornerLength, scanRect.top),
+      cornerPaint,
+    );
     canvas.drawLine(
-        Offset(scanRect.left, scanRect.top + radius),
-        Offset(scanRect.left, scanRect.top + cornerLength),
-        cornerPaint);
+      Offset(scanRect.left, scanRect.top + radius),
+      Offset(scanRect.left, scanRect.top + cornerLength),
+      cornerPaint,
+    );
     canvas.drawArc(
-        Rect.fromLTWH(scanRect.left, scanRect.top, radius * 2, radius * 2),
-        pi, pi / 2, false, cornerPaint);
+      Rect.fromLTWH(scanRect.left, scanRect.top, radius * 2, radius * 2),
+      pi,
+      pi / 2,
+      false,
+      cornerPaint,
+    );
 
     // Top-right
     canvas.drawLine(
-        Offset(scanRect.right - cornerLength, scanRect.top),
-        Offset(scanRect.right - radius, scanRect.top),
-        cornerPaint);
+      Offset(scanRect.right - cornerLength, scanRect.top),
+      Offset(scanRect.right - radius, scanRect.top),
+      cornerPaint,
+    );
     canvas.drawLine(
-        Offset(scanRect.right, scanRect.top + radius),
-        Offset(scanRect.right, scanRect.top + cornerLength),
-        cornerPaint);
+      Offset(scanRect.right, scanRect.top + radius),
+      Offset(scanRect.right, scanRect.top + cornerLength),
+      cornerPaint,
+    );
     canvas.drawArc(
-        Rect.fromLTWH(scanRect.right - radius * 2, scanRect.top, radius * 2, radius * 2),
-        -pi / 2, pi / 2, false, cornerPaint);
+      Rect.fromLTWH(
+        scanRect.right - radius * 2,
+        scanRect.top,
+        radius * 2,
+        radius * 2,
+      ),
+      -pi / 2,
+      pi / 2,
+      false,
+      cornerPaint,
+    );
 
     // Bottom-left
     canvas.drawLine(
-        Offset(scanRect.left + radius, scanRect.bottom),
-        Offset(scanRect.left + cornerLength, scanRect.bottom),
-        cornerPaint);
+      Offset(scanRect.left + radius, scanRect.bottom),
+      Offset(scanRect.left + cornerLength, scanRect.bottom),
+      cornerPaint,
+    );
     canvas.drawLine(
-        Offset(scanRect.left, scanRect.bottom - cornerLength),
-        Offset(scanRect.left, scanRect.bottom - radius),
-        cornerPaint);
+      Offset(scanRect.left, scanRect.bottom - cornerLength),
+      Offset(scanRect.left, scanRect.bottom - radius),
+      cornerPaint,
+    );
     canvas.drawArc(
-        Rect.fromLTWH(scanRect.left, scanRect.bottom - radius * 2, radius * 2, radius * 2),
-        pi / 2, pi / 2, false, cornerPaint);
+      Rect.fromLTWH(
+        scanRect.left,
+        scanRect.bottom - radius * 2,
+        radius * 2,
+        radius * 2,
+      ),
+      pi / 2,
+      pi / 2,
+      false,
+      cornerPaint,
+    );
 
     // Bottom-right
     canvas.drawLine(
-        Offset(scanRect.right - cornerLength, scanRect.bottom),
-        Offset(scanRect.right - radius, scanRect.bottom),
-        cornerPaint);
+      Offset(scanRect.right - cornerLength, scanRect.bottom),
+      Offset(scanRect.right - radius, scanRect.bottom),
+      cornerPaint,
+    );
     canvas.drawLine(
-        Offset(scanRect.right, scanRect.bottom - cornerLength),
-        Offset(scanRect.right, scanRect.bottom - radius),
-        cornerPaint);
+      Offset(scanRect.right, scanRect.bottom - cornerLength),
+      Offset(scanRect.right, scanRect.bottom - radius),
+      cornerPaint,
+    );
     canvas.drawArc(
-        Rect.fromLTWH(scanRect.right - radius * 2, scanRect.bottom - radius * 2, radius * 2,
-            radius * 2),
-        0, pi / 2, false, cornerPaint);
+      Rect.fromLTWH(
+        scanRect.right - radius * 2,
+        scanRect.bottom - radius * 2,
+        radius * 2,
+        radius * 2,
+      ),
+      0,
+      pi / 2,
+      false,
+      cornerPaint,
+    );
   }
 
   @override

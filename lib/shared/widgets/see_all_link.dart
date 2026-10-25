@@ -11,7 +11,7 @@ class SeeAllLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
+    final foreground = Theme.of(context).colorScheme.onSurface;
 
     return InkWell(
       onTap: onTap,
@@ -23,12 +23,12 @@ class SeeAllLink extends StatelessWidget {
             Text(
               'see_all'.tr(),
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: primary,
+                color: foreground,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(width: 2),
-            Icon(Icons.chevron_right_rounded, size: 18, color: primary),
+            Icon(Icons.chevron_right_rounded, size: 18, color: foreground),
           ],
         ),
       ),

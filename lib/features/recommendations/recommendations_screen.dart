@@ -162,34 +162,33 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
 
         return Scaffold(
           appBar: StandardAppBar(onRefresh: _loadData),
-          body:
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : RefreshIndicator(
-                    onRefresh: _loadData,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: AppDimens.pagePadding(context),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Header section
-                          _buildHeaderSection(),
+          body: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                  onRefresh: _loadData,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: AppDimens.pagePadding(context),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header section
+                        _buildHeaderSection(),
 
-                          const SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
-                          // Daily nutrition insights card
-                          _buildInsightsCard(),
+                        // Daily nutrition insights card
+                        _buildInsightsCard(),
 
-                          const SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
-                          // Recommendations section
-                          SectionHeader('improve_nutrition'.tr()),
-                          _buildRecommendationsList(),
-                        ],
-                      ),
+                        // Recommendations section
+                        SectionHeader('improve_nutrition'.tr()),
+                        _buildRecommendationsList(),
+                      ],
                     ),
                   ),
+                ),
         );
       },
     );
@@ -218,6 +217,10 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
       iconColor = AppPalette.of(context).success;
     }
 
+    final foreground = _avgCalories > _targetCalories * 1.2
+        ? AppPalette.of(context).warningText
+        : Theme.of(context).colorScheme.onSurface;
+
     return Card(
       elevation: 2,
       child: Container(
@@ -225,7 +228,10 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
-            colors: [iconColor.withValues(alpha: 0.1), iconColor.withValues(alpha: 0.05)],
+            colors: [
+              iconColor.withValues(alpha: 0.1),
+              iconColor.withValues(alpha: 0.05),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -240,7 +246,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
                   color: iconColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: iconColor, size: 32),
+                child: Icon(icon, color: foreground, size: 32),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -251,16 +257,14 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
                       'personalized_tips'.tr(),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: iconColor,
+                        color: foreground,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       message,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(
-                        color: AppPalette.of(context).textSecondary,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -290,7 +294,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               children: [
                 Icon(
                   Icons.insights,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 const SizedBox(width: 8),
                 Text(

@@ -1,3 +1,4 @@
+import 'package:plate_track_ai/core/themes/app_theme.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -29,7 +30,7 @@ class AppButton extends StatelessWidget {
 
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,
-      style: ElevatedButton.styleFrom(
+      style: AppTheme.filledButtonStyle(
         backgroundColor: isSecondary ? scheme.secondary : scheme.primary,
         // Overriding the background without its matching foreground left the
         // button on the theme's default white, which on the lime secondary is
@@ -88,15 +89,15 @@ class NutritionCard extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  color: color ?? Theme.of(context).colorScheme.primary,
+                  color: color ?? Theme.of(context).colorScheme.onSurface,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -104,9 +105,9 @@ class NutritionCard extends StatelessWidget {
             Text(
               value,
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: color ?? Theme.of(context).colorScheme.primary,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: color ?? Theme.of(context).colorScheme.onSurface,
+              ),
             ),
           ],
         ),
@@ -133,10 +134,7 @@ class FrameGuideline extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        border: Border.all(
-          color: color,
-          width: strokeWidth,
-        ),
+        border: Border.all(color: color, width: strokeWidth),
         borderRadius: BorderRadius.circular(12),
       ),
     );
@@ -146,10 +144,7 @@ class FrameGuideline extends StatelessWidget {
 class LoadingIndicator extends StatelessWidget {
   final String message;
 
-  const LoadingIndicator({
-    super.key,
-    required this.message,
-  });
+  const LoadingIndicator({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -159,10 +154,7 @@ class LoadingIndicator extends StatelessWidget {
         children: [
           const CircularProgressIndicator(),
           const SizedBox(height: 16),
-          Text(
-            message,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
+          Text(message, style: Theme.of(context).textTheme.bodyLarge),
         ],
       ),
     );
@@ -200,11 +192,14 @@ class FoodItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // easy_localization's `context.locale` requires its widget above us; fall
     // back to the framework locale so the card also renders outside the app.
-    final localeName = (EasyLocalization.of(context)?.locale ??
-            Localizations.localeOf(context))
-        .toString();
-    final timeString = DateFormat(timeFormat ?? 'MMM d, h:mm a', localeName)
-        .format(item.timestamp);
+    final localeName =
+        (EasyLocalization.of(context)?.locale ??
+                Localizations.localeOf(context))
+            .toString();
+    final timeString = DateFormat(
+      timeFormat ?? 'MMM d, h:mm a',
+      localeName,
+    ).format(item.timestamp);
     final double mass = item.nutritionFacts.mass ?? 100.0;
     final int actualCalories = ((item.calories * mass) / 100.0).toInt();
     final palette = AppPalette.of(context);
@@ -253,7 +248,7 @@ class FoodItemCard extends StatelessWidget {
                   Text(
                     details,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: palette.textTertiary,
+                      color: palette.textSecondary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -301,7 +296,7 @@ class FoodItemCard extends StatelessWidget {
               Text(
                 'kcal'.tr(),
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: palette.textTertiary,
+                  color: palette.textSecondary,
                 ),
               ),
             ],
@@ -326,7 +321,10 @@ class _Thumbnail extends StatelessWidget {
     return Container(
       width: 58,
       height: 58,
-      decoration: BoxDecoration(borderRadius: radius, color: palette.placeholder),
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        color: palette.placeholder,
+      ),
       clipBehavior: Clip.antiAlias,
       child: path == null
           ? Icon(Icons.restaurant, color: palette.placeholderIcon, size: 24)
@@ -362,7 +360,7 @@ class _DeleteButton extends StatelessWidget {
         child: Icon(
           Icons.close_rounded,
           size: 16,
-          color: palette.textTertiary,
+          color: palette.textSecondary,
         ),
       ),
     );

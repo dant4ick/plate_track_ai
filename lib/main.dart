@@ -22,7 +22,7 @@ import 'package:plate_track_ai/shared/models/cached_barcode_product_adapter.dart
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize EasyLocalization
   await EasyLocalization.ensureInitialized();
 
@@ -154,13 +154,12 @@ class _AppInitializerState extends State<AppInitializer> {
 
   Future<void> _onProfileSetupComplete() async {
     try {
-      
       // Add a small delay to ensure the profile was saved
       await Future.delayed(const Duration(milliseconds: 100));
-      
+
       // Re-initialize the service to check if profile was saved
       await _userProfileService.initialize();
-      
+
       if (mounted) {
         setState(() {
           _hasUserProfile = _userProfileService.hasUserProfile;
@@ -175,25 +174,23 @@ class _AppInitializerState extends State<AppInitializer> {
 
   @override
   Widget build(BuildContext context) {
-    
     if (_isLoading) {
       return Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AppLogo(
-                size: 64,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              AppLogo(size: 64, color: Theme.of(context).colorScheme.primary),
               const SizedBox(height: 24),
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
               Text(
                 'loading_plate_track'.tr(),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
             ],
           ),
@@ -202,9 +199,7 @@ class _AppInitializerState extends State<AppInitializer> {
     }
 
     if (!_hasUserProfile) {
-      return UserSetupScreen(
-        onComplete: _onProfileSetupComplete,
-      );
+      return UserSetupScreen(onComplete: _onProfileSetupComplete);
     }
 
     return const HomeScreen();
@@ -304,8 +299,7 @@ class _HomeScreenState extends State<HomeScreen>
   static const double _subSize = 48.0;
 
   /// Right inset that centres a [_subSize] circle over the action button.
-  static const double _subRightInset =
-      _fabMargin + _fabSize / 2 - _subSize / 2;
+  static const double _subRightInset = _fabMargin + _fabSize / 2 - _subSize / 2;
 
   // ── Main dial button ─────────────────────────────────────────────────────────
 
@@ -319,7 +313,7 @@ class _HomeScreenState extends State<HomeScreen>
       elevation: 6,
       borderRadius: BorderRadius.circular(AppDimens.radiusSquircle),
       color: fabTheme.backgroundColor ?? Theme.of(context).colorScheme.primary,
-      shadowColor: AppColors.shadowMedium,
+      shadowColor: AppPalette.of(context).shadow,
       child: InkWell(
         onTap: _toggleDial,
         borderRadius: BorderRadius.circular(AppDimens.radiusSquircle),
@@ -338,7 +332,9 @@ class _HomeScreenState extends State<HomeScreen>
               angle: _dialController.value * math.pi / 4,
               child: Icon(
                 _showCloseIcon ? Icons.close_rounded : Icons.add_rounded,
-                color: AppColors.onAccent,
+                color:
+                    fabTheme.foregroundColor ??
+                    Theme.of(context).colorScheme.onPrimary,
                 size: 32,
               ),
             ),
@@ -373,14 +369,16 @@ class _HomeScreenState extends State<HomeScreen>
             children: [
               // Label pill
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).scaffoldBackgroundColor,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.shadowMedium,
+                      color: AppPalette.of(context).shadow,
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -389,9 +387,9 @@ class _HomeScreenState extends State<HomeScreen>
                 child: Text(
                   label,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: color,
-                      ),
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -406,7 +404,11 @@ class _HomeScreenState extends State<HomeScreen>
                   child: SizedBox(
                     width: _subSize,
                     height: _subSize,
-                    child: Icon(icon, color: AppColors.onAccent, size: 22),
+                    child: Icon(
+                      icon,
+                      color: AppPalette.of(context).foregroundOn(color),
+                      size: 22,
+                    ),
                   ),
                 ),
               ),

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import 'package:plate_track_ai/core/themes/app_colors.dart';
-
 class AppLogo extends StatelessWidget {
   final double size;
   final Color? color;
@@ -16,19 +14,17 @@ class AppLogo extends StatelessWidget {
       'assets/icons/app_icon.svg',
       width: size,
       height: size,
-      colorFilter:
-          color != null
-              ? ColorFilter.mode(color!, BlendMode.srcIn)
-              : ColorFilter.mode(
-                Theme.of(context).colorScheme.primary,
-                BlendMode.srcIn,
-              ),
+      colorFilter: color != null
+          ? ColorFilter.mode(color!, BlendMode.srcIn)
+          : ColorFilter.mode(
+              Theme.of(context).colorScheme.primary,
+              BlendMode.srcIn,
+            ),
     );
   }
 }
 
-/// The brand mark as a filled squircle tile: the glyph knocked out in white on
-/// the brand colour, rather than tinted onto the page.
+/// The brand mark as a filled squircle tile with a paired foreground.
 class AppLogoMark extends StatelessWidget {
   const AppLogoMark({super.key, this.size = 34});
 
@@ -45,7 +41,10 @@ class AppLogoMark extends StatelessWidget {
         borderRadius: BorderRadius.circular(size * 0.3),
       ),
       alignment: Alignment.center,
-      child: AppLogo(size: size * 0.62, color: AppColors.onAccent),
+      child: AppLogo(
+        size: size * 0.62,
+        color: Theme.of(context).colorScheme.onPrimary,
+      ),
     );
   }
 }

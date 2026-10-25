@@ -1,3 +1,4 @@
+import 'package:plate_track_ai/core/themes/app_theme.dart';
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -73,7 +74,7 @@ class MealDetailScreen extends StatelessWidget {
             Text(
               '${'logged_at'.tr()}: $logged',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: palette.textTertiary,
+                color: palette.textSecondary,
               ),
             ),
             const SizedBox(height: AppDimens.sectionGap),
@@ -98,21 +99,24 @@ class MealDetailScreen extends StatelessWidget {
                   _FactRow(
                     icon: Icons.fitness_center,
                     label: 'protein'.tr(),
-                    value: '${per(item.nutritionFacts.protein).round()} ${'g'.tr()}',
+                    value:
+                        '${per(item.nutritionFacts.protein).round()} ${'g'.tr()}',
                     color: palette.proteinInk,
                   ),
                   const SizedBox(height: 14),
                   _FactRow(
                     icon: Icons.grain,
                     label: 'carbs'.tr(),
-                    value: '${per(item.nutritionFacts.carbs).round()} ${'g'.tr()}',
+                    value:
+                        '${per(item.nutritionFacts.carbs).round()} ${'g'.tr()}',
                     color: palette.carbsInk,
                   ),
                   const SizedBox(height: 14),
                   _FactRow(
                     icon: Icons.opacity,
                     label: 'fat'.tr(),
-                    value: '${per(item.nutritionFacts.fat).round()} ${'g'.tr()}',
+                    value:
+                        '${per(item.nutritionFacts.fat).round()} ${'g'.tr()}',
                     color: palette.fatInk,
                   ),
                 ],
@@ -125,9 +129,9 @@ class MealDetailScreen extends StatelessWidget {
         children: [
           ElevatedButton.icon(
             onPressed: () => _delete(context),
-            style: ElevatedButton.styleFrom(
+            style: AppTheme.filledButtonStyle(
               backgroundColor: palette.danger,
-              foregroundColor: AppColors.onAccent,
+              foregroundColor: Theme.of(context).colorScheme.onError,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppDimens.radiusControl),
@@ -204,9 +208,7 @@ class _FactRow extends StatelessWidget {
           child: Icon(icon, color: color, size: 18),
         ),
         const SizedBox(width: 12),
-        Expanded(
-          child: Text(label, style: theme.textTheme.bodyMedium),
-        ),
+        Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
         Text(
           value,
           style: theme.textTheme.titleSmall?.copyWith(

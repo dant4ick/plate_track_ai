@@ -44,16 +44,16 @@ Widget buildFoodItemSection({
               const SizedBox(height: 16),
               Text(
                 'no_food_items_yet'.tr(),
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 6),
               Text(
                 'start_tracking_message'.tr(),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: palette.textTertiary,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: palette.textSecondary),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -92,13 +92,17 @@ Future<void> _openDetail(
   FoodItem item,
   VoidCallback refreshCallback,
 ) async {
-  await Navigator.of(context).push(
-    MaterialPageRoute(builder: (_) => MealDetailScreen(item: item)),
-  );
+  await Navigator.of(
+    context,
+  ).push(MaterialPageRoute(builder: (_) => MealDetailScreen(item: item)));
   refreshCallback();
 }
 
-Future<void> _handleDelete(BuildContext context, FoodItem item, VoidCallback refreshCallback) async {
+Future<void> _handleDelete(
+  BuildContext context,
+  FoodItem item,
+  VoidCallback refreshCallback,
+) async {
   final FoodStorageService storageService = FoodStorageService();
   await showDeleteConfirmationDialog(
     context: context,

@@ -28,7 +28,9 @@ class SoftCard extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color ?? AppColors.surfaceLight,
+        color:
+            Theme.of(context).cardTheme.color ??
+            Theme.of(context).colorScheme.surface,
         borderRadius: radius,
         boxShadow: AppDimens.cardShadow(palette),
       ),

@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:plate_track_ai/core/themes/app_colors.dart';
 import 'package:plate_track_ai/core/themes/app_dimens.dart';
 
 /// What the user typed into the weight sheet.
@@ -109,8 +108,7 @@ class _WeightGoalSheetState extends State<WeightGoalSheet> {
       padding: EdgeInsets.only(
         left: AppDimens.gutter,
         right: AppDimens.gutter,
-        bottom:
-            AppDimens.gutter + (keyboard > 0 ? keyboard : systemBar),
+        bottom: AppDimens.gutter + (keyboard > 0 ? keyboard : systemBar),
       ),
       child: Form(
         key: _formKey,
@@ -120,9 +118,9 @@ class _WeightGoalSheetState extends State<WeightGoalSheet> {
           children: [
             Text(
               'update_weight'.tr(),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 18),
             _WeightField(
@@ -158,10 +156,7 @@ class _WeightGoalSheetState extends State<WeightGoalSheet> {
               },
             ),
             const SizedBox(height: 22),
-            ElevatedButton(
-              onPressed: _save,
-              child: Text('save'.tr()),
-            ),
+            ElevatedButton(onPressed: _save, child: Text('save'.tr())),
             const SizedBox(height: 6),
           ],
         ),
@@ -186,14 +181,12 @@ class _WeightField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-      ],
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
       textInputAction: TextInputAction.done,
       decoration: InputDecoration(
         labelText: label,
         suffixText: 'kg'.tr(),
-        suffixStyle: TextStyle(color: AppPalette.of(context).textTertiary),
+        suffixStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       ),
       validator: validator,
     );

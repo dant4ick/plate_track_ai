@@ -135,7 +135,7 @@ class WeightChart extends StatelessWidget {
     final maxY = (hi + 2).ceilToDouble();
 
     final labelStyle = theme.textTheme.bodySmall?.copyWith(
-      color: palette.textTertiary,
+      color: palette.textSecondary,
     );
     final dateFormat = DateFormat('d MMM', context.locale.toString());
 
@@ -154,7 +154,7 @@ class WeightChart extends StatelessWidget {
                 isCurved: spots.length > 2,
                 curveSmoothness: 0.2,
                 preventCurveOverShooting: true,
-                color: theme.colorScheme.primary,
+                color: palette.accentInk,
                 barWidth: 3,
                 isStrokeCapRound: true,
                 dotData: FlDotData(
@@ -162,15 +162,15 @@ class WeightChart extends StatelessWidget {
                   getDotPainter: (spot, percent, bar, index) =>
                       FlDotCirclePainter(
                         radius: 4,
-                        color: theme.colorScheme.primary,
+                        color: palette.accentInk,
                         strokeWidth: 2,
                         strokeColor:
-                            theme.cardTheme.color ?? AppColors.surfaceLight,
+                            theme.cardTheme.color ?? theme.colorScheme.surface,
                       ),
                 ),
                 belowBarData: BarAreaData(
                   show: true,
-                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                  color: palette.accentInk.withValues(alpha: 0.12),
                 ),
               ),
             ],
@@ -180,14 +180,14 @@ class WeightChart extends StatelessWidget {
                     horizontalLines: [
                       HorizontalLine(
                         y: goal!,
-                        color: theme.colorScheme.secondary,
+                        color: palette.textSecondary,
                         strokeWidth: 2,
                         dashArray: [6, 4],
                         label: HorizontalLineLabel(
                           show: true,
                           alignment: Alignment.topRight,
                           style: labelStyle?.copyWith(
-                            color: theme.colorScheme.secondary,
+                            color: theme.colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                           labelResolver: (_) =>
@@ -344,7 +344,7 @@ class _EntryRow extends StatelessWidget {
             Text(
               '${delta > 0 ? '+' : '−'}${WeightCard.format(delta.abs())}',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: palette.textTertiary,
+                color: palette.textSecondary,
               ),
             ),
             const SizedBox(width: 12),
