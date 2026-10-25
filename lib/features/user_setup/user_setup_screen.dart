@@ -661,8 +661,6 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 '${_calculatedBMR.toInt()} ${'kcal'.tr()}/${'day'.tr()}',
                 'bmr_description'.tr(),
                 Icons.local_fire_department,
-                AppPalette.of(context).warning,
-                ink: AppPalette.of(context).warningText,
               ),
 
               const SizedBox(height: 12),
@@ -672,8 +670,6 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 '${_calculatedTDEE.toInt()} ${'kcal'.tr()}/${'day'.tr()}',
                 'tdee_description'.tr(),
                 Icons.restaurant,
-                AppPalette.of(context).success,
-                ink: Theme.of(context).colorScheme.onSurface,
               ),
             ] else ...[
               Container(
@@ -712,26 +708,17 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     String value,
     String subtitle,
     IconData icon,
-    Color color, {
-    required Color ink,
-  }) {
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: AppPalette.of(context).border),
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: ink, size: 24),
-          ),
+          Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 24),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -748,7 +735,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                   value,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: ink,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 Text(

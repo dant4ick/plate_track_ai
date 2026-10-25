@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:plate_track_ai/shared/widgets/soft_card.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:plate_track_ai/core/services/local_data_observer.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/shared/models/user_profile.dart';
 import 'package:plate_track_ai/features/user_setup/user_setup_screen.dart';
@@ -24,25 +25,37 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
   UserProfile? _currentProfile;
   bool _isLoading = true;
 
+  late final LocalDataObserver _dataObserver;
+
   @override
   void initState() {
     super.initState();
+    _dataObserver = LocalDataObserver(
+      onChanged: _loadUserProfile,
+      changes: [_userProfileService.onDataChanged],
+    );
     _loadUserProfile();
   }
 
+  @override
+  void dispose() {
+    _dataObserver.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadUserProfile() async {
-    setState(() {
-      _isLoading = true;
-    });
+    if (!mounted) return;
 
     try {
       await _userProfileService.initialize();
       final profile = _userProfileService.currentProfile;
+      if (!mounted) return;
       setState(() {
         _currentProfile = profile;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -118,7 +131,7 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: StandardAppBar(onRefresh: _loadUserProfile),
+      appBar: const StandardAppBar(),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _currentProfile == null

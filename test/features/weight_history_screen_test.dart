@@ -21,7 +21,9 @@ void main() {
     await initLocalization();
     SharedPreferences.setMockInitialValues({});
     await setUpTestHive();
-    if (!Hive.isAdapterRegistered(2)) Hive.registerAdapter(UserProfileAdapter());
+    if (!Hive.isAdapterRegistered(2)) {
+      Hive.registerAdapter(UserProfileAdapter());
+    }
     if (!Hive.isAdapterRegistered(3)) Hive.registerAdapter(GenderAdapter());
     if (!Hive.isAdapterRegistered(4)) {
       Hive.registerAdapter(ActivityLevelAdapter());
@@ -67,5 +69,22 @@ void main() {
     expect(find.text('71 kg'), findsOneWidget);
     expect(find.text('74 kg'), findsOneWidget);
     expect(find.text('−3'), findsOneWidget);
+
+    final editor = UserProfileService();
+    await editor.initialize();
+    await editor.updateProfile(weight: 69, goalWeight: 64);
+    await tester.pumpAndSettle();
+    expect(tester.widget<WeightCard>(find.byType(WeightCard)).current, 69);
+    expect(
+      tester
+          .widget<LineChart>(find.byType(LineChart))
+          .data
+          .extraLinesData
+          .horizontalLines
+          .single
+          .y,
+      64,
+    );
+    expect(find.text('69 kg'), findsOneWidget);
   });
 }

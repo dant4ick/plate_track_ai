@@ -159,6 +159,9 @@ void main() {
     expect(find.text('All time'), findsNothing);
     expect(find.byType(TabBar), findsNothing);
 
+    expect(find.byType(RefreshIndicator), findsNothing);
+    expect(find.byTooltip('Refresh'), findsNothing);
+
     await tester.tap(find.byKey(const ValueKey('calorie-bar-5')));
     await tester.pumpAndSettle();
     expect(text('stats-total-calories'), '600 kcal');
@@ -250,6 +253,13 @@ void main() {
         }
       }
     }
+    final editor = UserProfileService();
+    await editor.initialize();
+    await editor.updateProfile(weight: 85);
+    await tester.pumpAndSettle();
+    dailyGoal = editor.getNutritionTargets()!['calories']!;
+    expect(chart().dailyTarget, dailyGoal);
+
     await select('День');
     // Hive's stream listener was registered in setUpAll's real async zone.
     await tester.runAsync(() async {

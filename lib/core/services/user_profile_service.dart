@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:plate_track_ai/core/services/weight_history_service.dart';
@@ -8,7 +10,11 @@ import 'package:flutter/foundation.dart';
 class UserProfileService {
   static const String _userProfileBoxName = 'userProfile';
   static const String _currentUserIdKey = 'currentUserId';
-  
+  static final _changes = StreamController<void>.broadcast();
+
+  // Profile editors and readers use separate service instances.
+  Stream<void> get onDataChanged => _changes.stream;
+
   Box<UserProfile>? _userProfileBox;
   final WeightHistoryService _weightHistory = WeightHistoryService();
   UserProfile? _currentProfile;
@@ -28,10 +34,10 @@ class UserProfileService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final currentUserId = prefs.getString(_currentUserIdKey);
-      
-      if (currentUserId != null && _userProfileBox != null) {
-        _currentProfile = _userProfileBox!.get(currentUserId);
-      }
+
+      _currentProfile = currentUserId == null
+          ? null
+          : _userProfileBox?.get(currentUserId);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('UserProfileService: Error loading current profile: $e');
@@ -71,12 +77,13 @@ class UserProfileService {
     await _userProfileBox!.put(profile.id, profile);
     // The first point on the weight chart is the weight the profile opened with.
     await _weightHistory.record(weight, at: profile.createdAt);
-    
+
     // Set as current profile
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_currentUserIdKey, profile.id);
-    
+
     _currentProfile = profile;
+    _changes.add(null);
     return profile;
   }
 
@@ -118,7 +125,8 @@ class UserProfileService {
       await _weightHistory.record(weight);
     }
     _currentProfile = updatedProfile;
-    
+    _changes.add(null);
+
     return updatedProfile;
   }
 
@@ -128,11 +136,12 @@ class UserProfileService {
     }
 
     await _userProfileBox!.delete(_currentProfile!.id);
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_currentUserIdKey);
-    
+
     _currentProfile = null;
+    _changes.add(null);
   }
 
   // Calculate user's daily calorie needs based on current profile
@@ -162,7 +171,7 @@ class UserProfileService {
     // Protein: 10-35% of total calories (using 20%)
     // Carbs: 45-65% of total calories (using 50%)
     // Fat: 20-35% of total calories (using 30%)
-    
+
     return {
       'calories': tdee,
       'protein': (tdee * 0.20) / 4, // 4 calories per gram of protein

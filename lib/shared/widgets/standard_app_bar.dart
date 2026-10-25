@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 
 class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? titleText;
   final bool showLogo;
   final List<Widget>? actions;
-  final VoidCallback? onRefresh;
   final Widget? leading;
   final bool automaticallyImplyLeading;
   final Color? backgroundColor;
@@ -18,7 +16,6 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.titleText,
     this.showLogo = true,
     this.actions,
-    this.onRefresh,
     this.leading,
     this.automaticallyImplyLeading = true,
     this.backgroundColor,
@@ -31,24 +28,6 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
     final titleStyle =
         Theme.of(context).appBarTheme.titleTextStyle ??
         Theme.of(context).textTheme.titleLarge;
-    List<Widget> appBarActions = [];
-
-    // Add refresh button if callback is provided
-    if (onRefresh != null) {
-      appBarActions.add(
-        IconButton(
-          icon: const Icon(Icons.refresh),
-          onPressed: onRefresh,
-          tooltip: 'refresh'.tr(),
-        ),
-      );
-    }
-
-    // Add any additional actions
-    if (actions != null) {
-      appBarActions.addAll(actions!);
-    }
-
     return AppBar(
       titleSpacing: 16,
       scrolledUnderElevation: 0,
@@ -58,7 +37,7 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
                 : const AppLogoWithText())
           : (titleText != null ? Text(titleText!) : null),
       elevation: 0,
-      actions: appBarActions.isNotEmpty ? appBarActions : null,
+      actions: actions,
       leading: leading,
       automaticallyImplyLeading: automaticallyImplyLeading,
       backgroundColor: backgroundColor,

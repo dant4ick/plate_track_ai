@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import 'package:plate_track_ai/core/services/local_data_observer.dart';
 import 'package:plate_track_ai/core/services/food_recognition_service.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
@@ -49,11 +48,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// Daily targets from the profile's TDEE, or null until one exists.
   Map<String, double>? _targets;
 
-  StreamSubscription<void>? _dataChangeSubscription;
+  late final LocalDataObserver _dataObserver;
 
   @override
   void initState() {
     super.initState();
+    _dataObserver = LocalDataObserver(
+      onChanged: _loadDashboardData,
+      changes: [
+        _storageService.onDataChanged,
+        _userProfileService.onDataChanged,
+      ],
+    );
     _initializeServices();
   }
 
@@ -61,28 +67,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _recognitionService.initialize();
 
     await _storageService.initialize();
-
-    _dataChangeSubscription = _storageService.onDataChanged.listen((_) {
-      _loadDashboardData();
-    });
+    if (!mounted) return;
 
     await _loadDashboardData();
   }
 
   @override
   void dispose() {
-    _dataChangeSubscription?.cancel();
+    _dataObserver.dispose();
     _recognitionService.dispose();
     super.dispose();
   }
 
   Future<void> _loadDashboardData() async {
     if (!mounted) return;
-    setState(() => _isLoading = true);
 
     try {
-      // Other screens write the profile through their own service instance,
-      // so this one re-reads it rather than trusting what it cached.
       await _userProfileService.initialize();
 
       final today = DateTime.now();
@@ -130,54 +130,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadDashboardData,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                // 96 clears the floating action button; pagePadding adds the
-                // system navigation inset underneath that.
-                padding: AppDimens.pagePadding(context, bottom: 96),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (_profile != null) ...[
-                      SectionHeader(
-                        'your_weight'.tr(),
-                        trailing: SeeAllLink(onTap: _openWeightHistory),
-                      ),
-                      WeightCard(
-                        current: _profile!.weight,
-                        start: _profile!.effectiveStartWeight,
-                        goal: _profile!.goalWeight,
-                        progress: _profile!.weightProgress,
-                        onTap: _openWeightHistory,
-                      ),
-                      const SizedBox(height: AppDimens.sectionGap),
-                    ],
-
-                    // Calorie history lives behind the same card and link.
+          : SingleChildScrollView(
+              // 96 clears the floating action button; pagePadding adds the
+              // system navigation inset underneath that.
+              padding: AppDimens.pagePadding(context, bottom: 96),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_profile != null) ...[
                     SectionHeader(
-                      'your_calories'.tr(),
-                      trailing: SeeAllLink(onTap: _openStats),
+                      'your_weight'.tr(),
+                      trailing: SeeAllLink(onTap: _openWeightHistory),
                     ),
-                    _SummaryCard(
-                      totals: _today,
-                      targets: _targets,
-                      onTap: _openStats,
+                    WeightCard(
+                      current: _profile!.weight,
+                      start: _profile!.effectiveStartWeight,
+                      goal: _profile!.goalWeight,
+                      progress: _profile!.weightProgress,
+                      onTap: _openWeightHistory,
                     ),
                     const SizedBox(height: AppDimens.sectionGap),
-
-                    buildFoodItemSection(
-                      context: context,
-                      items: _recentFoodItems,
-                      refreshCallback: _loadDashboardData,
-                      trailing: SeeAllLink(onTap: _openMeals),
-                      // The full list groups by day and shows the time; here
-                      // the meals are simply the latest few.
-                      showTimestamp: false,
-                    ),
                   ],
-                ),
+
+                  // Calorie history lives behind the same card and link.
+                  SectionHeader(
+                    'your_calories'.tr(),
+                    trailing: SeeAllLink(onTap: _openStats),
+                  ),
+                  _SummaryCard(
+                    totals: _today,
+                    targets: _targets,
+                    onTap: _openStats,
+                  ),
+                  const SizedBox(height: AppDimens.sectionGap),
+
+                  buildFoodItemSection(
+                    context: context,
+                    items: _recentFoodItems,
+                    refreshCallback: _loadDashboardData,
+                    trailing: SeeAllLink(onTap: _openMeals),
+                    // The full list groups by day and shows the time; here
+                    // the meals are simply the latest few.
+                    showTimestamp: false,
+                  ),
+                ],
               ),
             ),
     );

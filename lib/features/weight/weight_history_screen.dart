@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import 'package:plate_track_ai/core/services/local_data_observer.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/core/services/weight_history_service.dart';
 import 'package:plate_track_ai/core/themes/app_colors.dart';
@@ -32,10 +33,22 @@ class _WeightHistoryScreenState extends State<WeightHistoryScreen> {
   List<WeightEntry> _series = const [];
   bool _isLoading = true;
 
+  late final LocalDataObserver _dataObserver;
+
   @override
   void initState() {
     super.initState();
+    _dataObserver = LocalDataObserver(
+      onChanged: _load,
+      changes: [_profileService.onDataChanged],
+    );
     _load();
+  }
+
+  @override
+  void dispose() {
+    _dataObserver.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -154,7 +167,7 @@ class WeightChart extends StatelessWidget {
                 isCurved: spots.length > 2,
                 curveSmoothness: 0.2,
                 preventCurveOverShooting: true,
-                color: palette.accentInk,
+                color: theme.colorScheme.primary,
                 barWidth: 3,
                 isStrokeCapRound: true,
                 dotData: FlDotData(
@@ -162,7 +175,7 @@ class WeightChart extends StatelessWidget {
                   getDotPainter: (spot, percent, bar, index) =>
                       FlDotCirclePainter(
                         radius: 4,
-                        color: palette.accentInk,
+                        color: theme.colorScheme.primary,
                         strokeWidth: 2,
                         strokeColor:
                             theme.cardTheme.color ?? theme.colorScheme.surface,
@@ -170,7 +183,7 @@ class WeightChart extends StatelessWidget {
                 ),
                 belowBarData: BarAreaData(
                   show: true,
-                  color: palette.accentInk.withValues(alpha: 0.12),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
                 ),
               ),
             ],

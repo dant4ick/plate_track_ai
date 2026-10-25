@@ -18,8 +18,6 @@ import 'package:plate_track_ai/shared/models/food_item_adapters.dart';
 import 'package:plate_track_ai/shared/models/user_profile_adapters.dart';
 import 'package:plate_track_ai/shared/models/cached_barcode_product_adapter.dart';
 
-// TODO: fix autorefresh in stats_tab after food recognition
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

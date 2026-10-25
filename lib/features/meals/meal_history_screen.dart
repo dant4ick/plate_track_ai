@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import 'package:plate_track_ai/core/services/local_data_observer.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/core/themes/app_colors.dart';
 import 'package:plate_track_ai/core/themes/app_dimens.dart';
@@ -26,18 +25,22 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
 
   List<MealDay> _days = const [];
   bool _isLoading = true;
-  StreamSubscription<void>? _changes;
+
+  late final LocalDataObserver _dataObserver;
 
   @override
   void initState() {
     super.initState();
-    _changes = _storage.onDataChanged.listen((_) => _load());
+    _dataObserver = LocalDataObserver(
+      onChanged: _load,
+      changes: [_storage.onDataChanged],
+    );
     _load();
   }
 
   @override
   void dispose() {
-    _changes?.cancel();
+    _dataObserver.dispose();
     super.dispose();
   }
 
@@ -51,9 +54,9 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
   }
 
   Future<void> _open(FoodItem item) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => MealDetailScreen(item: item)),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => MealDetailScreen(item: item)));
     // The storage stream normally covers this; the explicit reload keeps the
     // list right even if the stream fires before the box has settled.
     await _load();
@@ -66,27 +69,23 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _days.isEmpty
-              ? Padding(
-                  padding: AppDimens.pagePadding(context),
-                  child: buildFoodItemSection(
-                    context: context,
-                    items: const [],
-                    refreshCallback: _load,
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _load,
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: AppDimens.pagePadding(context),
-                    itemCount: _days.length,
-                    itemBuilder: (context, index) => _DaySection(
-                      day: _days[index],
-                      isLast: index == _days.length - 1,
-                      onOpen: _open,
-                    ),
-                  ),
-                ),
+          ? Padding(
+              padding: AppDimens.pagePadding(context),
+              child: buildFoodItemSection(
+                context: context,
+                items: const [],
+                refreshCallback: _load,
+              ),
+            )
+          : ListView.builder(
+              padding: AppDimens.pagePadding(context),
+              itemCount: _days.length,
+              itemBuilder: (context, index) => _DaySection(
+                day: _days[index],
+                isLast: index == _days.length - 1,
+                onOpen: _open,
+              ),
+            ),
     );
   }
 }

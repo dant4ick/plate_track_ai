@@ -6,6 +6,7 @@ import 'package:plate_track_ai/shared/models/cached_barcode_product.dart';
 import 'package:plate_track_ai/shared/widgets/bottom_action_bar.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
+import 'package:plate_track_ai/shared/widgets/soft_card.dart';
 import 'package:plate_track_ai/shared/widgets/status_snack_bar.dart';
 import 'package:plate_track_ai/core/services/barcode_cache_service.dart';
 import 'package:plate_track_ai/core/services/open_food_facts_service.dart';
@@ -31,7 +32,6 @@ class BarcodeResultScreen extends StatefulWidget {
 
 class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
   _BarcodeResultState _state = _BarcodeResultState.loading;
-  bool _fromCache = false;
   bool _saveToLibrary = true;
 
   late TextEditingController _nameController;
@@ -105,7 +105,6 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
 
     setState(() {
       _state = _BarcodeResultState.found;
-      _fromCache = fromCache;
       _saveToLibrary = !fromCache;
     });
   }
@@ -371,8 +370,15 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildStatusCard(),
-                const SizedBox(height: 16),
+                if (_state == _BarcodeResultState.notFound) ...[
+                  SoftCard(
+                    child: Text(
+                      'barcode_not_found_message'.tr(),
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 // Single ListenableBuilder drives both the warning banner and
                 // per-card highlighting so allZero is computed only once.
                 ListenableBuilder(
@@ -453,81 +459,6 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildStatusCard() {
-    final isFound = _state == _BarcodeResultState.found;
-    final title = _fromCache
-        ? 'barcode_product_found_cache'.tr()
-        : isFound
-        ? 'barcode_product_found'.tr()
-        : 'barcode_product_not_found'.tr();
-    final subtitle = isFound
-        ? 'review_and_adjust_nutrition'.tr()
-        : 'barcode_not_found_message'.tr();
-    final color = isFound
-        ? Theme.of(context).colorScheme.primary
-        : Theme.of(context).colorScheme.secondary;
-    final icon = isFound ? Icons.check_circle_outline : Icons.edit_note;
-
-    return Card(
-      elevation: 2,
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              color.withValues(alpha: 0.1),
-              color.withValues(alpha: 0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  color: Theme.of(context).colorScheme.onSurface,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

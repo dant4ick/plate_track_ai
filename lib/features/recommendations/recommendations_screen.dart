@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:plate_track_ai/core/services/local_data_observer.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/features/recommendations/nutrition_advice.dart';
@@ -19,7 +20,7 @@ class RecommendationsScreen extends StatefulWidget {
 class _RecommendationsScreenState extends State<RecommendationsScreen> {
   final FoodStorageService _storageService = FoodStorageService();
   final UserProfileService _userProfileService = UserProfileService();
-  bool _isLoading = false;
+  bool _isLoading = true;
 
   // Nutrition summary for the past week
   double _avgCalories = 0;
@@ -37,46 +38,37 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
   // screen and the dashboard can never disagree about what to suggest.
   List<NutritionTip> _recommendations = [];
 
+  late final LocalDataObserver _dataObserver;
+
   @override
   void initState() {
     super.initState();
-    // Initialize services and load data
-    _initializeServices();
-  }
-
-  Future<void> _initializeServices() async {
-    // Initialize the storage service
-    _storageService.initialize();
-
-    // Initialize user profile service and load targets
-    await _userProfileService.initialize();
-    _loadUserTargets();
-
-    // Load food data
+    _dataObserver = LocalDataObserver(
+      onChanged: _loadData,
+      changes: [
+        _storageService.onDataChanged,
+        _userProfileService.onDataChanged,
+      ],
+    );
     _loadData();
   }
 
-  void _loadUserTargets() {
-    final targets = _userProfileService.getNutritionTargets();
-    if (targets != null) {
-      setState(() {
-        _targetCalories = targets['calories']!;
-        _targetProtein = targets['protein']!;
-        _targetCarbs = targets['carbs']!;
-        _targetFat = targets['fat']!;
-      });
-    }
+  @override
+  void dispose() {
+    _dataObserver.dispose();
+    super.dispose();
   }
 
-  // Don't need to load data in the build method, it will be triggered by the ValueListenable
   Future<void> _loadData() async {
     if (!mounted) return;
 
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
+      await _userProfileService.initialize();
+      final targets = _userProfileService.getNutritionTargets();
+      _targetCalories = targets?['calories'] ?? 2000;
+      _targetProtein = targets?['protein'] ?? 80;
+      _targetCarbs = targets?['carbs'] ?? 250;
+      _targetFat = targets?['fat'] ?? 70;
       final now = DateTime.now();
       int daysWithData = 0;
       double totalCalories = 0;
@@ -154,126 +146,22 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: _storageService.foodBoxListenable,
-      builder: (context, box, child) {
-        // Don't call _loadData() here - that was causing the error
-        // Instead, call it inside didUpdateWidget or use a useEffect pattern
-
-        return Scaffold(
-          appBar: StandardAppBar(onRefresh: _loadData),
-          body: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: AppDimens.pagePadding(context),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header section
-                        _buildHeaderSection(),
-
-                        const SizedBox(height: 24),
-
-                        // Daily nutrition insights card
-                        _buildInsightsCard(),
-
-                        const SizedBox(height: 24),
-
-                        // Recommendations section
-                        SectionHeader('improve_nutrition'.tr()),
-                        _buildRecommendationsList(),
-                      ],
-                    ),
-                  ),
-                ),
-        );
-      },
-    );
-  }
-
-  Widget _buildHeaderSection() {
-    String message;
-    IconData icon;
-    Color iconColor;
-
-    if (_avgCalories == 0) {
-      message = 'start_tracking_meals'.tr();
-      icon = Icons.restaurant_menu;
-      iconColor = AppPalette.of(context).info;
-    } else if (_avgCalories < _targetCalories * 0.8) {
-      message = 'nutrition_data_good'.tr();
-      icon = Icons.trending_up;
-      iconColor = AppPalette.of(context).success;
-    } else if (_avgCalories > _targetCalories * 1.2) {
-      message = 'moderate_calorie_intake'.tr();
-      icon = Icons.info;
-      iconColor = AppPalette.of(context).warning;
-    } else {
-      message = 'nutrition_tracking_great'.tr();
-      icon = Icons.check_circle;
-      iconColor = AppPalette.of(context).success;
-    }
-
-    final foreground = _avgCalories > _targetCalories * 1.2
-        ? AppPalette.of(context).warningText
-        : Theme.of(context).colorScheme.onSurface;
-
-    return Card(
-      elevation: 2,
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              iconColor.withValues(alpha: 0.1),
-              iconColor.withValues(alpha: 0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: foreground, size: 32),
+    return Scaffold(
+      appBar: const StandardAppBar(),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: AppDimens.pagePadding(context),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInsightsCard(),
+                  const SizedBox(height: 24),
+                  SectionHeader('improve_nutrition'.tr()),
+                  _buildRecommendationsList(),
+                ],
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'personalized_tips'.tr(),
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: foreground,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      message,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 

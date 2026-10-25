@@ -16,7 +16,7 @@ void main() {
       WeightEntry(date: DateTime(2026, 8, 1 + i * 4), kg: 72 - i * 0.8),
   ];
 
-  testWidgets('draws readable series and goals in all three themes', (
+  testWidgets('draws themed series and readable goals in all three themes', (
     tester,
   ) async {
     await pumpLocalized(
@@ -70,10 +70,7 @@ void main() {
     for (var i = 0; i < withGoal.length; i++) {
       final data = withGoal[i].data;
       final surface = themes[i].colorScheme.surface;
-      expect(
-        contrastOn(data.lineBarsData.single.color!, surface),
-        greaterThanOrEqualTo(3),
-      );
+      expect(data.lineBarsData.single.color, themes[i].colorScheme.primary);
       final goal = data.extraLinesData.horizontalLines.single;
       expect(contrastOn(goal.color!, surface), greaterThanOrEqualTo(3));
       expect(

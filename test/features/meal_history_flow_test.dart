@@ -84,6 +84,29 @@ void main() {
     expect(find.textContaining('08:00'), findsOneWidget);
     expect(find.textContaining('Old dinner'), findsOneWidget);
 
+    expect(find.byType(RefreshIndicator), findsNothing);
+    // A newly saved meal appears without navigation or a refresh gesture.
+    final snack = TestDataFactory.createFoodItem(
+      name: 'Live snack',
+      calories: 100,
+      mass: 100,
+      timestamp: today.add(const Duration(hours: 15)),
+    );
+    await tester.runAsync(() async {
+      await FoodStorageService().saveFoodItem(snack);
+      await Future<void>.delayed(Duration.zero);
+    });
+    await tester.pumpAndSettle();
+    expect(find.text('Live snack'), findsOneWidget);
+    expect(find.text('900 kcal'), findsOneWidget);
+    await tester.runAsync(() async {
+      await FoodStorageService().deleteFoodItem(snack.id);
+      await Future<void>.delayed(Duration.zero);
+    });
+    await tester.pumpAndSettle();
+    expect(find.text('Live snack'), findsNothing);
+    expect(find.text('800 kcal'), findsOneWidget);
+
     // Tap a meal → detail screen.
     await tester.tap(find.text('Lunch wrap'));
     await tester.pumpAndSettle();

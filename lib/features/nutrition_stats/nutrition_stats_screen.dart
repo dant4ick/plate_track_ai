@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import 'package:plate_track_ai/core/services/local_data_observer.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
 import 'package:plate_track_ai/core/themes/app_colors.dart';
@@ -25,7 +24,6 @@ class NutritionStatsScreen extends StatefulWidget {
 class _NutritionStatsScreenState extends State<NutritionStatsScreen> {
   final _storage = FoodStorageService();
   final _profiles = UserProfileService();
-  StreamSubscription<void>? _changes;
   List<FoodItem> _items = const [];
   NutritionPeriod _period = NutritionPeriod.day;
   int _selectedIndex = 7;
@@ -33,16 +31,21 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> {
   bool _loadFailed = false;
   Map<String, double>? _targets;
 
+  late final LocalDataObserver _dataObserver;
+
   @override
   void initState() {
     super.initState();
-    _changes = _storage.onDataChanged.listen((_) => _load());
+    _dataObserver = LocalDataObserver(
+      onChanged: _load,
+      changes: [_storage.onDataChanged, _profiles.onDataChanged],
+    );
     _load();
   }
 
   @override
   void dispose() {
-    _changes?.cancel();
+    _dataObserver.dispose();
     super.dispose();
   }
 
@@ -74,37 +77,19 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen> {
       now: DateTime.now(),
     );
     return Scaffold(
-      appBar: StandardAppBar(
-        titleText: 'your_calories'.tr(),
-        showLogo: false,
-        onRefresh: _load,
-      ),
+      appBar: StandardAppBar(titleText: 'your_calories'.tr(), showLogo: false),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _load,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: AppDimens.pagePadding(context),
-                children: [
-                  _buildPeriodSelector(),
-                  const SizedBox(height: 20),
-                  if (_loadFailed)
-                    SoftCard(
-                      child: Column(
-                        children: [
-                          Text('stats_load_error'.tr()),
-                          TextButton(
-                            onPressed: _load,
-                            child: Text('refresh'.tr()),
-                          ),
-                        ],
-                      ),
-                    )
-                  else
-                    _buildOverview(summary),
-                ],
-              ),
+          : ListView(
+              padding: AppDimens.pagePadding(context),
+              children: [
+                _buildPeriodSelector(),
+                const SizedBox(height: 20),
+                if (_loadFailed)
+                  SoftCard(child: Text('stats_load_error'.tr()))
+                else
+                  _buildOverview(summary),
+              ],
             ),
     );
   }
