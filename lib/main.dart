@@ -1,12 +1,13 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
+import 'package:plate_track_ai/core/themes/app_dimens.dart';
 import 'package:plate_track_ai/core/themes/app_theme.dart';
+import 'package:plate_track_ai/core/themes/theme_controller.dart';
 import 'package:plate_track_ai/features/dashboard/dashboard_screen.dart';
-import 'package:plate_track_ai/features/nutrition_stats/nutrition_stats_screen.dart';
-import 'package:plate_track_ai/features/recommendations/recommendations_screen.dart';
 import 'package:plate_track_ai/features/user_setup/user_setup_screen.dart';
-import 'package:plate_track_ai/features/profile/profile_management_screen.dart';
 import 'package:plate_track_ai/features/food_recognition/food_camera_screen.dart';
 import 'package:plate_track_ai/features/barcode_scan/barcode_scanner_screen.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
@@ -17,11 +18,9 @@ import 'package:plate_track_ai/shared/models/food_item_adapters.dart';
 import 'package:plate_track_ai/shared/models/user_profile_adapters.dart';
 import 'package:plate_track_ai/shared/models/cached_barcode_product_adapter.dart';
 
-// TODO: fix autorefresh in stats_tab after food recognition
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize EasyLocalization
   await EasyLocalization.ensureInitialized();
 
@@ -62,6 +61,9 @@ void main() async {
   // Initialize barcode cache
   await BarcodeCacheService().initialize();
 
+  // Restore the stored theme choice so the first frame already wears it.
+  await initThemePreference();
+
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ru')],
@@ -93,16 +95,21 @@ class PlateTrackApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'app_name'.tr(),
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system, // Uses the device's theme settings
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      home: const AppInitializer(),
+    return ValueListenableBuilder<ThemePreference>(
+      valueListenable: themePreference,
+      builder: (context, preference, _) {
+        return MaterialApp(
+          title: 'app_name'.tr(),
+          debugShowCheckedModeBanner: false,
+          theme: preference.theme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: preference.mode,
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          locale: context.locale,
+          home: const AppInitializer(),
+        );
+      },
     );
   }
 }
@@ -145,13 +152,12 @@ class _AppInitializerState extends State<AppInitializer> {
 
   Future<void> _onProfileSetupComplete() async {
     try {
-      
       // Add a small delay to ensure the profile was saved
       await Future.delayed(const Duration(milliseconds: 100));
-      
+
       // Re-initialize the service to check if profile was saved
       await _userProfileService.initialize();
-      
+
       if (mounted) {
         setState(() {
           _hasUserProfile = _userProfileService.hasUserProfile;
@@ -166,25 +172,23 @@ class _AppInitializerState extends State<AppInitializer> {
 
   @override
   Widget build(BuildContext context) {
-    
     if (_isLoading) {
       return Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AppLogo(
-                size: 64,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              const AppLogoMark(size: 80),
               const SizedBox(height: 24),
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
               Text(
                 'loading_plate_track'.tr(),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
             ],
           ),
@@ -193,9 +197,7 @@ class _AppInitializerState extends State<AppInitializer> {
     }
 
     if (!_hasUserProfile) {
-      return UserSetupScreen(
-        onComplete: _onProfileSetupComplete,
-      );
+      return UserSetupScreen(onComplete: _onProfileSetupComplete);
     }
 
     return const HomeScreen();
@@ -211,8 +213,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
-  int _selectedIndex = 0;
-
   late AnimationController _dialController;
   late Animation<double> _aiAnim;
   late Animation<double> _barcodeAnim;
@@ -220,8 +220,6 @@ class _HomeScreenState extends State<HomeScreen>
 
   // True while animation value > 0 (opening, open, or closing)
   bool get _dialVisible => _dialController.value > 0;
-  // Icon shows "close" when more than halfway open
-  bool get _showCloseIcon => _dialController.value > 0.5;
 
   @override
   void initState() {
@@ -254,29 +252,15 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _toggleDial() {
-    if (_dialController.isDismissed) {
-      _dialController.forward();
-    } else {
+    if (_dialController.status == AnimationStatus.forward ||
+        _dialController.isCompleted) {
       _dialController.reverse();
+    } else {
+      _dialController.forward();
     }
   }
 
   void _closeDial() => _dialController.reverse();
-
-  Widget _getScreenForIndex(int index) {
-    switch (index) {
-      case 0:
-        return const DashboardScreen();
-      case 1:
-        return const NutritionStatsScreen();
-      case 2:
-        return const RecommendationsScreen();
-      case 3:
-        return const ProfileManagementScreen();
-      default:
-        return const DashboardScreen();
-    }
-  }
 
   void _navigateToFoodCamera() {
     Navigator.push(
@@ -296,72 +280,46 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
-  void _onItemTapped(int index) => setState(() => _selectedIndex = index);
+  // ── Dial geometry ───────────────────────────────────────────────────────────
+  //
+  // The design puts the action button in the bottom-right corner rather than
+  // centred in the nav bar, so the sub-buttons have to line up on *its* centre
+  // line instead of the screen's.
 
-  // ── Nav item ────────────────────────────────────────────────────────────────
+  /// Edge of the squircle action button.
+  static const double _fabSize = 60.0;
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
-    final isSelected = index == _selectedIndex;
-    return Expanded(
-      flex: 2,
-      child: InkWell(
-        onTap: () => _onItemTapped(index),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.grey,
-                size: 28,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.grey,
-                  fontSize: 13,
-                  fontWeight:
-                      isSelected ? FontWeight.w600 : FontWeight.normal,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  /// Gap between the action button and the screen edge / nav bar.
+  static const double _fabMargin = 16.0;
+
+  /// Edge of a sub-button's icon circle.
+  static const double _subSize = 48.0;
+
+  /// Right inset that centres a [_subSize] circle over the action button.
+  static const double _subRightInset = _fabMargin + _fabSize / 2 - _subSize / 2;
 
   // ── Main dial button ─────────────────────────────────────────────────────────
 
   Widget _buildMainDialButton() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Material(
-        elevation: 4,
-        borderRadius: BorderRadius.circular(24),
-        color: Theme.of(context).colorScheme.primary,
-        child: InkWell(
-          onTap: _toggleDial,
-          borderRadius: BorderRadius.circular(24),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                _showCloseIcon ? Icons.close : Icons.camera_alt,
-                key: ValueKey(_showCloseIcon),
-                color: Colors.white,
-                size: 32,
-              ),
+    final colors = Theme.of(context).colorScheme;
+
+    return Material(
+      elevation: 6,
+      borderRadius: BorderRadius.circular(AppDimens.radiusSquircle),
+      color: colors.primary,
+      shadowColor: AppPalette.of(context).shadow,
+      child: InkWell(
+        onTap: _toggleDial,
+        borderRadius: BorderRadius.circular(AppDimens.radiusSquircle),
+        child: SizedBox(
+          width: _fabSize,
+          height: _fabSize,
+          // Keep the same glyph throughout: a 45-degree turn makes the plus
+          // a close icon without a mid-animation shape change.
+          child: Center(
+            child: Transform.rotate(
+              angle: _overlayAnim.value * math.pi / 4,
+              child: Icon(Icons.add_rounded, color: colors.onPrimary, size: 32),
             ),
           ),
         ),
@@ -369,45 +327,42 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // ── Sub-button ───────────────────────────────────────────────────────────────
+  // ── Sub-button ───────────────────────────────────────────────────────────
   //
-  // The icon circle (48 px wide) must be centred horizontally over the main
-  // button, which is itself centred on screen.  We achieve this by right-padding
-  // the row so the right edge of the 48-px circle lands at
-  //   (screenWidth / 2) + 24.
-  // i.e. rightPadding = screenWidth - (screenWidth/2 + 24) = screenWidth/2 - 24.
+  // The icon circle is centred on the action button's vertical axis by insetting
+  // the row from the right edge — see [_subRightInset].
 
   Widget _buildSubButton({
     required Animation<double> anim,
     required IconData icon,
     required String label,
-    required Color color,
     required VoidCallback onTap,
   }) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final rightPadding = (screenWidth / 2 - 24.0).clamp(0.0, screenWidth);
+    final colors = Theme.of(context).colorScheme;
 
     return FadeTransition(
       opacity: anim,
       child: ScaleTransition(
         scale: anim,
-        alignment: Alignment.bottomCenter,
+        alignment: Alignment.bottomRight,
         child: Padding(
-          padding: EdgeInsets.only(right: rightPadding),
+          padding: const EdgeInsets.only(right: _subRightInset),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             mainAxisSize: MainAxisSize.max,
             children: [
               // Label pill
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).scaffoldBackgroundColor,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
+                      color: AppPalette.of(context).shadow,
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -416,24 +371,24 @@ class _HomeScreenState extends State<HomeScreen>
                 child: Text(
                   label,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: color,
-                      ),
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
-              // Icon circle — 48 × 48
+              // Icon circle
               Material(
                 elevation: 3,
                 shape: const CircleBorder(),
-                color: color,
+                color: colors.primary,
                 child: InkWell(
                   customBorder: const CircleBorder(),
                   onTap: onTap,
                   child: SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: Icon(icon, color: Colors.white, size: 22),
+                    width: _subSize,
+                    height: _subSize,
+                    child: Icon(icon, color: colors.onPrimary, size: 22),
                   ),
                 ),
               ),
@@ -448,59 +403,25 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
-    // Total rendered height of the bottom nav bar (SafeArea padding + content)
-    const navContentHeight = 110.0;
-    final navTotalHeight = navContentHeight + bottomPadding;
-
-    // Bottom nav bar — centre slot is a plain spacer; the real button lives in
-    // the Stack above so it is never clipped and always on the correct Z layer.
-    final bottomNav = Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: SizedBox(
-          height: navContentHeight,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              children: [
-                _buildNavItem(0, Icons.home, 'home_tab'.tr()),
-                _buildNavItem(1, Icons.bar_chart, 'stats_tab'.tr()),
-                // Spacer matching the width slot of the main button
-                const Expanded(flex: 3, child: SizedBox.shrink()),
-                _buildNavItem(2, Icons.lightbulb, 'recommendations_tab'.tr()),
-                _buildNavItem(3, Icons.person, 'profile_tab'.tr()),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+    // With no nav bar, the dial sits directly above the system inset.
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    final dialBottom = bottomInset + _fabMargin;
 
     // Stack Z-order (bottom → top):
-    //  [0] Scaffold  — body + nav bar
-    //  [1] Dim overlay — full screen, blocks nav-tab taps when dial is open
+    //  [0] The dashboard — the whole app surface now, and the child that sizes
+    //      the stack. It brings its own Scaffold, so there is no outer one:
+    //      the removed nav bar was the only reason this level ever had a
+    //      Scaffold of its own.
+    //  [1] Dim overlay — full screen, swallows taps while the dial is open
     //  [2] Sub-button: AI Scan
     //  [3] Sub-button: Barcode
     //  [4] Main dial button — always on top and tappable
     return Stack(
       children: [
-        // [0] Scaffold
-        Scaffold(
-          body: _getScreenForIndex(_selectedIndex),
-          bottomNavigationBar: bottomNav,
-        ),
+        // [0] Dashboard
+        const DashboardScreen(),
 
-        // [1] Dim overlay — covers entire screen (including nav bar)
+        // [1] Dim overlay
         if (_dialVisible)
           Positioned.fill(
             child: GestureDetector(
@@ -508,22 +429,21 @@ class _HomeScreenState extends State<HomeScreen>
               behavior: HitTestBehavior.opaque,
               child: FadeTransition(
                 opacity: _overlayAnim,
-                child: Container(color: Colors.black.withValues(alpha: 0.45)),
+                child: Container(color: AppColors.scrim),
               ),
             ),
           ),
 
-        // [2] Sub-button: AI Scan — just above the nav bar
+        // [2] Sub-button: AI Scan — one step above the dial
         if (_dialVisible)
           Positioned(
-            bottom: navTotalHeight + 12,
+            bottom: dialBottom + _fabSize + 12,
             left: 0,
             right: 0,
             child: _buildSubButton(
               anim: _aiAnim,
               icon: Icons.auto_awesome,
               label: 'scan_food_ai'.tr(),
-              color: Theme.of(context).colorScheme.primary,
               onTap: () {
                 _closeDial();
                 _navigateToFoodCamera();
@@ -531,17 +451,16 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
 
-        // [3] Sub-button: Barcode — one step higher
+        // [3] Sub-button: Barcode — one step higher again
         if (_dialVisible)
           Positioned(
-            bottom: navTotalHeight + 12 + 48 + 12,
+            bottom: dialBottom + _fabSize + 12 + _subSize + 12,
             left: 0,
             right: 0,
             child: _buildSubButton(
               anim: _barcodeAnim,
               icon: Icons.barcode_reader,
               label: 'scan_barcode'.tr(),
-              color: Theme.of(context).colorScheme.secondary,
               onTap: () {
                 _closeDial();
                 _navigateToBarcodeScanner();
@@ -549,12 +468,11 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
 
-        // [4] Main dial button — centred over the spacer slot, always on top
+        // [4] Main dial button — bottom-right, always on top and tappable
         Positioned(
-          bottom: bottomPadding + 19,
-          left: 0,
-          right: 0,
-          child: Center(child: _buildMainDialButton()),
+          bottom: dialBottom,
+          right: _fabMargin,
+          child: _buildMainDialButton(),
         ),
       ],
     );

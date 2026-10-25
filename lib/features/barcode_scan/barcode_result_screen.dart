@@ -3,10 +3,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:uuid/uuid.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/shared/models/cached_barcode_product.dart';
+import 'package:plate_track_ai/shared/widgets/bottom_action_bar.dart';
 import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
+import 'package:plate_track_ai/shared/widgets/soft_card.dart';
+import 'package:plate_track_ai/shared/widgets/status_snack_bar.dart';
 import 'package:plate_track_ai/core/services/barcode_cache_service.dart';
 import 'package:plate_track_ai/core/services/open_food_facts_service.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 enum _BarcodeResultState { loading, found, notFound, error }
 
@@ -28,7 +32,6 @@ class BarcodeResultScreen extends StatefulWidget {
 
 class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
   _BarcodeResultState _state = _BarcodeResultState.loading;
-  bool _fromCache = false;
   bool _saveToLibrary = true;
 
   late TextEditingController _nameController;
@@ -87,7 +90,10 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
     super.dispose();
   }
 
-  void _populateFromProduct(CachedBarcodeProduct product, {required bool fromCache}) {
+  void _populateFromProduct(
+    CachedBarcodeProduct product, {
+    required bool fromCache,
+  }) {
     _caloriesPer100g = product.caloriesPer100g;
     _proteinPer100g = product.proteinPer100g;
     _carbsPer100g = product.carbsPer100g;
@@ -99,7 +105,6 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
 
     setState(() {
       _state = _BarcodeResultState.found;
-      _fromCache = fromCache;
       _saveToLibrary = !fromCache;
     });
   }
@@ -156,10 +161,12 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
   }
 
   void _recalculateFromMass(double mass) {
-    _caloriesController.text = (_caloriesPer100g * mass / 100).toStringAsFixed(1);
-    _proteinController.text  = (_proteinPer100g  * mass / 100).toStringAsFixed(1);
-    _carbsController.text    = (_carbsPer100g    * mass / 100).toStringAsFixed(1);
-    _fatController.text      = (_fatPer100g      * mass / 100).toStringAsFixed(1);
+    _caloriesController.text = (_caloriesPer100g * mass / 100).toStringAsFixed(
+      1,
+    );
+    _proteinController.text = (_proteinPer100g * mass / 100).toStringAsFixed(1);
+    _carbsController.text = (_carbsPer100g * mass / 100).toStringAsFixed(1);
+    _fatController.text = (_fatPer100g * mass / 100).toStringAsFixed(1);
   }
 
   // Four separate listeners — each only updates its OWN per-100 g value.
@@ -171,14 +178,16 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
     if (_isRecalculating) return;
     final mass = double.tryParse(_massController.text) ?? 0;
     if (mass <= 0) return;
-    _caloriesPer100g = (double.tryParse(_caloriesController.text) ?? 0) * 100 / mass;
+    _caloriesPer100g =
+        (double.tryParse(_caloriesController.text) ?? 0) * 100 / mass;
   }
 
   void _onProteinChanged() {
     if (_isRecalculating) return;
     final mass = double.tryParse(_massController.text) ?? 0;
     if (mass <= 0) return;
-    _proteinPer100g = (double.tryParse(_proteinController.text) ?? 0) * 100 / mass;
+    _proteinPer100g =
+        (double.tryParse(_proteinController.text) ?? 0) * 100 / mass;
   }
 
   void _onCarbsChanged() {
@@ -222,7 +231,9 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
 
       final foodItem = FoodItem(
         id: const Uuid().v4(),
-        name: _nameController.text.isNotEmpty ? _nameController.text : widget.barcode,
+        name: _nameController.text.isNotEmpty
+            ? _nameController.text
+            : widget.barcode,
         calories: _caloriesPer100g,
         nutritionFacts: NutritionFacts(
           protein: _proteinPer100g,
@@ -236,19 +247,15 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
       widget.onSave(foodItem);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('food_item_saved'.tr()),
-          behavior: SnackBarBehavior.floating,
-        ),
+        StatusSnackBar.success(context, message: 'food_item_saved'.tr()),
       );
 
       Navigator.popUntil(context, (route) => route.isFirst);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${'error_saving_food_item'.tr()}: ${e.toString()}'),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.red,
+        StatusSnackBar.error(
+          context,
+          message: '${'error_saving_food_item'.tr()}: ${e.toString()}',
         ),
       );
     }
@@ -289,23 +296,25 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.wifi_off_rounded,
-                size: 64, color: Theme.of(context).colorScheme.error),
+            Icon(
+              Icons.wifi_off_rounded,
+              size: 64,
+              color: Theme.of(context).colorScheme.error,
+            ),
             const SizedBox(height: 16),
             Text(
               'barcode_product_fetch_error'.tr(),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'barcode_no_internet'.tr(),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: Colors.grey[600]),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppPalette.of(context).textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -324,21 +333,25 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.amber[50],
-        border: Border.all(color: Colors.amber[700]!),
+        color: AppPalette.of(context).warningSoft,
+        border: Border.all(color: AppPalette.of(context).warningBorder),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.warning_amber_rounded, color: Colors.amber[700], size: 20),
+          Icon(
+            Icons.warning_amber_rounded,
+            color: AppPalette.of(context).warning,
+            size: 20,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'barcode_missing_values_warning'.tr(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.amber[900],
-                  ),
+                color: AppPalette.of(context).warningText,
+              ),
             ),
           ),
         ],
@@ -357,8 +370,15 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildStatusCard(),
-                const SizedBox(height: 16),
+                if (_state == _BarcodeResultState.notFound) ...[
+                  SoftCard(
+                    child: Text(
+                      'barcode_not_found_message'.tr(),
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 // Single ListenableBuilder drives both the warning banner and
                 // per-card highlighting so allZero is computed only once.
                 ListenableBuilder(
@@ -369,7 +389,8 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
                     _fatController,
                   ]),
                   builder: (context, _) {
-                    final allZero = _state == _BarcodeResultState.found &&
+                    final allZero =
+                        _state == _BarcodeResultState.found &&
                         [
                           _caloriesController,
                           _proteinController,
@@ -414,7 +435,7 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: AppPalette.of(context).shadow,
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -426,90 +447,18 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
           Icon(
             Icons.barcode_reader,
             size: 48,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           const SizedBox(height: 8),
           Text(
             widget.barcode,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontFamily: 'monospace',
-                  letterSpacing: 2,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              fontFamily: 'monospace',
+              letterSpacing: 2,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildStatusCard() {
-    final isFound = _state == _BarcodeResultState.found;
-    final title = _fromCache
-        ? 'barcode_product_found_cache'.tr()
-        : isFound
-            ? 'barcode_product_found'.tr()
-            : 'barcode_product_not_found'.tr();
-    final subtitle = isFound
-        ? 'review_and_adjust_nutrition'.tr()
-        : 'barcode_not_found_message'.tr();
-    final color = isFound
-        ? Theme.of(context).colorScheme.primary
-        : Theme.of(context).colorScheme.secondary;
-    final icon = isFound ? Icons.check_circle_outline : Icons.edit_note;
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              color.withValues(alpha: 0.1),
-              color.withValues(alpha: 0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: color, size: 28),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: color,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -527,13 +476,12 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
             border: InputBorder.none,
             prefixIcon: Icon(
               Icons.food_bank,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
-              ?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -553,25 +501,23 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.scale,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     size: 20,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Text(
                   'portion_size'.tr(),
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -580,8 +526,9 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
               controller: _massController,
               decoration: InputDecoration(
                 labelText: 'mass'.tr(),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 suffixText: 'g'.tr(),
               ),
               keyboardType: TextInputType.number,
@@ -598,23 +545,21 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color:
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             Icons.analytics,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.onSurface,
             size: 24,
           ),
         ),
         const SizedBox(width: 12),
         Text(
           'nutrition_facts'.tr(),
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
-              ?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -631,7 +576,7 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
                 label: 'calories'.tr(),
                 icon: Icons.local_fire_department,
                 suffix: 'kcal'.tr(),
-                color: Colors.red[400]!,
+                color: AppPalette.of(context).caloriesInk,
                 highlighted: highlightAll,
               ),
             ),
@@ -642,7 +587,7 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
                 label: 'protein'.tr(),
                 icon: Icons.fitness_center,
                 suffix: 'g'.tr(),
-                color: Colors.purple[400]!,
+                color: AppPalette.of(context).proteinInk,
                 highlighted: highlightAll,
               ),
             ),
@@ -657,7 +602,7 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
                 label: 'carbs'.tr(),
                 icon: Icons.grain,
                 suffix: 'g'.tr(),
-                color: Colors.amber[700]!,
+                color: AppPalette.of(context).carbsInk,
                 highlighted: highlightAll,
               ),
             ),
@@ -668,7 +613,7 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
                 label: 'fat'.tr(),
                 icon: Icons.opacity,
                 suffix: 'g'.tr(),
-                color: Colors.blue[400]!,
+                color: AppPalette.of(context).fatInk,
                 highlighted: highlightAll,
               ),
             ),
@@ -691,7 +636,10 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: highlighted
-            ? BorderSide(color: Colors.amber[700]!, width: 1.5)
+            ? BorderSide(
+                color: AppPalette.of(context).warningBorder,
+                width: 1.5,
+              )
             : BorderSide.none,
       ),
       child: Container(
@@ -714,9 +662,9 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
                   child: Text(
                     label,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
+                      color: AppPalette.of(context).textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -724,21 +672,21 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
             const SizedBox(height: 8),
             TextField(
               controller: controller,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: InputDecoration(
                 isDense: true,
                 border: InputBorder.none,
                 suffixText: suffix,
-                suffixStyle: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: Colors.grey[600]),
+                suffixStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
             ),
           ],
         ),
@@ -755,14 +703,13 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
         onChanged: (v) => setState(() => _saveToLibrary = v),
         title: Text(
           'save_to_barcode_library'.tr(),
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(fontWeight: FontWeight.w500),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
         ),
         secondary: Icon(
           Icons.bookmark_add_outlined,
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -770,28 +717,20 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
   }
 
   Widget _buildBottomBar() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Expanded(
-            child: AppButton(
-              text: 'cancel'.tr(),
-              onPressed: () => Navigator.pop(context),
-              isSecondary: true,
-              icon: Icons.close,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: AppButton(
-              text: 'save_result'.tr(),
-              onPressed: _saveFoodItem,
-              icon: Icons.save_alt,
-            ),
-          ),
-        ],
-      ),
+    return BottomActionBar(
+      children: [
+        AppButton(
+          text: 'cancel'.tr(),
+          onPressed: () => Navigator.pop(context),
+          isSecondary: true,
+          icon: Icons.close,
+        ),
+        AppButton(
+          text: 'save_result'.tr(),
+          onPressed: _saveFoodItem,
+          icon: Icons.save_alt,
+        ),
+      ],
     );
   }
 }

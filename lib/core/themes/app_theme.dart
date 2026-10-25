@@ -1,116 +1,406 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import 'app_colors.dart';
+import 'app_dimens.dart';
 
 class AppTheme {
-  static const _primaryColorLight = Color(0xFF4CAF50);
-  static const _primaryColorDark = Color(0xFF388E3C);
-  static const _secondaryColorLight = Color(0xFF2196F3);
-  static const _secondaryColorDark = Color(0xFF1976D2);
-  static const _errorColor = Color(0xFFE57373);
-  static const _surfaceLight = Color(0xFFFAFAFA);
-  static const _surfaceDark = Color(0xFF121212);
-  static const _backgroundLight = Color(0xFFFFFFFF);
-  static const _backgroundDark = Color(0xFF1F1F1F);
+  AppTheme._();
+
+  /// Bundled Latin and Cyrillic font, shared by every theme and locale.
+  static const fontFamily = 'Montserrat';
+
+  /// Keep feedback on filled controls while preserving text contrast after
+  /// compositing the state layer over indigo and destructive backgrounds.
+  static ButtonStyle filledButtonStyle({
+    required Color foregroundColor,
+    required Color backgroundColor,
+    EdgeInsetsGeometry? padding,
+    OutlinedBorder? shape,
+  }) =>
+      ElevatedButton.styleFrom(
+        foregroundColor: foregroundColor,
+        backgroundColor: backgroundColor,
+        padding: padding,
+        shape: shape,
+      ).copyWith(
+        overlayColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) return null;
+          if (states.contains(WidgetState.pressed) ||
+              states.contains(WidgetState.focused) ||
+              states.contains(WidgetState.hovered)) {
+            return foregroundColor.withValues(alpha: 0.08);
+          }
+          return null;
+        }),
+      );
+
+  // Light uses the green logo's background; dark uses the blue logo's background
+  // with its pale lime glyph as the secondary accent.
+  static const _primaryLight = AppColors.secondLight;
+  static const _primaryDark = AppColors.prime;
+  static const _secondaryLight = AppColors.prime;
+  static const _secondaryDark = AppColors.second;
 
   // Light theme
-  static ThemeData lightTheme = ThemeData(
-    useMaterial3: true,
-    brightness: Brightness.light,
-    colorScheme: ColorScheme.light(
-      primary: _primaryColorLight,
-      secondary: _secondaryColorLight,
-      error: _errorColor,
-      surface: _backgroundLight,
-    ),
-    textTheme: GoogleFonts.poppinsTextTheme(ThemeData.light().textTheme),
-    appBarTheme: AppBarTheme(
-      backgroundColor: _surfaceLight,
-      elevation: 0,
-      iconTheme: const IconThemeData(color: _primaryColorLight),
-      titleTextStyle: GoogleFonts.poppins(
-        color: Colors.black87,
-        fontSize: 20.0,
-        fontWeight: FontWeight.w500,
+  static final ThemeData lightTheme = _readableControls(
+    ThemeData(
+      useMaterial3: true,
+      fontFamily: fontFamily,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: AppColors.scaffoldLight,
+      extensions: const [AppFlavorTag(AppFlavor.light)],
+      colorScheme: const ColorScheme.light(
+        primary: _primaryLight,
+        onPrimary: AppColors.onAccentDark,
+        secondary: _secondaryLight,
+        onSecondary: AppColors.onAccent,
+        tertiary: AppColors.tri,
+        onTertiary: AppColors.onAccentDark,
+        error: AppColors.dangerLight,
+        onError: AppColors.onAccentDark,
+        surface: AppColors.surfaceLight,
+        onSurface: AppColors.textPrimaryLight,
+        outline: AppColors.textSecondaryLight,
       ),
-    ),
-    cardTheme: CardThemeData(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.white,
-        backgroundColor: _primaryColorLight,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleTextStyle: const TextStyle(
+          fontFamily: fontFamily,
+          color: AppColors.textPrimaryLight,
+          fontSize: 20.0,
+          fontWeight: FontWeight.w500,
+        ),
       ),
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: _primaryColorLight,
-      foregroundColor: Colors.white,
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: Colors.grey[100],
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
+      cardTheme: CardThemeData(
+        color: AppColors.surfaceLight,
+        elevation: 2,
+        shadowColor: AppColors.shadowSubtle,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+        ),
       ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: _primaryColorLight, width: 2),
+      dividerColor: AppColors.borderLight,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: filledButtonStyle(
+          foregroundColor: AppColors.onAccentDark,
+          backgroundColor: _primaryLight,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: _primaryLight,
+        foregroundColor: AppColors.onAccentDark,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusSquircle),
+        ),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.triShade,
+        linearTrackColor: AppColors.trackLight,
+      ),
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        actionTextColor: AppColors.onAccent,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.fieldLight,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+          borderSide: const BorderSide(
+            color: AppColors.textPrimaryLight,
+            width: 2,
+          ),
+        ),
       ),
     ),
   );
 
   // Dark theme
-  static ThemeData darkTheme = ThemeData(
-    useMaterial3: true,
-    brightness: Brightness.dark,
-    colorScheme: ColorScheme.dark(
-      primary: _primaryColorDark,
-      secondary: _secondaryColorDark,
-      error: _errorColor,
-      surface: _backgroundDark,
-    ),
-    textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
-    appBarTheme: AppBarTheme(
-      backgroundColor: _surfaceDark,
-      elevation: 0,
-      iconTheme: const IconThemeData(color: _primaryColorDark),
-      titleTextStyle: GoogleFonts.poppins(
-        color: Colors.white,
-        fontSize: 20.0,
-        fontWeight: FontWeight.w500,
+  static final ThemeData darkTheme = _readableControls(
+    ThemeData(
+      useMaterial3: true,
+      fontFamily: fontFamily,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: AppColors.scaffoldDark,
+      extensions: const [AppFlavorTag(AppFlavor.dark)],
+      colorScheme: const ColorScheme.dark(
+        primary: _primaryDark,
+        onPrimary: AppColors.onAccent,
+        secondary: _secondaryDark,
+        onSecondary: AppColors.onAccentDark,
+        tertiary: AppColors.tri,
+        onTertiary: AppColors.onAccentDark,
+        error: AppColors.dangerDark,
+        onError: AppColors.onAccentDark,
+        surface: AppColors.surfaceDark,
+        onSurface: AppColors.textPrimaryDark,
+        outline: AppColors.textSecondaryDark,
       ),
-    ),
-    cardTheme: CardThemeData(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.white,
-        backgroundColor: _primaryColorDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleTextStyle: const TextStyle(
+          fontFamily: fontFamily,
+          color: AppColors.textPrimaryDark,
+          fontSize: 20.0,
+          fontWeight: FontWeight.w500,
+        ),
       ),
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: _primaryColorDark,
-      foregroundColor: Colors.white,
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: Colors.grey[900],
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
+      cardTheme: CardThemeData(
+        color: AppColors.surfaceDark,
+        elevation: 2,
+        shadowColor: AppColors.shadowStrong,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+        ),
       ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: _primaryColorDark, width: 2),
+      dividerColor: AppColors.borderDark,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: filledButtonStyle(
+          foregroundColor: AppColors.onAccent,
+          backgroundColor: _primaryDark,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: _primaryDark,
+        foregroundColor: AppColors.onAccent,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusSquircle),
+        ),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.tri,
+        linearTrackColor: AppColors.trackDark,
+      ),
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        actionTextColor: AppColors.onAccent,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.fieldDark,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+          borderSide: const BorderSide(
+            color: AppColors.textPrimaryDark,
+            width: 2,
+          ),
+        ),
       ),
     ),
   );
+
+  // "Pick me" theme — a third brand identity, light in brightness but pink in
+  // hue. `ThemeMode` only spans light/dark/system, so this one cannot ride on
+  // the OS setting: pass it to `MaterialApp.theme` directly from a stored user
+  // preference.
+  //
+  // One deviation from the pattern the other two follow, taken from the design
+  // frame rather than inferred: the FAB stays lime. Navigation uses readable ink.
+  static final ThemeData pickMeTheme = _readableControls(
+    ThemeData(
+      useMaterial3: true,
+      fontFamily: fontFamily,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: AppColors.scaffoldPick,
+      extensions: const [AppFlavorTag(AppFlavor.pickMe)],
+      colorScheme: const ColorScheme.light(
+        primary: AppColors.pick,
+        onPrimary: AppColors.onAccentDark,
+        secondary: AppColors.secondShade,
+        // Dark ink, not white: this secondary is the lime shade, and white on it
+        // is 1.70:1. Matches what the dark theme already does with its lime.
+        onSecondary: AppColors.onAccentDark,
+        tertiary: AppColors.tri,
+        onTertiary: AppColors.onAccentDark,
+        error: AppColors.dangerLight,
+        onError: AppColors.onAccentDark,
+        surface: AppColors.surfaceLight,
+        onSurface: AppColors.textPrimaryLight,
+        outline: AppColors.textSecondaryLight,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleTextStyle: const TextStyle(
+          fontFamily: fontFamily,
+          // The bar is transparent, so the title sits on the pale pink scaffold:
+          // white would vanish there. Ink, like the other two themes use.
+          color: AppColors.textPrimaryLight,
+          fontSize: 20.0,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: AppColors.surfaceLight,
+        elevation: 2,
+        shadowColor: AppColors.shadowSubtle,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+        ),
+      ),
+      dividerColor: AppColors.borderLight,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: filledButtonStyle(
+          foregroundColor: AppColors.onAccentDark,
+          backgroundColor: AppColors.pick,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: AppColors.secondShade,
+        foregroundColor: AppColors.onAccentDark,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusSquircle),
+        ),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.triShade,
+        linearTrackColor: AppColors.trackLight,
+      ),
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        actionTextColor: AppColors.onAccent,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.fieldLight,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+          borderSide: const BorderSide(
+            color: AppColors.textPrimaryLight,
+            width: 2,
+          ),
+        ),
+      ),
+    ),
+  );
+
+  /// Filled accents keep the brand palette; text and interactive outlines use
+  /// readable ink. Set state colours explicitly instead of M3 container fallbacks.
+  static ThemeData _readableControls(ThemeData theme) {
+    final scheme = theme.colorScheme;
+    final muted = theme.brightness == Brightness.dark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
+    return theme.copyWith(
+      // Derive default text colours from the active scheme.
+      textTheme: theme.textTheme.apply(
+        bodyColor: scheme.onSurface,
+        displayColor: scheme.onSurface,
+      ),
+      inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+        labelStyle: WidgetStateTextStyle.resolveWith(
+          (states) => TextStyle(
+            color: states.contains(WidgetState.disabled)
+                ? scheme.onSurface.withValues(alpha: 0.38)
+                : scheme.onSurface,
+          ),
+        ),
+        floatingLabelStyle: WidgetStateTextStyle.resolveWith(
+          (states) => TextStyle(
+            color: states.contains(WidgetState.disabled)
+                ? scheme.onSurface.withValues(alpha: 0.38)
+                : scheme.onSurface,
+          ),
+        ),
+        errorStyle: theme.textTheme.bodySmall?.copyWith(
+          color: scheme.onSurface,
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+          borderSide: BorderSide(color: scheme.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppDimens.radiusControl),
+          borderSide: BorderSide(color: scheme.error, width: 2),
+        ),
+      ),
+      appBarTheme: theme.appBarTheme.copyWith(
+        iconTheme: IconThemeData(color: scheme.onSurface),
+        actionsIconTheme: IconThemeData(color: scheme.onSurface),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: scheme.onSurface),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: scheme.onSurface,
+          side: BorderSide(color: muted),
+        ),
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelColor: scheme.onSurface,
+        unselectedLabelColor: muted,
+        indicatorColor: scheme.onSurface,
+      ),
+      radioTheme: RadioThemeData(
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) return null;
+          return states.contains(WidgetState.selected)
+              ? scheme.onSurface
+              : muted;
+        }),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) return null;
+          return states.contains(WidgetState.selected)
+              ? scheme.onPrimary
+              : muted;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) return null;
+          return states.contains(WidgetState.selected)
+              ? scheme.primary
+              : theme.inputDecorationTheme.fillColor ?? scheme.surface;
+        }),
+        trackOutlineColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) return null;
+          return muted;
+        }),
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: scheme.onSurface,
+        selectionHandleColor: scheme.onSurface,
+        selectionColor: scheme.primary.withValues(alpha: 0.3),
+      ),
+    );
+  }
 }

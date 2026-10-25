@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/shared/widgets/app_logo.dart';
 
 class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? titleText;
   final bool showLogo;
   final List<Widget>? actions;
-  final VoidCallback? onRefresh;
   final Widget? leading;
   final bool automaticallyImplyLeading;
   final Color? backgroundColor;
@@ -18,7 +16,6 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.titleText,
     this.showLogo = true,
     this.actions,
-    this.onRefresh,
     this.leading,
     this.automaticallyImplyLeading = true,
     this.backgroundColor,
@@ -28,46 +25,39 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> appBarActions = [];
-    
-    // Add refresh button if callback is provided
-    if (onRefresh != null) {
-      appBarActions.add(
-        IconButton(
-          icon: const Icon(Icons.refresh),
-          onPressed: onRefresh,
-          tooltip: 'refresh'.tr(),
-        ),
-      );
-    }
-    
-    // Add any additional actions
-    if (actions != null) {
-      appBarActions.addAll(actions!);
-    }
-
+    final titleStyle =
+        Theme.of(context).appBarTheme.titleTextStyle ??
+        Theme.of(context).textTheme.titleLarge;
     return AppBar(
-      title: showLogo 
-          ? (titleText != null 
-              ? AppLogoWithText(
-                  text: titleText!,
-                  logoSize: 24,
-                  fontSize: 18,
-                )
-              : const AppLogoWithText())
+      titleSpacing: 16,
+      scrolledUnderElevation: 0,
+      title: showLogo
+          ? (titleText != null
+                ? AppLogoWithText(text: titleText!, logoSize: 24, fontSize: 18)
+                : const AppLogoWithText())
           : (titleText != null ? Text(titleText!) : null),
       elevation: 0,
-      actions: appBarActions.isNotEmpty ? appBarActions : null,
+      actions: actions,
       leading: leading,
       automaticallyImplyLeading: automaticallyImplyLeading,
       backgroundColor: backgroundColor,
       foregroundColor: foregroundColor,
+      // Explicit chrome colours (camera panels) must override every inherited
+      // foreground role: AppBar.foregroundColor alone is only a fallback.
+      titleTextStyle: foregroundColor == null
+          ? null
+          : titleStyle?.copyWith(color: foregroundColor),
+      iconTheme: foregroundColor == null
+          ? null
+          : IconThemeData(color: foregroundColor),
+      actionsIconTheme: foregroundColor == null
+          ? null
+          : IconThemeData(color: foregroundColor),
       bottom: bottom,
     );
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(
-    kToolbarHeight + (bottom?.preferredSize.height ?? 0.0),
-  );
+  Size get preferredSize =>
+      Size.fromHeight(kToolbarHeight + (bottom?.preferredSize.height ?? 0.0));
 }

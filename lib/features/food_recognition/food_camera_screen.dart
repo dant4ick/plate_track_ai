@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
+import 'package:plate_track_ai/shared/widgets/camera_scan_overlay.dart';
+import 'package:plate_track_ai/features/food_recognition/food_camera_controls.dart';
 import 'package:plate_track_ai/features/food_recognition/recognition_result_screen.dart';
 import 'package:plate_track_ai/core/services/food_recognition_service.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
 
 class FoodCameraScreen extends StatefulWidget {
   const FoodCameraScreen({super.key});
@@ -17,7 +19,8 @@ class FoodCameraScreen extends StatefulWidget {
   State<FoodCameraScreen> createState() => _FoodCameraScreenState();
 }
 
-class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBindingObserver {
+class _FoodCameraScreenState extends State<FoodCameraScreen>
+    with WidgetsBindingObserver {
   CameraController? _controller;
   List<CameraDescription>? _cameras;
   bool _isInitialized = false;
@@ -26,7 +29,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
   FlashMode _flashMode = FlashMode.off;
   // Keep track of whether we came from gallery to handle state properly
   bool _isFromGallery = false;
-  
+
   // ML services
   final FoodRecognitionService _recognitionService = FoodRecognitionService();
   final FoodStorageService _storageService = FoodStorageService();
@@ -36,7 +39,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initializeCamera();
-    
+
     // Initialize the recognition service
     _recognitionService.initialize();
   }
@@ -82,7 +85,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
       );
 
       await _controller!.initialize();
-      
+
       // Set initial flash mode
       await _controller!.setFlashMode(_flashMode);
 
@@ -104,7 +107,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
 
     try {
       FlashMode newMode;
-      
+
       // Cycle through flash modes: off -> auto -> always
       switch (_flashMode) {
         case FlashMode.off:
@@ -116,9 +119,9 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
         default:
           newMode = FlashMode.off;
       }
-      
+
       await _controller!.setFlashMode(newMode);
-      
+
       setState(() {
         _flashMode = newMode;
       });
@@ -142,7 +145,10 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
   }
 
   Future<void> _takePicture() async {
-    if (_controller == null || !_controller!.value.isInitialized || _isAnalyzing || _isCapturing) {
+    if (_controller == null ||
+        !_controller!.value.isInitialized ||
+        _isAnalyzing ||
+        _isCapturing) {
       return;
     }
 
@@ -243,14 +249,16 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
 
   Future<void> _processImage(File imageFile) async {
     if (!mounted) return;
-    
+
     try {
       // Get nutrition data from the recognition service
       // These are now per 100g values (except for mass)
-      final nutritionValues = await _recognitionService.recognizeFoodValues(imageFile);
-      
+      final nutritionValues = await _recognitionService.recognizeFoodValues(
+        imageFile,
+      );
+
       if (!mounted) return;
-      
+
       // Create food item with per 100g nutrition values
       final foodItem = FoodItem(
         name: 'food_item'.tr(),
@@ -260,11 +268,13 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
           protein: nutritionValues['protein'] ?? 0,
           carbs: nutritionValues['carbs'] ?? 0,
           fat: nutritionValues['fat'] ?? 0,
-          mass: nutritionValues['mass'] ?? 100.0, // Default to 100g if not available
+          mass:
+              nutritionValues['mass'] ??
+              100.0, // Default to 100g if not available
         ),
         imagePath: imageFile.path,
       );
-      
+
       // Navigate to results screen with the data
       await Navigator.push(
         context,
@@ -279,7 +289,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
           ),
         ),
       );
-      
+
       // Check if a result was returned and update state
       if (mounted) {
         if (_isFromGallery) {
@@ -287,14 +297,14 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
           _isFromGallery = false;
           await _initializeCamera(); // Reinitialize camera to ensure it's working properly
         }
-        
+
         setState(() {
           _isAnalyzing = false;
         });
       }
     } catch (e) {
       debugPrint('Error processing image: $e');
-      
+
       // Create a fallback food item with sample data
       final fallbackFoodItem = FoodItem(
         name: 'sample_food'.tr(),
@@ -307,7 +317,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
         ),
         imagePath: imageFile.path,
       );
-      
+
       // Navigate to results screen with fallback data
       if (mounted) {
         await Navigator.push(
@@ -323,13 +333,13 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
             ),
           ),
         );
-        
+
         if (_isFromGallery) {
           // Explicitly force a complete rebuild of the screen for gallery images
           _isFromGallery = false;
           await _initializeCamera(); // Reinitialize camera to ensure it's working properly
         }
-        
+
         setState(() {
           _isAnalyzing = false;
         });
@@ -339,154 +349,75 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
 
   @override
   Widget build(BuildContext context) {
-    if (_isAnalyzing) {
-      return Scaffold(
-        body: LoadingIndicator(message: 'analyzing_food'.tr()),
-      );
-    }
-
-    if (!_isInitialized || _controller == null) {
-      return Scaffold(
-        body: LoadingIndicator(message: 'loading'.tr()),
-      );
-    }
-
+    final cameraReady = _isInitialized && _controller != null;
     return Scaffold(
+      backgroundColor: AppColors.cameraBackdrop,
       appBar: StandardAppBar(
         titleText: 'food_scanner'.tr(),
         showLogo: false,
-        backgroundColor: Colors.black54,
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        backgroundColor: AppColors.cameraBackdrop,
+        foregroundColor: AppColors.cameraForeground,
+        actions: cameraReady && !_isAnalyzing
+            ? [
+                IconButton(
+                  icon: Icon(_getFlashIcon()),
+                  onPressed: _isCapturing ? null : _toggleFlash,
+                  tooltip: 'toggle_flash_mode'.tr(),
+                ),
+              ]
+            : null,
       ),
-      body: Stack(
-        children: [
-          // Camera preview
-          Positioned.fill(
-            child: AspectRatio(
-              aspectRatio: _controller!.value.aspectRatio,
-              child: CameraPreview(_controller!),
-            ),
-          ),
-          
-          // Framing guideline
-          Center(
-            child: FrameGuideline(
-              size: MediaQuery.of(context).size.width * 0.8,
-            ),
-          ),
-          
-          // Flash toggle button
-          Positioned(
-            top: 60,
-            right: 20,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: IconButton(
-                icon: Icon(
-                  _getFlashIcon(),
-                  color: Colors.white,
-                  size: 24,
-                ),
-                onPressed: () {
-                  if (!_isCapturing && !_isAnalyzing) {
-                    _toggleFlash();
-                  }
-                },
-                tooltip: 'toggle_flash_mode'.tr(),
-              ),
-            ),
-          ),
-          
-          // Instruction text
-          Positioned(
-            top: 60,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  _isCapturing ? "capturing".tr() : 'frame_your_food'.tr(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          
-          // Capturing indicator overlay
-          if (_isCapturing)
-            Container(
-              color: Colors.black26,
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          
-          // Bottom actions panel
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.only(
-                left: 24, 
-                right: 24, 
-                top: 20, 
-                bottom: 36
-              ),
-              decoration: const BoxDecoration(
-                color: Colors.black45,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: !cameraReady || _isAnalyzing
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  AppButton(
-                    text: 'select_from_gallery'.tr(),
-                    onPressed: () {
-                      if (!_isCapturing && !_isAnalyzing) {
-                        _pickImageFromGallery();
-                      }
-                    },
-                    isSecondary: true,
-                    icon: Icons.photo_library,
+                  const CircularProgressIndicator(
+                    color: AppColors.cameraForeground,
                   ),
-                  const SizedBox(width: 16),
-                  AppButton(
-                    text: 'take_photo'.tr(),
-                    onPressed: () {
-                      if (!_isCapturing && !_isAnalyzing) {
-                        _takePicture();
-                      }
-                    },
-                    icon: Icons.camera_alt,
+                  const SizedBox(height: 16),
+                  Text(
+                    (_isAnalyzing ? 'analyzing_food' : 'loading').tr(),
+                    style: const TextStyle(color: AppColors.cameraForeground),
                   ),
                 ],
               ),
+            )
+          : Stack(
+              children: [
+                // Camera preview
+                Positioned.fill(
+                  child: AspectRatio(
+                    aspectRatio: _controller!.value.aspectRatio,
+                    child: CameraPreview(_controller!),
+                  ),
+                ),
+
+                const CameraScanOverlay(),
+
+                // Capturing indicator overlay
+                if (_isCapturing)
+                  Container(
+                    color: AppColors.cameraPanelSoft,
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.cameraForeground,
+                      ),
+                    ),
+                  ),
+
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: FoodCameraControls(
+                    isCapturing: _isCapturing,
+                    onGallery: _isCapturing ? null : _pickImageFromGallery,
+                    onTakePhoto: _isCapturing ? null : _takePicture,
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }

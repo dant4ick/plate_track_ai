@@ -1,0 +1,71 @@
+{
+  "family": "Montserrat",
+  "license": "SIL Open Font License 1.1",
+  "license_source": "https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/OFL.txt",
+  "files": [
+    {
+      "file": "Montserrat-Regular.ttf",
+      "weight": 400,
+      "style": "normal",
+      "bytes": 175484,
+      "sha256": "7ec20755dbe4985c2505b42bbdfcf2456dd0f2acd8801d9725b2c82c9f9b6433",
+      "source": "https://fonts.gstatic.com/s/a/7ec20755dbe4985c2505b42bbdfcf2456dd0f2acd8801d9725b2c82c9f9b6433.ttf"
+    },
+    {
+      "file": "Montserrat-Medium.ttf",
+      "weight": 500,
+      "style": "normal",
+      "bytes": 175452,
+      "sha256": "36ad36e0941cc29d47c926ee87d664c5dd20ecebe75410843e05a3bec763fb70",
+      "source": "https://fonts.gstatic.com/s/a/36ad36e0941cc29d47c926ee87d664c5dd20ecebe75410843e05a3bec763fb70.ttf"
+    },
+    {
+      "file": "Montserrat-SemiBold.ttf",
+      "weight": 600,
+      "style": "normal",
+      "bytes": 176000,
+      "sha256": "ff847b201647579bb6cd0f46de344b5731f9e4932308842b7b4dce64fc27c0ef",
+      "source": "https://fonts.gstatic.com/s/a/ff847b201647579bb6cd0f46de344b5731f9e4932308842b7b4dce64fc27c0ef.ttf"
+    },
+    {
+      "file": "Montserrat-Bold.ttf",
+      "weight": 700,
+      "style": "normal",
+      "bytes": 176444,
+      "sha256": "6909027d44d53e9a64ea940b0a7aea9d04187d1bb8ab17a178d99a46bf9ef320",
+      "source": "https://fonts.gstatic.com/s/a/6909027d44d53e9a64ea940b0a7aea9d04187d1bb8ab17a178d99a46bf9ef320.ttf"
+    },
+    {
+      "file": "Montserrat-Italic.ttf",
+      "weight": 400,
+      "style": "italic",
+      "bytes": 176940,
+      "sha256": "e258fd64abbd1bf5d6c33fef4d0ffb376b01f587da11792ce4e22267344eeafb",
+      "source": "https://fonts.gstatic.com/s/a/e258fd64abbd1bf5d6c33fef4d0ffb376b01f587da11792ce4e22267344eeafb.ttf"
+    },
+    {
+      "file": "Montserrat-MediumItalic.ttf",
+      "weight": 500,
+      "style": "italic",
+      "bytes": 177048,
+      "sha256": "e9738557370083ed415dafdfd478b4e2d9cefecbc63e951b58520c8f552ae467",
+      "source": "https://fonts.gstatic.com/s/a/e9738557370083ed415dafdfd478b4e2d9cefecbc63e951b58520c8f552ae467.ttf"
+    },
+    {
+      "file": "Montserrat-SemiBoldItalic.ttf",
+      "weight": 600,
+      "style": "italic",
+      "bytes": 177668,
+      "sha256": "a4d435b5aaede1d5433cfbd7ad7f13ae3f90e50e50b6aea05a8ac03b5e481be7",
+      "source": "https://fonts.gstatic.com/s/a/a4d435b5aaede1d5433cfbd7ad7f13ae3f90e50e50b6aea05a8ac03b5e481be7.ttf"
+    },
+    {
+      "file": "Montserrat-BoldItalic.ttf",
+      "weight": 700,
+      "style": "italic",
+      "bytes": 177996,
+      "sha256": "2e163d6e58097f9495e2090cda82a67c75b176d1d76d32b2557bd8609cc95feb",
+      "source": "https://fonts.gstatic.com/s/a/2e163d6e58097f9495e2090cda82a67c75b176d1d76d32b2557bd8609cc95feb.ttf"
+    }
+  ]
+}

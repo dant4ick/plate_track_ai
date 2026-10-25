@@ -1,7 +1,12 @@
+import 'package:plate_track_ai/core/themes/app_theme.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
+import 'package:plate_track_ai/core/themes/app_dimens.dart';
+import 'package:plate_track_ai/shared/widgets/macro_chip.dart';
+import 'package:plate_track_ai/shared/widgets/soft_card.dart';
 
 class AppButton extends StatelessWidget {
   final String text;
@@ -21,21 +26,25 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isSecondary 
-            ? Theme.of(context).colorScheme.secondary 
-            : Theme.of(context).colorScheme.primary,
+      style: AppTheme.filledButtonStyle(
+        backgroundColor: isSecondary ? scheme.secondary : scheme.primary,
+        // Overriding the background without its matching foreground left the
+        // button on the theme's default white, which on the lime secondary is
+        // 1.13:1 — invisible. The scheme already pairs these correctly.
+        foregroundColor: isSecondary ? scheme.onSecondary : scheme.onPrimary,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: isLoading
-          ? const SizedBox(
+          ? SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
-                color: Colors.white,
+                color: isSecondary ? scheme.onSecondary : scheme.onPrimary,
                 strokeWidth: 2.0,
               ),
             )
@@ -71,7 +80,6 @@ class NutritionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -81,15 +89,15 @@ class NutritionCard extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  color: color ?? Theme.of(context).colorScheme.primary,
+                  color: color ?? Theme.of(context).colorScheme.onSurface,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -97,9 +105,9 @@ class NutritionCard extends StatelessWidget {
             Text(
               value,
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: color ?? Theme.of(context).colorScheme.primary,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: color ?? Theme.of(context).colorScheme.onSurface,
+              ),
             ),
           ],
         ),
@@ -117,7 +125,7 @@ class FrameGuideline extends StatelessWidget {
     super.key,
     required this.size,
     this.strokeWidth = 3.0,
-    this.color = Colors.white,
+    this.color = AppColors.cameraForeground,
   });
 
   @override
@@ -126,10 +134,7 @@ class FrameGuideline extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        border: Border.all(
-          color: color,
-          width: strokeWidth,
-        ),
+        border: Border.all(color: color, width: strokeWidth),
         borderRadius: BorderRadius.circular(12),
       ),
     );
@@ -139,10 +144,7 @@ class FrameGuideline extends StatelessWidget {
 class LoadingIndicator extends StatelessWidget {
   final String message;
 
-  const LoadingIndicator({
-    super.key,
-    required this.message,
-  });
+  const LoadingIndicator({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -152,10 +154,7 @@ class LoadingIndicator extends StatelessWidget {
         children: [
           const CircularProgressIndicator(),
           const SizedBox(height: 16),
-          Text(
-            message,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
+          Text(message, style: Theme.of(context).textTheme.bodyLarge),
         ],
       ),
     );
@@ -170,6 +169,13 @@ class FoodItemCard extends StatelessWidget {
   final bool showNutrientChips;
   final String? timeFormat;
 
+  /// Whether the "when" line carries the timestamp. Off for lists that already
+  /// say when — the dashboard's recent meals, a history grouped by day.
+  final bool showTimestamp;
+
+  /// Opens the meal's detail screen when set.
+  final VoidCallback? onTap;
+
   const FoodItemCard({
     super.key,
     required this.item,
@@ -177,168 +183,184 @@ class FoodItemCard extends StatelessWidget {
     this.showDeleteButton = false,
     this.showMass = true,
     this.showNutrientChips = true,
+    this.showTimestamp = true,
     this.timeFormat,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final timeString = timeFormat != null 
-        ? DateFormat(timeFormat!, context.locale.toString()).format(item.timestamp)
-        : DateFormat('MMM d, h:mm a', context.locale.toString()).format(item.timestamp);
+    // easy_localization's `context.locale` requires its widget above us; fall
+    // back to the framework locale so the card also renders outside the app.
+    final localeName =
+        (EasyLocalization.of(context)?.locale ??
+                Localizations.localeOf(context))
+            .toString();
+    final timeString = DateFormat(
+      timeFormat ?? 'MMM d, h:mm a',
+      localeName,
+    ).format(item.timestamp);
     final double mass = item.nutritionFacts.mass ?? 100.0;
     final int actualCalories = ((item.calories * mass) / 100.0).toInt();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            // Leading image
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: isDark ? Colors.grey[800] : Colors.grey[200],
-              ),
-              child: item.imagePath != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.file(
-                        File(item.imagePath!),
-                        fit: BoxFit.cover,
+    final palette = AppPalette.of(context);
+    final theme = Theme.of(context);
+
+    // Nutrition facts are stored per 100 g, so every figure shown has to be
+    // scaled to the portion actually eaten.
+    double per(double per100) => (per100 * mass) / 100.0;
+
+    // The secondary line: timestamp and portion, either of which may be off.
+    final details = [
+      if (showTimestamp) timeString,
+      if (showMass) '${mass.toInt()}${'g'.tr()}',
+    ].join(' · ');
+
+    return SoftCard(
+      padding: const EdgeInsets.all(14),
+      onTap: onTap,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _Thumbnail(imagePath: item.imagePath),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.name,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    )
-                  : Icon(
-                      Icons.restaurant,
-                      color: isDark ? Colors.grey[500] : Colors.grey[400],
                     ),
-            ),
-            const SizedBox(width: 12),
-            
-            // Main content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title row with delete button
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.name,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                      ),
-                      if (showDeleteButton && onDelete != null)
-                        InkWell(
-                          onTap: onDelete,
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: isDark ? Colors.red[900]?.withValues(alpha: 0.3) : Colors.red[50],
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isDark ? Colors.red[600]! : Colors.red[200]!,
-                                width: 1,
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.delete_outline,
-                              size: 16,
-                              color: isDark ? Colors.red[300] : Colors.red[400],
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  
-                  // Time and mass
+                    if (showDeleteButton && onDelete != null)
+                      _DeleteButton(onDelete: onDelete!),
+                  ],
+                ),
+                if (details.isNotEmpty) ...[
+                  const SizedBox(height: 3),
                   Text(
-                    showMass ? '$timeString · ${mass.toInt()}${'g'.tr()}' : timeString,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
+                    details,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: palette.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  // Bottom row with nutrients and calories
-                    Row(
+                ],
+                if (showNutrientChips) ...[
+                  const SizedBox(height: 9),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
                     children: [
-                      if (showNutrientChips) ...[
-                      Expanded(
-                        child: Wrap(
-                        spacing: 4,
-                        children: [
-                          _buildNutrientChip(
-                          '${'protein_short'.tr()}: ${((item.nutritionFacts.protein * mass) / 100).toInt()}${'g'.tr()}',
-                          Colors.purple[400]!,
-                          ),
-                          _buildNutrientChip(
-                          '${'carbs_short'.tr()}: ${((item.nutritionFacts.carbs * mass) / 100).toInt()}${'g'.tr()}',
-                          Colors.amber[600]!,
-                          ),
-                          _buildNutrientChip(
-                          '${'fat_short'.tr()}: ${((item.nutritionFacts.fat * mass) / 100).toInt()}${'g'.tr()}',
-                          Colors.blue[400]!,
-                          ),
-                        ],
-                        ),
+                      MacroChip(
+                        macro: Macro.protein,
+                        grams: per(item.nutritionFacts.protein),
                       ),
-                      const SizedBox(width: 12),
-                      ],
-                      
-                      // Calories
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '$actualCalories',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark ? Colors.red[300] : Colors.red[400],
-                                ),
-                          ),
-                          Text(
-                            'kcal'.tr(),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                ),
-                          ),
-                        ],
+                      MacroChip(
+                        macro: Macro.carbs,
+                        grams: per(item.nutritionFacts.carbs),
+                      ),
+                      MacroChip(
+                        macro: Macro.fat,
+                        grams: per(item.nutritionFacts.fat),
                       ),
                     ],
                   ),
                 ],
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 10),
+          // Calories read as one phrase — figure then unit — rather than a
+          // stacked pair, so the row has a single strong right-hand anchor.
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '$actualCalories',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(width: 3),
+              Text(
+                'kcal'.tr(),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: palette.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
+}
 
-  Widget _buildNutrientChip(String text, Color color) {
+class _Thumbnail extends StatelessWidget {
+  const _Thumbnail({required this.imagePath});
+
+  final String? imagePath;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = AppPalette.of(context);
+    final radius = BorderRadius.circular(AppDimens.radiusThumb);
+    final path = imagePath;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      width: 58,
+      height: 58,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: radius,
+        color: palette.placeholder,
       ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          color: color,
+      clipBehavior: Clip.antiAlias,
+      child: path == null
+          ? Icon(Icons.restaurant, color: palette.placeholderIcon, size: 24)
+          : Image.file(
+              File(path),
+              fit: BoxFit.cover,
+              // A stored path can outlive the file it points at, so a missing
+              // image falls back to the placeholder instead of an error box.
+              errorBuilder: (context, error, stack) => Icon(
+                Icons.restaurant,
+                color: palette.placeholderIcon,
+                size: 24,
+              ),
+            ),
+    );
+  }
+}
+
+class _DeleteButton extends StatelessWidget {
+  const _DeleteButton({required this.onDelete});
+
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = AppPalette.of(context);
+
+    return InkWell(
+      onTap: onDelete,
+      borderRadius: BorderRadius.circular(AppDimens.radiusPill),
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Icon(
+          Icons.close_rounded,
+          size: 16,
+          color: palette.textSecondary,
         ),
       ),
     );

@@ -1,6 +1,9 @@
+import 'package:plate_track_ai/core/themes/app_theme.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:plate_track_ai/shared/models/food_item.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
+import 'package:plate_track_ai/shared/widgets/status_snack_bar.dart';
 
 Future<void> showDeleteConfirmationDialog({
   required BuildContext context,
@@ -11,31 +14,36 @@ Future<void> showDeleteConfirmationDialog({
   required String successMessageKey,
   required String deleteButtonTextKey,
 }) async {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final palette = AppPalette.of(context);
 
   return showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isDark ? Colors.red[900]?.withValues(alpha: 0.3) : Colors.red[50],
+                color: palette.dangerSoft,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 Icons.delete_outline,
-                color: isDark ? Colors.red[300] : Colors.red[400],
+                color: palette.danger,
                 size: 24,
               ),
             ),
             const SizedBox(width: 12),
-            Text(
-              'delete_food_item'.tr(),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            // Expanded so a long title (or a long translation) wraps instead of
+            // running out of the dialog.
+            Expanded(
+              child: Text(
+                'delete_food_item'.tr(),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -51,17 +59,15 @@ Future<void> showDeleteConfirmationDialog({
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isDark ? Colors.orange[900]?.withValues(alpha: 0.3) : Colors.orange[50],
+                color: palette.warningSoft,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isDark ? Colors.orange[600]! : Colors.orange[200]!,
-                ),
+                border: Border.all(color: palette.warningBorder),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.warning_amber_rounded,
-                    color: isDark ? Colors.orange[300] : Colors.orange[600],
+                    color: palette.warning,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -69,7 +75,7 @@ Future<void> showDeleteConfirmationDialog({
                     child: Text(
                       undoWarningTextKey,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: isDark ? Colors.orange[200] : Colors.orange[700],
+                        color: palette.warningText,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -88,7 +94,9 @@ Future<void> showDeleteConfirmationDialog({
             child: Text(
               'cancel'.tr(),
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -98,28 +106,21 @@ Future<void> showDeleteConfirmationDialog({
               if (context.mounted) {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Row(
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.green[400], size: 20),
-                        const SizedBox(width: 8),
-                        Text(successMessageKey),
-                      ],
-                    ),
-                    backgroundColor: Colors.green[600],
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                  StatusSnackBar.success(
+                    context,
+                    message: successMessageKey,
+                    icon: Icons.check_circle,
                   ),
                 );
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[400],
-              foregroundColor: Colors.white,
+            style: AppTheme.filledButtonStyle(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: Text(deleteButtonTextKey),
           ),

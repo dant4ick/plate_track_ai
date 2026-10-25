@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:plate_track_ai/core/services/local_data_observer.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
-import 'package:plate_track_ai/shared/widgets/common_widgets.dart';
+import 'package:plate_track_ai/features/recommendations/nutrition_advice.dart';
 import 'package:plate_track_ai/shared/widgets/standard_app_bar.dart';
+import 'package:plate_track_ai/shared/widgets/soft_card.dart';
+import 'package:plate_track_ai/shared/widgets/tip_card.dart';
+import 'package:plate_track_ai/core/themes/app_colors.dart';
+import 'package:plate_track_ai/core/themes/app_dimens.dart';
 
 class RecommendationsScreen extends StatefulWidget {
   const RecommendationsScreen({super.key});
@@ -15,7 +20,7 @@ class RecommendationsScreen extends StatefulWidget {
 class _RecommendationsScreenState extends State<RecommendationsScreen> {
   final FoodStorageService _storageService = FoodStorageService();
   final UserProfileService _userProfileService = UserProfileService();
-  bool _isLoading = false;
+  bool _isLoading = true;
 
   // Nutrition summary for the past week
   double _avgCalories = 0;
@@ -29,49 +34,41 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
   double _targetCarbs = 250;
   double _targetFat = 70;
 
-  // List of personalized recommendations
-  List<Map<String, dynamic>> _recommendations = [];
+  // Personalised advice, produced by the shared NutritionAdvice rules so this
+  // screen and the dashboard can never disagree about what to suggest.
+  List<NutritionTip> _recommendations = [];
+
+  late final LocalDataObserver _dataObserver;
 
   @override
   void initState() {
     super.initState();
-    // Initialize services and load data
-    _initializeServices();
-  }
-
-  Future<void> _initializeServices() async {
-    // Initialize the storage service
-    _storageService.initialize();
-
-    // Initialize user profile service and load targets
-    await _userProfileService.initialize();
-    _loadUserTargets();
-
-    // Load food data
+    _dataObserver = LocalDataObserver(
+      onChanged: _loadData,
+      changes: [
+        _storageService.onDataChanged,
+        _userProfileService.onDataChanged,
+      ],
+    );
     _loadData();
   }
 
-  void _loadUserTargets() {
-    final targets = _userProfileService.getNutritionTargets();
-    if (targets != null) {
-      setState(() {
-        _targetCalories = targets['calories']!;
-        _targetProtein = targets['protein']!;
-        _targetCarbs = targets['carbs']!;
-        _targetFat = targets['fat']!;
-      });
-    }
+  @override
+  void dispose() {
+    _dataObserver.dispose();
+    super.dispose();
   }
 
-  // Don't need to load data in the build method, it will be triggered by the ValueListenable
   Future<void> _loadData() async {
     if (!mounted) return;
 
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
+      await _userProfileService.initialize();
+      final targets = _userProfileService.getNutritionTargets();
+      _targetCalories = targets?['calories'] ?? 2000;
+      _targetProtein = targets?['protein'] ?? 80;
+      _targetCarbs = targets?['carbs'] ?? 250;
+      _targetFat = targets?['fat'] ?? 70;
       final now = DateTime.now();
       int daysWithData = 0;
       double totalCalories = 0;
@@ -127,254 +124,44 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
   }
 
   void _generateRecommendations() {
-    _recommendations = [];
-
-    // Calorie recommendation
-    if (_avgCalories < _targetCalories * 0.8) {
-      _recommendations.add({
-        'title': 'increase_calorie_intake'.tr(),
-        'description': 'increase_calorie_intake_desc'.tr(
-          namedArgs: {
-            "avg_calories": _avgCalories.toInt().toString(),
-            "target_calories": _targetCalories.toInt().toString(),
-          },
-        ),
-        'icon': Icons.add_circle,
-        'color': Colors.orange[700],
-      });
-    } else if (_avgCalories > _targetCalories * 1.2) {
-      _recommendations.add({
-        'title': 'reduce_calorie_intake'.tr(),
-        'description': 'reduce_calorie_intake_desc'.tr(
-          namedArgs: {
-            "avg_calories": _avgCalories.toInt().toString(),
-            "target_calories": _targetCalories.toInt().toString(),
-          },
-        ),
-        'icon': Icons.remove_circle,
-        'color': Colors.red[700],
-      });
-    }
-
-    // Protein recommendation
-    if (_avgProtein < _targetProtein * 0.8) {
-      _recommendations.add({
-        'title': 'increase_protein_intake'.tr(),
-        'description': 'increase_protein_intake_desc'.tr(),
-        'icon': Icons.fitness_center,
-        'color': Colors.purple[700],
-      });
-    }
-
-    // Carbs recommendation
-    double carbRatio = _avgCarbs / _targetCarbs;
-    if (carbRatio > 1.3) {
-      _recommendations.add({
-        'title': 'reduce_simple_carbs'.tr(),
-        'description': 'reduce_simple_carbs_desc'.tr(),
-        'icon': Icons.grain,
-        'color': Colors.amber[700],
-      });
-    }
-
-    // Fat recommendation
-    if (_avgFat > _targetFat * 1.2) {
-      _recommendations.add({
-        'title': 'monitor_fat_intake'.tr(),
-        'description': 'monitor_fat_intake_desc'.tr(),
-        'icon': Icons.opacity,
-        'color': Colors.blue[700],
-      });
-    }
-
-    // General healthy eating recommendation
-    _recommendations.add({
-      'title': 'stay_hydrated'.tr(),
-      'description': 'stay_hydrated_desc'.tr(),
-      'icon': Icons.water_drop,
-      'color': Colors.blue[700],
-    });
-
-    // If no specific recommendations, add some general ones
-    if (_recommendations.length < 3) {
-      _recommendations.add({
-        'title': 'eat_variety_of_foods'.tr(),
-        'description': 'eat_variety_of_foods_desc'.tr(),
-        'icon': Icons.diversity_1,
-        'color': Colors.teal[700],
-      });
-
-      _recommendations.add({
-        'title': 'regular_meal_pattern'.tr(),
-        'description': 'regular_meal_pattern_desc'.tr(),
-        'icon': Icons.schedule,
-        'color': Colors.indigo[700],
-      });
-    }
+    _recommendations = NutritionAdvice.forWeek(
+      averages: NutritionAverages(
+        calories: _avgCalories,
+        protein: _avgProtein,
+        carbs: _avgCarbs,
+        fat: _avgFat,
+      ),
+      targets: NutritionTargets(
+        calories: _targetCalories,
+        protein: _targetProtein,
+        carbs: _targetCarbs,
+        fat: _targetFat,
+      ),
+    );
   }
 
   void _useDefaultRecommendations() {
-    _recommendations = [
-      {
-        'title': 'balance_macronutrients'.tr(),
-        'description': 'balance_macronutrients_desc'.tr(),
-        'icon': Icons.balance,
-        'color': Colors.purple[700],
-      },
-      {
-        'title': 'stay_hydrated'.tr(),
-        'description': 'stay_hydrated_desc'.tr(),
-        'icon': Icons.water_drop,
-        'color': Colors.blue[700],
-      },
-      {
-        'title': 'portion_control'.tr(),
-        'description': 'portion_control_desc'.tr(),
-        'icon': Icons.pie_chart,
-        'color': Colors.orange[700],
-      },
-      {
-        'title': 'eat_more_whole_foods'.tr(),
-        'description': 'eat_more_whole_foods_desc'.tr(),
-        'icon': Icons.restaurant,
-        'color': Colors.green[700],
-      },
-    ];
+    _recommendations = NutritionAdvice.general();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: _storageService.foodBoxListenable,
-      builder: (context, box, child) {
-        // Don't call _loadData() here - that was causing the error
-        // Instead, call it inside didUpdateWidget or use a useEffect pattern
-
-        return Scaffold(
-          appBar: StandardAppBar(onRefresh: _loadData),
-          body:
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : RefreshIndicator(
-                    onRefresh: _loadData,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Header section
-                          _buildHeaderSection(),
-
-                          const SizedBox(height: 24),
-
-                          // Daily nutrition insights card
-                          _buildInsightsCard(),
-
-                          const SizedBox(height: 24),
-
-                          // Recommendations section
-                          Text(
-                            'improve_nutrition'.tr(),
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Recommendations list
-                          _buildRecommendationsList(),
-                        ],
-                      ),
-                    ),
-                  ),
-        );
-      },
-    );
-  }
-
-  // Override didUpdateWidget to load data when box changes
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // This will be called when the dependencies of this widget change,
-    // including when the ValueListenable emits a new value
-    _loadData();
-  }
-
-  Widget _buildHeaderSection() {
-    String message;
-    IconData icon;
-    Color iconColor;
-
-    if (_avgCalories == 0) {
-      message = 'start_tracking_meals'.tr();
-      icon = Icons.restaurant_menu;
-      iconColor = Colors.blue[400]!;
-    } else if (_avgCalories < _targetCalories * 0.8) {
-      message = 'nutrition_data_good'.tr();
-      icon = Icons.trending_up;
-      iconColor = Colors.green[400]!;
-    } else if (_avgCalories > _targetCalories * 1.2) {
-      message = 'moderate_calorie_intake'.tr();
-      icon = Icons.info;
-      iconColor = Colors.orange[400]!;
-    } else {
-      message = 'nutrition_tracking_great'.tr();
-      icon = Icons.check_circle;
-      iconColor = Colors.green[400]!;
-    }
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [iconColor.withValues(alpha: 0.1), iconColor.withValues(alpha: 0.05)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: iconColor, size: 32),
+    return Scaffold(
+      appBar: const StandardAppBar(),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: AppDimens.pagePadding(context),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInsightsCard(),
+                  const SizedBox(height: 24),
+                  SectionHeader('improve_nutrition'.tr()),
+                  _buildRecommendationsList(),
+                ],
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'personalized_tips'.tr(),
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: iconColor,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      message,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
@@ -386,7 +173,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -396,7 +182,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               children: [
                 Icon(
                   Icons.insights,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -414,7 +200,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               'protein'.tr(),
               proteinPercentage,
               '${(proteinPercentage * 100).toInt()}% ${'of_goal'.tr()}',
-              Colors.purple[400]!,
+              AppColors.protein,
             ),
             const SizedBox(height: 12),
 
@@ -423,7 +209,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               'carbs'.tr(),
               carbsPercentage,
               '${(carbsPercentage * 100).toInt()}% ${'of_goal'.tr()}',
-              Colors.amber[700]!,
+              AppColors.carbs,
             ),
             const SizedBox(height: 12),
 
@@ -432,7 +218,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
               'fat'.tr(),
               fatPercentage,
               '${(fatPercentage * 100).toInt()}% ${'of_goal'.tr()}',
-              Colors.blue[400]!,
+              AppColors.fat,
             ),
 
             const SizedBox(height: 16),
@@ -462,10 +248,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
     return RichText(
       text: TextSpan(
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color:
-              Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey[200]
-                  : Colors.grey[800],
+          color: Theme.of(context).colorScheme.onSurface,
         ),
         children: [
           TextSpan(
@@ -506,7 +289,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
           child: LinearProgressIndicator(
             value: progress,
             minHeight: 8,
-            backgroundColor: Colors.grey[200],
+            backgroundColor: AppPalette.of(context).track,
             valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),
@@ -519,76 +302,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _recommendations.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final item = _recommendations[index];
-        return _buildRecommendationCard(
-          context,
-          title: item['title'] as String,
-          description: item['description'] as String,
-          icon: item['icon'] as IconData,
-          color: item['color'] as Color,
-        );
-      },
-    );
-  }
-
-  Widget _buildRecommendationCard(
-    BuildContext context, {
-    required String title,
-    required String description,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, color: color, size: 24),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(description, style: Theme.of(context).textTheme.bodyMedium),
-            const SizedBox(height: 12),
-            AppButton(
-              text: 'learn_more'.tr(),
-              onPressed: () {
-                // TODO: Navigate to detailed recommendation screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('more_details_coming_soon'.tr()),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-              isSecondary: true,
-              icon: Icons.info_outline,
-            ),
-          ],
-        ),
-      ),
+      separatorBuilder: (context, index) => const SizedBox(height: 10),
+      itemBuilder: (context, index) => TipCard(tip: _recommendations[index]),
     );
   }
 }
