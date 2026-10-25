@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 import 'app_dimens.dart';
 
 class AppTheme {
   AppTheme._();
+
+  /// Bundled Latin and Cyrillic font, shared by every theme and locale.
+  static const fontFamily = 'Montserrat';
 
   /// Keep feedback on filled controls while preserving text contrast after
   /// compositing the state layer over indigo and destructive backgrounds.
@@ -44,6 +46,7 @@ class AppTheme {
   static final ThemeData lightTheme = _readableControls(
     ThemeData(
       useMaterial3: true,
+      fontFamily: fontFamily,
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.scaffoldLight,
       extensions: const [AppFlavorTag(AppFlavor.light)],
@@ -60,13 +63,13 @@ class AppTheme {
         onSurface: AppColors.textPrimaryLight,
         outline: AppColors.textSecondaryLight,
       ),
-      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.light().textTheme),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: const TextStyle(
+          fontFamily: fontFamily,
           color: AppColors.textPrimaryLight,
           fontSize: 20.0,
           fontWeight: FontWeight.w500,
@@ -130,6 +133,7 @@ class AppTheme {
   static final ThemeData darkTheme = _readableControls(
     ThemeData(
       useMaterial3: true,
+      fontFamily: fontFamily,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.scaffoldDark,
       extensions: const [AppFlavorTag(AppFlavor.dark)],
@@ -146,13 +150,13 @@ class AppTheme {
         onSurface: AppColors.textPrimaryDark,
         outline: AppColors.textSecondaryDark,
       ),
-      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: const TextStyle(
+          fontFamily: fontFamily,
           color: AppColors.textPrimaryDark,
           fontSize: 20.0,
           fontWeight: FontWeight.w500,
@@ -222,6 +226,7 @@ class AppTheme {
   static final ThemeData pickMeTheme = _readableControls(
     ThemeData(
       useMaterial3: true,
+      fontFamily: fontFamily,
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.scaffoldPick,
       extensions: const [AppFlavorTag(AppFlavor.pickMe)],
@@ -240,13 +245,13 @@ class AppTheme {
         onSurface: AppColors.textPrimaryLight,
         outline: AppColors.textSecondaryLight,
       ),
-      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.light().textTheme),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: const TextStyle(
+          fontFamily: fontFamily,
           // The bar is transparent, so the title sits on the pale pink scaffold:
           // white would vanish there. Ink, like the other two themes use.
           color: AppColors.textPrimaryLight,
@@ -316,8 +321,7 @@ class AppTheme {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
     return theme.copyWith(
-      // Keep Poppins metrics while deriving all default text colours from the
-      // active scheme rather than the unrelated ThemeData.light/dark palette.
+      // Derive default text colours from the active scheme.
       textTheme: theme.textTheme.apply(
         bodyColor: scheme.onSurface,
         displayColor: scheme.onSurface,

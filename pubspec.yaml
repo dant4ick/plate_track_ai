@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   cupertino_icons: ^1.0.8
   
   # Camera and image handling
@@ -27,7 +29,6 @@ dependencies:
   
   # UI components
   fl_chart: ^1.0.0
-  google_fonts: ^8.0.2
   cached_network_image: ^3.3.1
   shimmer: ^3.0.0
   flutter_svg: ^2.0.10+1
@@ -73,3 +74,28 @@ flutter:
     - assets/icons/
     - assets/ml/
     - assets/translations/
+    - assets/fonts/Montserrat/OFL.txt
+
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat/Montserrat-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Montserrat/Montserrat-Italic.ttf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/Montserrat/Montserrat-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Montserrat/Montserrat-MediumItalic.ttf
+          weight: 500
+          style: italic
+        - asset: assets/fonts/Montserrat/Montserrat-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Montserrat/Montserrat-SemiBoldItalic.ttf
+          weight: 600
+          style: italic
+        - asset: assets/fonts/Montserrat/Montserrat-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Montserrat/Montserrat-BoldItalic.ttf
+          weight: 700
+          style: italic

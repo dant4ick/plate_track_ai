@@ -222,8 +222,6 @@ class _HomeScreenState extends State<HomeScreen>
 
   // True while animation value > 0 (opening, open, or closing)
   bool get _dialVisible => _dialController.value > 0;
-  // Icon shows "close" when more than halfway open
-  bool get _showCloseIcon => _dialController.value > 0.5;
 
   @override
   void initState() {
@@ -256,10 +254,11 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _toggleDial() {
-    if (_dialController.isDismissed) {
-      _dialController.forward();
-    } else {
+    if (_dialController.status == AnimationStatus.forward ||
+        _dialController.isCompleted) {
       _dialController.reverse();
+    } else {
+      _dialController.forward();
     }
   }
 
@@ -304,15 +303,12 @@ class _HomeScreenState extends State<HomeScreen>
   // ── Main dial button ─────────────────────────────────────────────────────────
 
   Widget _buildMainDialButton() {
-    // Styled off the FAB theme, not colorScheme.primary: this button *is* the
-    // app's FAB, and the pick-me frame deliberately keeps the FAB lime while
-    // its primary is pink. The two only differ there.
-    final fabTheme = Theme.of(context).floatingActionButtonTheme;
+    final colors = Theme.of(context).colorScheme;
 
     return Material(
       elevation: 6,
       borderRadius: BorderRadius.circular(AppDimens.radiusSquircle),
-      color: fabTheme.backgroundColor ?? Theme.of(context).colorScheme.primary,
+      color: colors.primary,
       shadowColor: AppPalette.of(context).shadow,
       child: InkWell(
         onTap: _toggleDial,
@@ -320,23 +316,12 @@ class _HomeScreenState extends State<HomeScreen>
         child: SizedBox(
           width: _fabSize,
           height: _fabSize,
-          // The plus turns an eighth of a revolution into the close glyph
-          // rather than cross-fading, so the two states read as one control.
-          //
-          // Driven straight off the controller rather than through an implicit
-          // animation: the controller already rebuilds this every frame, and an
-          // AnimatedRotation would start a fresh 200 ms tween toward each of
-          // those frames and lag behind the button it sits in.
+          // Keep the same glyph throughout: a 45-degree turn makes the plus
+          // a close icon without a mid-animation shape change.
           child: Center(
             child: Transform.rotate(
-              angle: _dialController.value * math.pi / 4,
-              child: Icon(
-                _showCloseIcon ? Icons.close_rounded : Icons.add_rounded,
-                color:
-                    fabTheme.foregroundColor ??
-                    Theme.of(context).colorScheme.onPrimary,
-                size: 32,
-              ),
+              angle: _overlayAnim.value * math.pi / 4,
+              child: Icon(Icons.add_rounded, color: colors.onPrimary, size: 32),
             ),
           ),
         ),
@@ -353,9 +338,10 @@ class _HomeScreenState extends State<HomeScreen>
     required Animation<double> anim,
     required IconData icon,
     required String label,
-    required Color color,
     required VoidCallback onTap,
   }) {
+    final colors = Theme.of(context).colorScheme;
+
     return FadeTransition(
       opacity: anim,
       child: ScaleTransition(
@@ -397,18 +383,14 @@ class _HomeScreenState extends State<HomeScreen>
               Material(
                 elevation: 3,
                 shape: const CircleBorder(),
-                color: color,
+                color: colors.primary,
                 child: InkWell(
                   customBorder: const CircleBorder(),
                   onTap: onTap,
                   child: SizedBox(
                     width: _subSize,
                     height: _subSize,
-                    child: Icon(
-                      icon,
-                      color: AppPalette.of(context).foregroundOn(color),
-                      size: 22,
-                    ),
+                    child: Icon(icon, color: colors.onPrimary, size: 22),
                   ),
                 ),
               ),
@@ -464,7 +446,6 @@ class _HomeScreenState extends State<HomeScreen>
               anim: _aiAnim,
               icon: Icons.auto_awesome,
               label: 'scan_food_ai'.tr(),
-              color: Theme.of(context).colorScheme.primary,
               onTap: () {
                 _closeDial();
                 _navigateToFoodCamera();
@@ -482,7 +463,6 @@ class _HomeScreenState extends State<HomeScreen>
               anim: _barcodeAnim,
               icon: Icons.barcode_reader,
               label: 'scan_barcode'.tr(),
-              color: Theme.of(context).colorScheme.secondary,
               onTap: () {
                 _closeDial();
                 _navigateToBarcodeScanner();

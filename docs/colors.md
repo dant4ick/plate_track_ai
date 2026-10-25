@@ -92,7 +92,7 @@ dangerBorder и цвета удалённой нижней навигации. �
 `trackLight = borderLight`, `cameraMask = cameraPanel`. Раздельные имена
 ролей сохранены для дальнейшей независимой настройки.
 
-Основная типографика Poppins получает `bodyColor/displayColor` из активного
+Основная типографика Montserrat получает `bodyColor/displayColor` из активного
 `colorScheme.onSurface`: полупрозрачный чёрный в Light/Pick me и белый в Dark.
 Неявные базовые оттенки Material `#1D1B20/#E6E0E9` больше не используются
 в качестве основного текста приложения.

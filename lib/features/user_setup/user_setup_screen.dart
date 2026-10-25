@@ -490,19 +490,15 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                   _calculateBMR();
                 });
               },
-              child: Row(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: RadioListTile<Gender>(
-                      title: Text(Gender.male.displayName),
-                      value: Gender.male,
-                    ),
+                  RadioListTile<Gender>(
+                    title: Text(Gender.male.displayName),
+                    value: Gender.male,
                   ),
-                  Expanded(
-                    child: RadioListTile<Gender>(
-                      title: Text(Gender.female.displayName),
-                      value: Gender.female,
-                    ),
+                  RadioListTile<Gender>(
+                    title: Text(Gender.female.displayName),
+                    value: Gender.female,
                   ),
                 ],
               ),

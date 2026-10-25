@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:plate_track_ai/shared/widgets/soft_card.dart';
 
 import 'package:plate_track_ai/core/themes/app_colors.dart';
 import 'package:plate_track_ai/core/themes/theme_controller.dart';
@@ -14,58 +15,51 @@ class ThemePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'appearance'.tr(),
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            ValueListenableBuilder<ThemePreference>(
-              valueListenable: themePreference,
-              builder: (context, current, _) {
-                return RadioGroup<ThemePreference>(
-                  groupValue: current,
-                  onChanged: (value) {
-                    if (value != null) themePreference.value = value;
-                  },
-                  child: Column(
-                    children: [
-                      _option(
-                        ThemePreference.system,
-                        'theme_system'.tr(),
-                        null,
-                      ),
-                      _option(
-                        ThemePreference.light,
-                        'theme_light'.tr(),
-                        AppColors.secondShade,
-                      ),
-                      _option(
-                        ThemePreference.dark,
-                        'theme_dark'.tr(),
-                        AppColors.prime,
-                      ),
-                      _option(
-                        ThemePreference.pickMe,
-                        // A brand name, same in every locale — not translated.
-                        'Pick me',
-                        AppColors.pick,
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
+    return SoftCard(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'appearance'.tr(),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          ValueListenableBuilder<ThemePreference>(
+            valueListenable: themePreference,
+            builder: (context, current, _) {
+              return RadioGroup<ThemePreference>(
+                groupValue: current,
+                onChanged: (value) {
+                  if (value != null) themePreference.value = value;
+                },
+                child: Column(
+                  children: [
+                    _option(ThemePreference.system, 'theme_system'.tr(), null),
+                    _option(
+                      ThemePreference.light,
+                      'theme_light'.tr(),
+                      AppColors.secondShade,
+                    ),
+                    _option(
+                      ThemePreference.dark,
+                      'theme_dark'.tr(),
+                      AppColors.prime,
+                    ),
+                    _option(
+                      ThemePreference.pickMe,
+                      // A brand name, same in every locale — not translated.
+                      'Pick me',
+                      AppColors.pick,
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

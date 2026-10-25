@@ -365,7 +365,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
         value: _totalProtein,
         title: '${_totalProtein.toInt()}${'g'.tr()}',
         radius: 50,
-        titleStyle: TextStyle(
+        titleStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
           fontSize: 12,
           fontWeight: FontWeight.bold,
           color: AppPalette.of(context).foregroundOn(AppColors.protein),
@@ -376,7 +376,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
         value: _totalCarbs,
         title: '${_totalCarbs.toInt()}${'g'.tr()}',
         radius: 50,
-        titleStyle: TextStyle(
+        titleStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
           fontSize: 12,
           fontWeight: FontWeight.bold,
           color: AppPalette.of(context).foregroundOn(AppColors.carbs),
@@ -387,7 +387,7 @@ class _NutritionStatsScreenState extends State<NutritionStatsScreen>
         value: _totalFat,
         title: '${_totalFat.toInt()}${'g'.tr()}',
         radius: 50,
-        titleStyle: TextStyle(
+        titleStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
           fontSize: 12,
           fontWeight: FontWeight.bold,
           color: AppPalette.of(context).foregroundOn(AppColors.fat),
