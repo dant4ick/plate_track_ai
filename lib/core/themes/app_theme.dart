@@ -34,12 +34,11 @@ class AppTheme {
         }),
       );
 
-  // Light uses the green logo's background; dark uses the blue logo's background
-  // with its pale lime glyph as the secondary accent.
+  // Primary stays green in every theme; secondary carries the theme identity.
   static const _primaryLight = AppColors.secondLight;
-  static const _primaryDark = AppColors.prime;
+  static const _primaryDark = AppColors.secondLight;
   static const _secondaryLight = AppColors.prime;
-  static const _secondaryDark = AppColors.second;
+  static const _secondaryDark = AppColors.prime;
 
   // Light theme
   static final ThemeData lightTheme = _readableControls(
@@ -138,9 +137,9 @@ class AppTheme {
       extensions: const [AppFlavorTag(AppFlavor.dark)],
       colorScheme: const ColorScheme.dark(
         primary: _primaryDark,
-        onPrimary: AppColors.onAccent,
+        onPrimary: AppColors.onAccentDark,
         secondary: _secondaryDark,
-        onSecondary: AppColors.onAccentDark,
+        onSecondary: AppColors.onAccent,
         tertiary: AppColors.tri,
         onTertiary: AppColors.onAccentDark,
         error: AppColors.dangerDark,
@@ -173,7 +172,7 @@ class AppTheme {
       dividerColor: AppColors.borderDark,
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: filledButtonStyle(
-          foregroundColor: AppColors.onAccent,
+          foregroundColor: AppColors.onAccentDark,
           backgroundColor: _primaryDark,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimens.radiusControl),
@@ -183,7 +182,7 @@ class AppTheme {
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: _primaryDark,
-        foregroundColor: AppColors.onAccent,
+        foregroundColor: AppColors.onAccentDark,
         elevation: 4,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimens.radiusSquircle),
@@ -220,8 +219,7 @@ class AppTheme {
   // the OS setting: pass it to `MaterialApp.theme` directly from a stored user
   // preference.
   //
-  // One deviation from the pattern the other two follow, taken from the design
-  // frame rather than inferred: the FAB stays lime. Navigation uses readable ink.
+  // The pink identity lives in secondary; buttons share the green primary.
   static final ThemeData pickMeTheme = _readableControls(
     ThemeData(
       useMaterial3: true,
@@ -230,11 +228,9 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.scaffoldPick,
       extensions: const [AppFlavorTag(AppFlavor.pickMe)],
       colorScheme: const ColorScheme.light(
-        primary: AppColors.pick,
+        primary: _primaryLight,
         onPrimary: AppColors.onAccentDark,
-        secondary: AppColors.secondShade,
-        // Dark ink, not white: this secondary is the lime shade, and white on it
-        // is 1.70:1. Matches what the dark theme already does with its lime.
+        secondary: AppColors.pick,
         onSecondary: AppColors.onAccentDark,
         tertiary: AppColors.tri,
         onTertiary: AppColors.onAccentDark,
@@ -271,7 +267,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: filledButtonStyle(
           foregroundColor: AppColors.onAccentDark,
-          backgroundColor: AppColors.pick,
+          backgroundColor: _primaryLight,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimens.radiusControl),
           ),
@@ -279,7 +275,7 @@ class AppTheme {
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.secondShade,
+        backgroundColor: _primaryLight,
         foregroundColor: AppColors.onAccentDark,
         elevation: 4,
         shape: RoundedRectangleBorder(

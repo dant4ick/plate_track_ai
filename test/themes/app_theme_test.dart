@@ -26,16 +26,15 @@ void main() {
     'dark': AppTheme.darkTheme,
     'pick-me': AppTheme.pickMeTheme,
   }.entries) {
-    testWidgets(
-      'calories use primary graphics and neutral text in ${entry.key}',
-      (tester) async {
-        final palette = await paletteUnder(tester, entry.value);
-        final style = palette.styleOf(Macro.calories);
-        expect(style.graphic, entry.value.colorScheme.primary);
-        expect(style.ink, entry.value.colorScheme.onSurface);
-        expect(style.fill, palette.fillOf(entry.value.colorScheme.primary));
-      },
-    );
+    testWidgets('calories use fixed pink and neutral fills in ${entry.key}', (
+      tester,
+    ) async {
+      final palette = await paletteUnder(tester, entry.value);
+      final style = palette.styleOf(Macro.calories);
+      expect(style.graphic, const Color(0xFFFF3372));
+      expect(style.ink, const Color(0xFFFF3372));
+      expect(style.fill, entry.value.colorScheme.surface);
+    });
 
     testWidgets('macros use the designer colours in ${entry.key}', (
       tester,
@@ -44,6 +43,11 @@ void main() {
       expect(palette.styleOf(Macro.protein).graphic, const Color(0xFFFF7777));
       expect(palette.styleOf(Macro.carbs).graphic, const Color(0xFFFFCC77));
       expect(palette.styleOf(Macro.fat).graphic, const Color(0xFFAF5BD0));
+      for (final macro in [Macro.protein, Macro.carbs, Macro.fat]) {
+        final style = palette.styleOf(macro);
+        expect(style.ink, style.graphic);
+        expect(style.fill, entry.value.colorScheme.surface);
+      }
     });
   }
 
@@ -51,18 +55,33 @@ void main() {
     expect(AppTheme.darkTheme.scaffoldBackgroundColor, const Color(0xFF1A191F));
   });
 
-  test('light primary matches its logo without changing other themes', () {
+  test('dark cards use the requested surface without a Material tint', () {
+    const surface = Color(0xFF262A35);
+    expect(AppTheme.darkTheme.colorScheme.surface, surface);
+    expect(AppTheme.darkTheme.cardTheme.color, surface);
+    expect(AppTheme.darkTheme.cardTheme.surfaceTintColor, Colors.transparent);
+    expect(AppTheme.lightTheme.cardTheme.color, const Color(0xFFFFFFFF));
+    expect(AppTheme.pickMeTheme.cardTheme.color, const Color(0xFFFFFFFF));
+  });
+
+  test('all themes share green primary with their own secondary', () {
     const lime = Color(0xFFB0DD4E);
-    expect(AppTheme.lightTheme.colorScheme.primary, lime);
-    expect(AppTheme.lightTheme.floatingActionButtonTheme.backgroundColor, lime);
-    expect(
-      AppTheme.lightTheme.elevatedButtonTheme.style!.backgroundColor!.resolve(
-        {},
-      ),
-      lime,
-    );
-    expect(AppTheme.darkTheme.colorScheme.secondary, const Color(0xFFDAFF7C));
-    expect(AppTheme.pickMeTheme.colorScheme.secondary, const Color(0xFFA3D65B));
+    for (final theme in [
+      AppTheme.lightTheme,
+      AppTheme.darkTheme,
+      AppTheme.pickMeTheme,
+    ]) {
+      expect(theme.colorScheme.primary, lime);
+      expect(theme.floatingActionButtonTheme.backgroundColor, lime);
+      expect(
+        theme.elevatedButtonTheme.style!.backgroundColor!.resolve({}),
+        lime,
+      );
+      expect(theme.colorScheme.onPrimary, AppColors.onAccentDark);
+    }
+    expect(AppTheme.lightTheme.colorScheme.secondary, AppColors.prime);
+    expect(AppTheme.darkTheme.colorScheme.secondary, AppColors.prime);
+    expect(AppTheme.pickMeTheme.colorScheme.secondary, AppColors.pick);
   });
 
   for (final entry in {
@@ -132,10 +151,8 @@ void main() {
           _contrast(palette.foregroundOn(style.graphic), style.graphic),
           greaterThanOrEqualTo(4.5),
         );
-        expect(
-          _contrast(style.ink, entry.value.colorScheme.surface),
-          greaterThanOrEqualTo(4.5),
-        );
+        // Nutrition colours are fixed, not contrast-adjusted shades.
+        expect(style.ink, style.graphic);
       }
     });
   }
@@ -146,7 +163,7 @@ void main() {
 
       expect(palette.flavor, AppFlavor.light);
       expect(palette.isDark, isFalse);
-      expect(palette.calories, AppTheme.lightTheme.colorScheme.primary);
+      expect(palette.calories, const Color(0xFFFF3372));
     });
 
     testWidgets('dark theme resolves the dark flavor', (tester) async {
@@ -154,7 +171,7 @@ void main() {
 
       expect(palette.flavor, AppFlavor.dark);
       expect(palette.isDark, isTrue);
-      expect(palette.calories, AppTheme.darkTheme.colorScheme.primary);
+      expect(palette.calories, const Color(0xFFFF3372));
     });
 
     testWidgets('pick-me theme is told apart from light despite sharing '
@@ -163,7 +180,7 @@ void main() {
 
       expect(palette.flavor, AppFlavor.pickMe);
       expect(palette.isDark, isFalse);
-      expect(palette.calories, AppTheme.pickMeTheme.colorScheme.primary);
+      expect(palette.calories, const Color(0xFFFF3372));
     });
 
     testWidgets('pick-me inherits light values for tokens the pink frame '
@@ -191,9 +208,9 @@ void main() {
     test('takes its colors from the pink design frame', () {
       final theme = AppTheme.pickMeTheme;
 
-      expect(theme.colorScheme.primary, AppColors.pick);
+      expect(theme.colorScheme.secondary, AppColors.pick);
       expect(theme.scaffoldBackgroundColor, AppColors.scaffoldPick);
-      expect(theme.colorScheme.primary, const Color(0xFFFF7AB5));
+      expect(theme.colorScheme.primary, const Color(0xFFB0DD4E));
       expect(theme.scaffoldBackgroundColor, const Color(0xFFFFF6F9));
       expect(theme.appBarTheme.backgroundColor, Colors.transparent);
     });
@@ -203,7 +220,7 @@ void main() {
 
       expect(
         theme.floatingActionButtonTheme.backgroundColor,
-        AppColors.secondShade,
+        AppColors.secondLight,
       );
       expect(theme.appBarTheme.iconTheme?.color, theme.colorScheme.onSurface);
     });

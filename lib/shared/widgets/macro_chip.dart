@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:plate_track_ai/core/themes/app_colors.dart';
 import 'package:plate_track_ai/core/themes/app_dimens.dart';
 
-/// The tinted pill that labels a macro amount — "P: 32g".
+/// The neutral pill that labels a macro amount — "P: 32g".
 ///
-/// Colour comes from [AppPalette.styleOf], so the fill and the label are always
-/// the matching pair and the text keeps its 4.5:1 in both brightnesses.
+/// Macro text uses its original colour, without theme-dependent shades.
 class MacroChip extends StatelessWidget {
   const MacroChip({super.key, required this.macro, required this.grams});
 

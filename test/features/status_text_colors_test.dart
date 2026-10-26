@@ -82,6 +82,20 @@ void main() {
     );
     expect(tester.takeException(), isNull);
 
+    // The profile person icon has no circular coloured avatar background.
+    final avatarBackgrounds = find.ancestor(
+      of: find.byIcon(Icons.person_rounded),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is Container &&
+            widget.constraints?.maxWidth == 64 &&
+            widget.constraints?.maxHeight == 64 &&
+            widget.decoration != null,
+      ),
+    );
+    expect(find.byIcon(Icons.person_rounded), findsNWidgets(3));
+    expect(avatarBackgrounds, findsNothing);
+
     // Include small explanatory text, not only the large BMR values/titles.
     final secondary = find.descendant(
       of: find.byType(UserSetupScreen),

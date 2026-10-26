@@ -60,7 +60,7 @@ void main() {
         for (final group in data.barGroups) {
           for (var rodIndex = 0; rodIndex < group.barRods.length; rodIndex++) {
             final rod = group.barRods[rodIndex];
-            expect(rod.color, theme.colorScheme.primary);
+            expect(rod.color, const Color(0xFFFF3372));
             expect(
               rod.borderSide.width,
               group.x == data.barGroups.last.x ? 2 : 1,
