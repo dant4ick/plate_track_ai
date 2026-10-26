@@ -652,7 +652,7 @@ class _BarcodeResultScreenState extends State<BarcodeResultScreen> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Icon(icon, color: color, size: 16),

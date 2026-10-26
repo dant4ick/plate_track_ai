@@ -64,7 +64,7 @@ class ThemePicker extends StatelessWidget {
     );
   }
 
-  /// One row: a swatch of the theme's primary, its name, and the radio.
+  /// One row: a theme identity swatch, its name, and the radio.
   /// [swatch] is null for "System", which has no colour of its own.
   Widget _option(ThemePreference value, String label, Color? swatch) {
     return RadioListTile<ThemePreference>(

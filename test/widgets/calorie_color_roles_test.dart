@@ -11,7 +11,7 @@ import 'localized_pump.dart';
 void main() {
   setUpAll(initLocalization);
 
-  testWidgets('selected and ordinary calorie bars keep primary fills', (
+  testWidgets('selected and ordinary calorie bars keep fixed pink fills', (
     tester,
   ) async {
     final now = DateTime(2026, 10, 26);
@@ -59,7 +59,7 @@ void main() {
       expect(bars, hasLength(8));
       for (var bar = 0; bar < bars.length; bar++) {
         final decoration = bars[bar].decoration! as BoxDecoration;
-        expect(decoration.color, themes[index].colorScheme.primary);
+        expect(decoration.color, const Color(0xFFFF3372));
         expect(decoration.border, isNotNull);
         final border = decoration.border! as Border;
         expect(border.top.width, bar == 7 ? 2 : 1);

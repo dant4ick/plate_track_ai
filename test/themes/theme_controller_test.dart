@@ -44,7 +44,9 @@ void main() {
           theme: preference.theme,
           darkTheme: AppTheme.darkTheme,
           themeMode: preference.mode,
-          home: const Scaffold(body: SingleChildScrollView(child: ThemePicker())),
+          home: const Scaffold(
+            body: SingleChildScrollView(child: ThemePicker()),
+          ),
         ),
       );
     }
@@ -59,7 +61,8 @@ void main() {
 
       final context = tester.element(find.byType(ThemePicker));
       expect(AppPalette.of(context).flavor, AppFlavor.pickMe);
-      expect(Theme.of(context).colorScheme.primary, AppColors.pick);
+      expect(Theme.of(context).colorScheme.primary, AppColors.secondLight);
+      expect(Theme.of(context).colorScheme.secondary, AppColors.pick);
     });
 
     testWidgets('offers all four choices with the active one selected', (
@@ -78,10 +81,7 @@ void main() {
       }
 
       final system = tester.widget<RadioListTile<ThemePreference>>(
-        find.widgetWithText(
-          RadioListTile<ThemePreference>,
-          'theme_system',
-        ),
+        find.widgetWithText(RadioListTile<ThemePreference>, 'theme_system'),
       );
       expect(system.value, ThemePreference.system);
     });
