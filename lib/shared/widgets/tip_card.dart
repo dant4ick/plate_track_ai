@@ -13,8 +13,7 @@ class TipCard extends StatelessWidget {
 
   /// Resolves a tip's [TipTone] against the active theme.
   ///
-  /// Returns the *ink* shade in every case: the icon sits on a pale wash of its
-  /// own colour, and the vivid macro hues do not clear 3:1 against that.
+  /// Macro icons use their original hues; status tones retain their palette.
   static Color _accent(AppPalette palette, TipTone tone) => switch (tone) {
     TipTone.protein => palette.proteinInk,
     TipTone.carbs => palette.carbsInk,
@@ -31,6 +30,12 @@ class TipCard extends StatelessWidget {
     final palette = AppPalette.of(context);
     final theme = Theme.of(context);
     final accent = _accent(palette, tip.tone);
+    final fill = switch (tip.tone) {
+      TipTone.protein => palette.proteinFill,
+      TipTone.carbs => palette.carbsFill,
+      TipTone.fat => palette.fatFill,
+      _ => palette.fillOf(accent),
+    };
 
     return SoftCard(
       padding: const EdgeInsets.all(14),
@@ -40,7 +45,7 @@ class TipCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
-              color: palette.fillOf(accent),
+              color: fill,
               borderRadius: BorderRadius.circular(AppDimens.radiusControl),
             ),
             child: Icon(tip.icon, color: accent, size: 20),

@@ -94,6 +94,7 @@ class MealDetailScreen extends StatelessWidget {
                     label: 'calories'.tr(),
                     value: '${per(item.calories).round()} ${'kcal'.tr()}',
                     color: palette.calories,
+                    fill: palette.caloriesFill,
                   ),
                   const SizedBox(height: 14),
                   _FactRow(
@@ -102,6 +103,7 @@ class MealDetailScreen extends StatelessWidget {
                     value:
                         '${per(item.nutritionFacts.protein).round()} ${'g'.tr()}',
                     color: palette.proteinInk,
+                    fill: palette.proteinFill,
                   ),
                   const SizedBox(height: 14),
                   _FactRow(
@@ -110,6 +112,7 @@ class MealDetailScreen extends StatelessWidget {
                     value:
                         '${per(item.nutritionFacts.carbs).round()} ${'g'.tr()}',
                     color: palette.carbsInk,
+                    fill: palette.carbsFill,
                   ),
                   const SizedBox(height: 14),
                   _FactRow(
@@ -118,6 +121,7 @@ class MealDetailScreen extends StatelessWidget {
                     value:
                         '${per(item.nutritionFacts.fat).round()} ${'g'.tr()}',
                     color: palette.fatInk,
+                    fill: palette.fatFill,
                   ),
                 ],
               ),
@@ -185,12 +189,14 @@ class _FactRow extends StatelessWidget {
     required this.label,
     required this.value,
     required this.color,
+    this.fill,
   });
 
   final IconData icon;
   final String label;
   final String value;
   final Color color;
+  final Color? fill;
 
   @override
   Widget build(BuildContext context) {
@@ -202,7 +208,7 @@ class _FactRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: palette.fillOf(color),
+            color: fill ?? palette.fillOf(color),
             borderRadius: BorderRadius.circular(AppDimens.radiusControl),
           ),
           child: Icon(icon, color: color, size: 18),

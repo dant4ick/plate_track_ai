@@ -263,7 +263,7 @@ void main() {
       AppTheme.darkTheme: true,
     }.entries) {
       testWidgets(
-        'pairs each macro ink with its own fill (dark=${entry.value})',
+        'preserves macro hues on neutral fills (dark=${entry.value})',
         (tester) async {
           late AppPalette palette;
           await tester.pumpWidget(
@@ -282,7 +282,8 @@ void main() {
           for (final macro in Macro.values) {
             final style = palette.styleOf(macro);
             expect(style.ink, isNot(style.fill));
-            expect(style.ink, isNot(style.graphic));
+            expect(style.ink, style.graphic);
+            expect(style.fill, entry.key.colorScheme.surface);
           }
         },
       );

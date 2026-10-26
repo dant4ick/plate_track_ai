@@ -20,13 +20,13 @@ class AppColors {
   // Brand — 1:1 with the Figma color variables
   // ───────────────────────────────────────────────────────────────────────────
 
-  /// Primary brand color. Drives the dark theme (FAB, headings, accents).
+  /// Blue brand colour, used as the light/dark theme secondary.
   static const Color prime = Color(0xFF4D55F5);
 
   /// Pale lime accent of the dark theme and glyph on the blue logo.
   static const Color second = Color(0xFFDAFF7C);
 
-  /// Light theme primary, matching the green Figma logo tile.
+  /// Shared primary in every theme, matching the green logo tile.
   static const Color secondLight = Color(0xFFB0DD4E);
 
   /// Tertiary accent.
@@ -45,68 +45,25 @@ class AppColors {
   // ── "Pick me" ──────────────────────────────────────────────────────────────
   // Third brand hue, driving the pink theme frame.
 
-  /// Primary of the pick-me theme — headings, section labels, calorie figures.
+  /// Secondary of the pick-me theme, independent of the calorie colour.
   static const Color pick = Color(0xFFFF7AB5);
 
   // ───────────────────────────────────────────────────────────────────────────
   // Macronutrients
   // ───────────────────────────────────────────────────────────────────────────
-  // Each macro carries three roles, because one hue cannot serve all of them:
-  //
-  //  * plain name  — the *graphic* colour: bars, gauge segments, pie slices,
-  //    legend swatches. Tuned for vividness to match the design, and never
-  //    used for text: at these luminances the pastel-adjacent hues would fail
-  //    contrast on a white card.
-  //  * `...Ink`    — the *text* colour: chip labels, figures, anything read as
-  //    type. Every Ink/Soft pair clears 4.5:1, in both brightnesses.
-  //  * `...Soft`   — the pale chip/pill fill the matching Ink sits on.
-  //
-  // Bars deliberately do not clear 3:1 against a white card: every bar in the
-  // design prints its gram value directly above it, so the bar is redundant
-  // decoration rather than the sole carrier of the value.
+  // One unchanged colour per macro for graphics, text and icons in every
+  // theme. Macro backgrounds use neutral surfaces, not tinted variants.
+  // These original hues do not guarantee 4.5:1 text contrast on light cards.
 
   /// Protein graphic — bars, slices, swatches.
   static const Color protein = Color(0xFFFF7777);
 
-  /// Protein text on [proteinSoft] or a light card.
-  static const Color proteinInk = Color(0xFFB83F3F);
-
-  /// Protein text on [proteinSoftDark] or a dark card.
-  static const Color proteinInkDark = Color(0xFFFF9C9C);
-
-  /// Protein chip fill (light).
-  static const Color proteinSoft = Color(0xFFFFF0F0);
-
   /// Carbohydrate graphic — bars, slices, swatches.
   static const Color carbs = Color(0xFFFFCC77);
 
-  /// Carbohydrate text on [carbsSoft] or a light card.
-  static const Color carbsInk = Color(0xFF9A6200);
-
-  /// Carbohydrate text on [carbsSoftDark] or a dark card.
-  static const Color carbsInkDark = Color(0xFFFFD493);
-
-  /// Carbohydrate chip fill (light).
-  static const Color carbsSoft = Color(0xFFFFF3E0);
-
   /// Fat graphic — bars, slices, swatches.
   static const Color fat = Color(0xFFAF5BD0);
-
-  /// Fat text on [fatSoft] or a light card.
-  static const Color fatInk = Color(0xFF853CA3);
-
-  /// Fat text on [fatSoftDark] or a dark card.
-  static const Color fatInkDark = Color(0xFFD5A0ED);
-
-  /// Fat chip fill (light).
-  static const Color fatSoft = Color(0xFFF4E8FA);
-
-  // The pale fills above are tuned for light surfaces. On a dark card they read
-  // as bright patches, so each is replaced by an 18% wash of its own graphic
-  // colour — the value the matching `...InkDark` was contrast-checked against.
-  static const Color proteinSoftDark = Color(0x2EFF7777);
-  static const Color carbsSoftDark = Color(0x2EFFCC77);
-  static const Color fatSoftDark = Color(0x2EAF5BD0);
+  static const Color calories = Color(0xFFFF3372);
 
   // ───────────────────────────────────────────────────────────────────────────
   // Status
@@ -117,7 +74,7 @@ class AppColors {
 
   static const Color warningLight = Color(0xFFEF8E1B);
   static const Color warningDark = Color(0xFFFFB74D);
-  static const Color warningSoftLight = carbsSoft;
+  static const Color warningSoftLight = Color(0xFFFFF3E0);
   static const Color warningSoftDark = Color(0x337A4A00);
   static const Color warningBorderLight = Color(0xFFFFCC80);
   static const Color warningBorderDark = Color(0xFFB06E10);
@@ -143,7 +100,7 @@ class AppColors {
   static const Color scaffoldPick = Color(0xFFFFF6F9);
 
   static const Color surfaceLight = Color(0xFFFFFFFF);
-  static const Color surfaceDark = Color(0xFF2A2A2A);
+  static const Color surfaceDark = Color(0xFF262A35);
 
   /// Fill for inputs and other inset "well" areas.
   static const Color fieldLight = Color(0xFFF4F5F7);
@@ -227,10 +184,10 @@ class MacroStyle {
   /// Bars, gauge segments, pie slices, legend swatches.
   final Color graphic;
 
-  /// Anything read as type. Clears 4.5:1 against [fill].
+  /// Text and icons use the original nutrition hue, without contrast shading.
   final Color ink;
 
-  /// The pale pill/chip background [ink] sits on.
+  /// Neutral pill/chip surface behind [ink].
   final Color fill;
 }
 
@@ -327,28 +284,20 @@ class AppPalette {
 
   Color get info => isDark ? AppColors.infoDark : AppColors.infoLight;
 
-  /// Calorie graphics follow the actual theme primary, including transitions.
-  Color get calories => _scheme.primary;
+  /// Fixed calorie accent, independent of the theme primary.
+  Color get calories => AppColors.calories;
 
-  // Macronutrient chip/card fills for the current theme. The graphic colours
-  // (`AppColors.protein` and friends) are brightness-independent; the Ink
-  // colours are not, so they resolve through here.
-  Color get proteinFill =>
-      isDark ? AppColors.proteinSoftDark : AppColors.proteinSoft;
-  Color get carbsFill => isDark ? AppColors.carbsSoftDark : AppColors.carbsSoft;
-  Color get fatFill => isDark ? AppColors.fatSoftDark : AppColors.fatSoft;
-  Color get caloriesFill => fillOf(calories);
+  // Keep the existing role API, with neutral fills and original macro hues.
+  Color get proteinFill => _scheme.surface;
+  Color get carbsFill => _scheme.surface;
+  Color get fatFill => _scheme.surface;
+  Color get caloriesFill => _scheme.surface;
 
-  // Macronutrient text colours for the current theme. Use these wherever the
-  // macro colour is read as type; use the `AppColors` graphic tokens for bars,
-  // slices and swatches.
-  Color get proteinInk =>
-      isDark ? AppColors.proteinInkDark : AppColors.proteinInk;
-  Color get carbsInk => isDark ? AppColors.carbsInkDark : AppColors.carbsInk;
-  Color get fatInk => isDark ? AppColors.fatInkDark : AppColors.fatInk;
+  Color get proteinInk => AppColors.protein;
+  Color get carbsInk => AppColors.carbs;
+  Color get fatInk => AppColors.fat;
 
-  /// Calorie numbers remain neutral and readable on cards and tinted fills.
-  Color get caloriesInk => _scheme.onSurface;
+  Color get caloriesInk => AppColors.calories;
 
   /// The three roles of one macro, resolved for the current theme, so a caller
   /// that renders a bar *and* its label does not have to pick two tokens by

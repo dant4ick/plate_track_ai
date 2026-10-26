@@ -230,15 +230,9 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
       padding: const EdgeInsets.all(20.0),
       child: Row(
         children: [
-          Container(
+          SizedBox(
             width: 64,
             height: 64,
-            decoration: BoxDecoration(
-              color: Theme.of(
-                context,
-              ).colorScheme.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(32),
-            ),
             child: Icon(
               Icons.person_rounded,
               size: 32,
