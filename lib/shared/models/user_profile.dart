@@ -6,25 +6,25 @@ import 'package:easy_localization/easy_localization.dart';
 class UserProfile extends Equatable {
   @HiveField(0)
   final String id;
-  
+
   @HiveField(1)
   final int age;
-  
+
   @HiveField(2)
   final double weight; // in kg
-  
+
   @HiveField(3)
   final double height; // in cm
-  
+
   @HiveField(4)
   final Gender gender;
-  
+
   @HiveField(5)
   final ActivityLevel activityLevel;
-  
+
   @HiveField(6)
   final DateTime createdAt;
-  
+
   @HiveField(7)
   final DateTime? updatedAt;
 
@@ -37,6 +37,12 @@ class UserProfile extends Equatable {
   @HiveField(9)
   final double? goalWeight;
 
+  @HiveField(10)
+  final NutritionGoal nutritionGoal;
+
+  @HiveField(11)
+  final CalorieReduction calorieReduction;
+
   const UserProfile({
     required this.id,
     required this.age,
@@ -48,6 +54,8 @@ class UserProfile extends Equatable {
     this.updatedAt,
     this.startWeight,
     this.goalWeight,
+    this.nutritionGoal = NutritionGoal.maintenance,
+    this.calorieReduction = CalorieReduction.moderate,
   });
 
   /// The weight the goal is measured from. Profiles saved before goal tracking
@@ -87,20 +95,65 @@ class UserProfile extends Equatable {
   /// [minimumHealthyWeight] at this profile's height.
   double get minimumGoalWeight => minimumHealthyWeight(height);
 
-  // Calculate BMR (Basal Metabolic Rate) using the provided formulas
+  /// Estimates adult RMR/REE in kcal/day using rounded Mifflin–St Jeor.
+  /// The historical BMR API name is retained for compatibility.
   double calculateBMR() {
-    switch (gender) {
-      case Gender.male:
-        return 260 + (9.65 * weight) + (5.73 * height) - (5.08 * age);
-      case Gender.female:
-        return 43 + (7.38 * weight) + (6.07 * height) - (2.31 * age);
-    }
+    return 10 * weight +
+        6.25 * height -
+        5 * age +
+        (gender == Gender.male ? 5 : -161);
   }
 
   // Calculate Total Daily Energy Expenditure (TDEE) using activity level multiplier
   double calculateTDEE() {
     final bmr = calculateBMR();
     return bmr * activityLevel.multiplier;
+  }
+
+  /// Intake target; maintenance expenditure itself is never reduced.
+  double calculateCalorieTarget() {
+    if (nutritionGoal == NutritionGoal.weightLoss && !canUseWeightLossTargets) {
+      throw StateError(
+        'Automatic weight-loss targets are not supported for this profile',
+      );
+    }
+    final maintenance = calculateTDEE();
+    return nutritionGoal == NutritionGoal.weightLoss
+        ? maintenance * (1 - calorieReduction.fraction)
+        : maintenance;
+  }
+
+  /// Starting macro targets. Weight-loss protein is fixed at 1.4 g/kg;
+  /// fat supplies 30% of intake and carbohydrate supplies the remainder.
+  Map<String, double> calculateNutritionTargets() {
+    final calories = calculateCalorieTarget();
+    final protein = nutritionGoal == NutritionGoal.weightLoss
+        ? 1.4 * weight
+        : calories * 0.20 / 4;
+    final fat = calories * 0.30 / 9;
+    final carbs = (calories - protein * 4 - fat * 9) / 4;
+    return {
+      'calories': calories,
+      'protein': protein,
+      'carbs': carbs,
+      'fat': fat,
+    };
+  }
+
+  /// Adult, non-underweight profiles with a feasible macro energy budget.
+  /// This basic guard does not replace individual medical assessment.
+  bool get canUseWeightLossTargets {
+    final calories = calculateTDEE() * (1 - calorieReduction.fraction);
+    return age >= 18 &&
+        age <= 120 &&
+        weight.isFinite &&
+        weight > 0 &&
+        height.isFinite &&
+        height > 0 &&
+        bmi >= 18.5 &&
+        calories.isFinite &&
+        calories > 0 &&
+        calories * 0.70 >= 1.4 * weight * 4;
   }
 
   UserProfile copyWith({
@@ -115,6 +168,8 @@ class UserProfile extends Equatable {
     double? startWeight,
     double? goalWeight,
     bool clearGoalWeight = false,
+    NutritionGoal? nutritionGoal,
+    CalorieReduction? calorieReduction,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -130,22 +185,26 @@ class UserProfile extends Equatable {
       // field here means too — so removing a goal needs its own flag rather
       // than being expressible as a null argument.
       goalWeight: clearGoalWeight ? null : (goalWeight ?? this.goalWeight),
+      nutritionGoal: nutritionGoal ?? this.nutritionGoal,
+      calorieReduction: calorieReduction ?? this.calorieReduction,
     );
   }
 
   @override
   List<Object?> get props => [
-        id,
-        age,
-        weight,
-        height,
-        gender,
-        activityLevel,
-        createdAt,
-        updatedAt,
-        startWeight,
-        goalWeight,
-      ];
+    id,
+    age,
+    weight,
+    height,
+    gender,
+    activityLevel,
+    createdAt,
+    updatedAt,
+    startWeight,
+    goalWeight,
+    nutritionGoal,
+    calorieReduction,
+  ];
 
   Map<String, dynamic> toJson() {
     return {
@@ -159,6 +218,8 @@ class UserProfile extends Equatable {
       'updatedAt': updatedAt?.toIso8601String(),
       'startWeight': startWeight,
       'goalWeight': goalWeight,
+      'nutritionGoal': nutritionGoal.name,
+      'calorieReduction': calorieReduction.name,
     };
   }
 
@@ -169,13 +230,52 @@ class UserProfile extends Equatable {
       weight: json['weight'],
       height: json['height'],
       gender: Gender.values.firstWhere((e) => e.name == json['gender']),
-      activityLevel: ActivityLevel.values.firstWhere((e) => e.name == json['activityLevel']),
+      activityLevel: ActivityLevel.values.firstWhere(
+        (e) => e.name == json['activityLevel'],
+      ),
       createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : null,
       startWeight: (json['startWeight'] as num?)?.toDouble(),
       goalWeight: (json['goalWeight'] as num?)?.toDouble(),
+      nutritionGoal: json['nutritionGoal'] == null
+          ? NutritionGoal.maintenance
+          : NutritionGoal.values.byName(json['nutritionGoal'] as String),
+      calorieReduction: json['calorieReduction'] == null
+          ? CalorieReduction.moderate
+          : CalorieReduction.values.byName(json['calorieReduction'] as String),
     );
   }
+}
+
+/// Stored as stable string names in the profile adapter, not enum ordinals.
+enum NutritionGoal {
+  maintenance,
+  weightLoss;
+
+  String get displayName => switch (this) {
+    maintenance => 'goal_maintenance'.tr(),
+    weightLoss => 'goal_weight_loss'.tr(),
+  };
+}
+
+enum CalorieReduction {
+  gentle,
+  moderate,
+  substantial;
+
+  double get fraction => switch (this) {
+    gentle => 0.10,
+    moderate => 0.15,
+    substantial => 0.20,
+  };
+
+  String get displayName => switch (this) {
+    gentle => 'reduction_gentle'.tr(),
+    moderate => 'reduction_moderate'.tr(),
+    substantial => 'reduction_substantial'.tr(),
+  };
 }
 
 @HiveType(typeId: 3)

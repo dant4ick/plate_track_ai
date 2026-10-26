@@ -19,9 +19,9 @@ An intelligent Flutter-based nutrition tracking app that uses AI-powered image r
 - **Goal Tracking**: Monitor progress against personalized daily nutrition targets
 
 ### 👤 Personalized User Profiles
-- **BMR Calculation**: Automatic Basal Metabolic Rate calculation based on your personal data
+- **Resting Energy Estimate**: Rounded Mifflin–St Jeor calculation based on adult profile data
 - **TDEE Estimation**: Total Daily Energy Expenditure based on activity level
-- **Custom Nutrition Targets**: Personalized calorie, protein, carb, and fat goals
+- **Nutrition Goals**: Maintenance or weight loss with gentle, moderate, or substantial calorie reduction
 - **Multiple Activity Levels**: From sedentary to extremely active lifestyle support
 
 ### 💡 Smart Recommendations
@@ -156,9 +156,11 @@ lib/
 - **Smart Recommendations**: Personalized tips based on eating patterns
 
 ### Profile & Goal Setting
-- **BMR Formula**: Uses Mifflin-St Jeor equation for accurate calculations
-- **Activity Multipliers**: Precise TDEE calculation based on lifestyle
-- **Macro Distribution**: Customizable protein/carb/fat ratios
+- **Resting Energy Formula**: Rounded Mifflin–St Jeor: `10W + 6.25H - 5A + 5` for men and `10W + 6.25H - 5A - 161` for women (kg, cm, years). This estimates resting expenditure, not a measured basal metabolic rate.
+- **Maintenance Energy**: Resting expenditure multiplied by an approximate habitual-activity factor. Exercise and food thermogenesis should not be added again. Individual estimates may be off by hundreds of kcal/day.
+- **Nutrition Goal**: Maintenance uses the full estimated daily expenditure. Weight loss offers gentle (10%), moderate (15%, initially selected), or substantial (20%) calorie reduction. Existing profiles remain on maintenance until the goal is explicitly changed. A target weight alone does not enable a deficit.
+- **Macro Targets**: Maintenance starts with 20% protein, 50% carbohydrate and 30% fat. Weight loss uses 1.4 g protein per kg of current weight, 30% of target calories from fat, and the remaining calories from carbohydrate. Protein is not a separate user setting; targets recalculate when weight changes.
+- **Limitations**: Automatic weight-loss targets require an adult profile without underweight and a feasible macro energy budget. These estimates are not a medical prescription; pregnancy, breastfeeding, medical dietary needs, severe obesity or unusual body composition require individual assessment. Review weight trends over several weeks rather than reacting to daily fluctuations.
 - **Goal Tracking**: Visual progress indicators for motivation
 
 ## 🔧 Configuration

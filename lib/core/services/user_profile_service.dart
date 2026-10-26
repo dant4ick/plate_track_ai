@@ -56,6 +56,8 @@ class UserProfileService {
     required Gender gender,
     required ActivityLevel activityLevel,
     double? goalWeight,
+    NutritionGoal nutritionGoal = NutritionGoal.maintenance,
+    CalorieReduction calorieReduction = CalorieReduction.moderate,
   }) async {
     if (_userProfileBox == null) {
       throw Exception('UserProfileService not initialized');
@@ -72,8 +74,11 @@ class UserProfileService {
       // Today's weight is the baseline every future goal is measured against.
       startWeight: weight,
       goalWeight: goalWeight,
+      nutritionGoal: nutritionGoal,
+      calorieReduction: calorieReduction,
     );
 
+    _validateNutritionGoal(profile);
     await _userProfileBox!.put(profile.id, profile);
     // The first point on the weight chart is the weight the profile opened with.
     await _weightHistory.record(weight, at: profile.createdAt);
@@ -96,6 +101,8 @@ class UserProfileService {
     double? startWeight,
     double? goalWeight,
     bool clearGoalWeight = false,
+    NutritionGoal? nutritionGoal,
+    CalorieReduction? calorieReduction,
   }) async {
     if (_currentProfile == null || _userProfileBox == null) {
       throw Exception('No current profile to update');
@@ -118,8 +125,11 @@ class UserProfileService {
           _currentProfile!.weight,
       goalWeight: goalWeight,
       clearGoalWeight: clearGoalWeight,
+      nutritionGoal: nutritionGoal,
+      calorieReduction: calorieReduction,
     );
 
+    _validateNutritionGoal(updatedProfile);
     await _userProfileBox!.put(updatedProfile.id, updatedProfile);
     if (weight != null) {
       await _weightHistory.record(weight);
@@ -144,7 +154,7 @@ class UserProfileService {
     _changes.add(null);
   }
 
-  // Calculate user's daily calorie needs based on current profile
+  // Maintenance expenditure, distinct from the goal-specific intake target.
   double? calculateDailyCalorieNeeds() {
     if (_currentProfile == null) {
       return null;
@@ -160,24 +170,18 @@ class UserProfileService {
     return _currentProfile!.calculateBMR();
   }
 
-  // Get basic nutrition targets based on TDEE
+  // All consumers use the same goal-specific calorie and macro targets.
   Map<String, double>? getNutritionTargets() {
-    final tdee = calculateDailyCalorieNeeds();
-    if (tdee == null) {
-      return null;
+    return _currentProfile?.calculateNutritionTargets();
+  }
+
+  static void _validateNutritionGoal(UserProfile profile) {
+    if (profile.nutritionGoal == NutritionGoal.weightLoss &&
+        !profile.canUseWeightLossTargets) {
+      throw ArgumentError(
+        'Automatic weight-loss targets are not supported for this profile',
+      );
     }
-
-    // Standard macro distribution:
-    // Protein: 10-35% of total calories (using 20%)
-    // Carbs: 45-65% of total calories (using 50%)
-    // Fat: 20-35% of total calories (using 30%)
-
-    return {
-      'calories': tdee,
-      'protein': (tdee * 0.20) / 4, // 4 calories per gram of protein
-      'carbs': (tdee * 0.50) / 4, // 4 calories per gram of carbs
-      'fat': (tdee * 0.30) / 9, // 9 calories per gram of fat
-    };
   }
 
   void dispose() {

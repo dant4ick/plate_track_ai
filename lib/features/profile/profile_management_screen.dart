@@ -320,6 +320,20 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
             'activity_level'.tr(),
             _getActivityLevelDescription(profile.activityLevel),
           ),
+          const SizedBox(height: 12),
+          _buildInfoRow(
+            Icons.flag_outlined,
+            'nutrition_goal'.tr(),
+            profile.nutritionGoal.displayName,
+          ),
+          if (profile.nutritionGoal == NutritionGoal.weightLoss) ...[
+            const SizedBox(height: 12),
+            _buildInfoRow(
+              Icons.trending_down,
+              'calorie_reduction'.tr(),
+              '${profile.calorieReduction.displayName} (${(profile.calorieReduction.fraction * 100).round()}%)',
+            ),
+          ],
         ],
       ),
     );
@@ -342,6 +356,13 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
             Icons.local_fire_department,
             'bmr_label'.tr(),
             '${bmr.toInt()} ${'kcal'.tr()}/${'day'.tr()}',
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'bmr_description'.tr(),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppPalette.of(context).textSecondary,
+            ),
           ),
           const SizedBox(height: 12),
           _buildInfoRow(
@@ -400,7 +421,10 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'macro_distribution_description'.tr(),
+            (_currentProfile!.nutritionGoal == NutritionGoal.weightLoss
+                    ? 'macro_distribution_weight_loss'
+                    : 'macro_distribution_description')
+                .tr(),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppPalette.of(context).textSecondary,
               fontStyle: FontStyle.italic,
@@ -419,11 +443,14 @@ class _ProfileManagementScreenState extends State<ProfileManagementScreen> {
         Expanded(
           child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
         ),
-        Text(
-          value,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
         ),
       ],
     );

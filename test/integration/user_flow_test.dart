@@ -16,7 +16,7 @@ void main() {
 
     setUpAll(() async {
       await setUpTestHive();
-      
+
       // Register all adapters
       if (!Hive.isAdapterRegistered(0)) {
         Hive.registerAdapter(FoodItemAdapter());
@@ -39,7 +39,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       userProfileService = UserProfileService();
       foodStorageService = FoodStorageService();
-      
+
       await userProfileService.initialize();
       await foodStorageService.initialize();
     });
@@ -118,7 +118,9 @@ void main() {
         await foodStorageService.saveFoodItem(dinner);
 
         // 4. User checks daily progress
-        final todayItems = await foodStorageService.getFoodItemsByDate(DateTime.now());
+        final todayItems = await foodStorageService.getFoodItemsByDate(
+          DateTime.now(),
+        );
         expect(todayItems.length, 3);
 
         // Calculate total nutrition (values are per 100g, so with given masses it's different)
@@ -134,14 +136,23 @@ void main() {
 
         // Expected calories: (300*200/100) + (450*300/100) + (550*350/100) = 600 + 1350 + 1925 = 3875
         expect(totalCalories, closeTo(3875, 10)); // Corrected calculation
-        expect(totalProtein, closeTo(265, 10)); // (10*200/100) + (35*300/100) + (40*350/100) = 20 + 105 + 140 = 265
+        expect(
+          totalProtein,
+          closeTo(265, 10),
+        ); // (10*200/100) + (35*300/100) + (40*350/100) = 20 + 105 + 140 = 265
 
         // 5. Check if user is meeting targets
         final calorieTarget = targets['calories']!;
         final proteinTarget = targets['protein']!;
 
-        expect(totalCalories / calorieTarget, lessThan(1.3)); // Within reasonable range
-        expect(totalProtein / proteinTarget, greaterThan(0.8)); // Meeting protein needs
+        // Logged meals can exceed maintenance; targets must follow the profile,
+        // not be inflated to make an arbitrary sample menu look on target.
+        expect(calorieTarget, closeTo(2887.875, 0.001));
+        expect(totalCalories / calorieTarget, closeTo(1.34181708, 0.0001));
+        expect(
+          totalProtein / proteinTarget,
+          greaterThan(0.8),
+        ); // Meeting protein needs
       });
 
       test('should handle profile updates affecting targets', () async {
@@ -168,44 +179,47 @@ void main() {
         expect(updatedCalories, greaterThan(initialCalories));
       });
 
-      test('should maintain data consistency across service restarts', () async {
-        // Create profile and add food
-        final profile = await userProfileService.createProfile(
-          age: 35,
-          weight: 80.0,
-          height: 180.0,
-          gender: Gender.male,
-          activityLevel: ActivityLevel.moderatelyActive,
-        );
+      test(
+        'should maintain data consistency across service restarts',
+        () async {
+          // Create profile and add food
+          final profile = await userProfileService.createProfile(
+            age: 35,
+            weight: 80.0,
+            height: 180.0,
+            gender: Gender.male,
+            activityLevel: ActivityLevel.moderatelyActive,
+          );
 
-        final foodItem = FoodItem(
-          name: 'Test Food',
-          calories: 200,
-          nutritionFacts: NutritionFacts(
-            protein: 15,
-            carbs: 25,
-            fat: 8,
-            mass: 150,
-          ),
-        );
+          final foodItem = FoodItem(
+            name: 'Test Food',
+            calories: 200,
+            nutritionFacts: NutritionFacts(
+              protein: 15,
+              carbs: 25,
+              fat: 8,
+              mass: 150,
+            ),
+          );
 
-        await foodStorageService.saveFoodItem(foodItem);
+          await foodStorageService.saveFoodItem(foodItem);
 
-        // Simulate app restart by creating new service instances
-        final newUserService = UserProfileService();
-        final newFoodService = FoodStorageService();
+          // Simulate app restart by creating new service instances
+          final newUserService = UserProfileService();
+          final newFoodService = FoodStorageService();
 
-        await newUserService.initialize();
-        await newFoodService.initialize();
+          await newUserService.initialize();
+          await newFoodService.initialize();
 
-        // Verify data persistence
-        expect(newUserService.hasUserProfile, isTrue);
-        expect(newUserService.currentProfile?.id, profile.id);
+          // Verify data persistence
+          expect(newUserService.hasUserProfile, isTrue);
+          expect(newUserService.currentProfile?.id, profile.id);
 
-        final allFoodItems = await newFoodService.getAllFoodItems();
-        expect(allFoodItems.length, 1);
-        expect(allFoodItems.first.id, foodItem.id);
-      });
+          final allFoodItems = await newFoodService.getAllFoodItems();
+          expect(allFoodItems.length, 1);
+          expect(allFoodItems.first.id, foodItem.id);
+        },
+      );
 
       test('should handle multiple days of food tracking', () async {
         await userProfileService.createProfile(
@@ -225,13 +239,23 @@ void main() {
           FoodItem(
             name: 'Today Breakfast',
             calories: 300,
-            nutritionFacts: NutritionFacts(protein: 12, carbs: 40, fat: 8, mass: 200),
+            nutritionFacts: NutritionFacts(
+              protein: 12,
+              carbs: 40,
+              fat: 8,
+              mass: 200,
+            ),
             timestamp: today,
           ),
           FoodItem(
             name: 'Today Lunch',
             calories: 400,
-            nutritionFacts: NutritionFacts(protein: 25, carbs: 35, fat: 12, mass: 250),
+            nutritionFacts: NutritionFacts(
+              protein: 25,
+              carbs: 35,
+              fat: 12,
+              mass: 250,
+            ),
             timestamp: today,
           ),
         ];
@@ -240,7 +264,12 @@ void main() {
           FoodItem(
             name: 'Yesterday Dinner',
             calories: 500,
-            nutritionFacts: NutritionFacts(protein: 30, carbs: 45, fat: 15, mass: 300),
+            nutritionFacts: NutritionFacts(
+              protein: 30,
+              carbs: 45,
+              fat: 15,
+              mass: 300,
+            ),
             timestamp: yesterday,
           ),
         ];
@@ -249,20 +278,33 @@ void main() {
           FoodItem(
             name: 'Two Days Ago Snack',
             calories: 150,
-            nutritionFacts: NutritionFacts(protein: 5, carbs: 20, fat: 6, mass: 100),
+            nutritionFacts: NutritionFacts(
+              protein: 5,
+              carbs: 20,
+              fat: 6,
+              mass: 100,
+            ),
             timestamp: twoDaysAgo,
           ),
         ];
 
         // Save all items
-        for (final item in [...todayFoods, ...yesterdayFoods, ...twoDaysAgoFoods]) {
+        for (final item in [
+          ...todayFoods,
+          ...yesterdayFoods,
+          ...twoDaysAgoFoods,
+        ]) {
           await foodStorageService.saveFoodItem(item);
         }
 
         // Verify day-specific filtering
         final todayItems = await foodStorageService.getFoodItemsByDate(today);
-        final yesterdayItems = await foodStorageService.getFoodItemsByDate(yesterday);
-        final twoDaysAgoItems = await foodStorageService.getFoodItemsByDate(twoDaysAgo);
+        final yesterdayItems = await foodStorageService.getFoodItemsByDate(
+          yesterday,
+        );
+        final twoDaysAgoItems = await foodStorageService.getFoodItemsByDate(
+          twoDaysAgo,
+        );
 
         expect(todayItems.length, 2);
         expect(yesterdayItems.length, 1);
@@ -286,7 +328,12 @@ void main() {
         final foodItem = FoodItem(
           name: 'Orphan Food',
           calories: 100,
-          nutritionFacts: NutritionFacts(protein: 5, carbs: 10, fat: 2, mass: 100),
+          nutritionFacts: NutritionFacts(
+            protein: 5,
+            carbs: 10,
+            fat: 2,
+            mass: 100,
+          ),
         );
 
         await foodStorageService.saveFoodItem(foodItem);
@@ -307,7 +354,12 @@ void main() {
         final foodItem = FoodItem(
           name: 'Test Food',
           calories: 200,
-          nutritionFacts: NutritionFacts(protein: 10, carbs: 20, fat: 5, mass: 150),
+          nutritionFacts: NutritionFacts(
+            protein: 10,
+            carbs: 20,
+            fat: 5,
+            mass: 150,
+          ),
         );
 
         await foodStorageService.saveFoodItem(foodItem);

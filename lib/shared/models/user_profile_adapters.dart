@@ -11,7 +11,7 @@ class UserProfileAdapter extends TypeAdapter<UserProfile> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    
+
     return UserProfile(
       id: fields[0] as String,
       age: fields[1] as int,
@@ -26,12 +26,18 @@ class UserProfileAdapter extends TypeAdapter<UserProfile> {
       // and reads as null — which is exactly the "no goal set" state.
       startWeight: fields[8] as double?,
       goalWeight: fields[9] as double?,
+      nutritionGoal: fields[10] == null
+          ? NutritionGoal.maintenance
+          : NutritionGoal.values.byName(fields[10] as String),
+      calorieReduction: fields[11] == null
+          ? CalorieReduction.moderate
+          : CalorieReduction.values.byName(fields[11] as String),
     );
   }
 
   @override
   void write(BinaryWriter writer, UserProfile obj) {
-    writer.writeByte(10);
+    writer.writeByte(12);
     writer.writeByte(0);
     writer.write(obj.id);
     writer.writeByte(1);
@@ -52,6 +58,10 @@ class UserProfileAdapter extends TypeAdapter<UserProfile> {
     writer.write(obj.startWeight);
     writer.writeByte(9);
     writer.write(obj.goalWeight);
+    writer.writeByte(10);
+    writer.write(obj.nutritionGoal.name);
+    writer.writeByte(11);
+    writer.write(obj.calorieReduction.name);
   }
 }
 

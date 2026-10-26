@@ -32,11 +32,15 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
   // Form state
   Gender _selectedGender = Gender.male;
   ActivityLevel _selectedActivityLevel = ActivityLevel.moderatelyActive;
+  NutritionGoal _selectedNutritionGoal = NutritionGoal.maintenance;
+  CalorieReduction _selectedCalorieReduction = CalorieReduction.moderate;
   String _selectedLanguage = 'en'; // Default language
 
   bool _isLoading = false;
   double _calculatedBMR = 0;
   double _calculatedTDEE = 0;
+  double _calculatedTarget = 0;
+  bool _weightLossUnavailable = false;
 
   @override
   void initState() {
@@ -65,6 +69,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
   }
 
   void _loadExistingProfile() {
+    if (!mounted) return;
     if (widget.isEditing && _userProfileService.hasUserProfile) {
       final profile = _userProfileService.currentProfile!;
       setState(() {
@@ -74,6 +79,8 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
         _goalWeightController.text = _formatKg(profile.goalWeight);
         _selectedGender = profile.gender;
         _selectedActivityLevel = profile.activityLevel;
+        _selectedNutritionGoal = profile.nutritionGoal;
+        _selectedCalorieReduction = profile.calorieReduction;
       });
       _calculateBMR();
     }
@@ -102,26 +109,52 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     final weight = double.tryParse(_weightController.text);
     final height = double.tryParse(_heightController.text);
 
-    if (age != null && weight != null && height != null) {
-      setState(() {
-        // Calculate BMR using the provided formulas
-        switch (_selectedGender) {
-          case Gender.male:
-            _calculatedBMR =
-                260 + (9.65 * weight) + (5.73 * height) - (5.08 * age);
-            break;
-          case Gender.female:
-            _calculatedBMR =
-                43 + (7.38 * weight) + (6.07 * height) - (2.31 * age);
-            break;
-        }
-        _calculatedTDEE = _calculatedBMR * _selectedActivityLevel.multiplier;
-      });
-    }
+    final valid =
+        age != null &&
+        age >= 10 &&
+        age <= 120 &&
+        weight != null &&
+        weight.isFinite &&
+        weight >= 20 &&
+        weight <= 300 &&
+        height != null &&
+        height.isFinite &&
+        height >= 100 &&
+        height <= 250;
+    final preview = valid
+        ? UserProfile(
+            id: 'preview',
+            age: age,
+            weight: weight,
+            height: height,
+            gender: _selectedGender,
+            activityLevel: _selectedActivityLevel,
+            nutritionGoal: _selectedNutritionGoal,
+            calorieReduction: _selectedCalorieReduction,
+            createdAt: DateTime.now(),
+          )
+        : null;
+    setState(() {
+      _weightLossUnavailable =
+          preview != null &&
+          _selectedNutritionGoal == NutritionGoal.weightLoss &&
+          !preview.canUseWeightLossTargets;
+      _calculatedBMR = preview?.calculateBMR() ?? 0;
+      _calculatedTDEE = preview?.calculateTDEE() ?? 0;
+      _calculatedTarget = _weightLossUnavailable
+          ? 0
+          : preview?.calculateCalorieTarget() ?? 0;
+    });
   }
 
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    if (_weightLossUnavailable) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        StatusSnackBar.error(context, message: 'weight_loss_unavailable'.tr()),
+      );
       return;
     }
 
@@ -142,6 +175,8 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
           height: height,
           gender: _selectedGender,
           activityLevel: _selectedActivityLevel,
+          nutritionGoal: _selectedNutritionGoal,
+          calorieReduction: _selectedCalorieReduction,
           goalWeight: goalWeight,
         );
       } else {
@@ -151,6 +186,8 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
           height: height,
           gender: _selectedGender,
           activityLevel: _selectedActivityLevel,
+          nutritionGoal: _selectedNutritionGoal,
+          calorieReduction: _selectedCalorieReduction,
           goalWeight: goalWeight,
         );
       }
@@ -257,6 +294,10 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
               const SizedBox(height: 24),
 
               // BMR Calculation results
+              _buildNutritionGoalSection(),
+
+              const SizedBox(height: 24),
+
               _buildBMRResultsSection(),
 
               const SizedBox(height: 32),
@@ -564,10 +605,12 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                   size: 24,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'activity_level'.tr(),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    'activity_level'.tr(),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -629,6 +672,75 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
     );
   }
 
+  Widget _buildNutritionGoalSection() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'nutrition_goal'.tr(),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            RadioGroup<NutritionGoal>(
+              groupValue: _selectedNutritionGoal,
+              onChanged: (value) {
+                _selectedNutritionGoal = value!;
+                _calculateBMR();
+              },
+              child: Column(
+                children: NutritionGoal.values
+                    .map(
+                      (goal) => RadioListTile<NutritionGoal>(
+                        title: Text(goal.displayName),
+                        value: goal,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+            if (_selectedNutritionGoal == NutritionGoal.weightLoss) ...[
+              const SizedBox(height: 16),
+              Text(
+                'weight_loss_caution'.tr(),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'calorie_reduction'.tr(),
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              RadioGroup<CalorieReduction>(
+                groupValue: _selectedCalorieReduction,
+                onChanged: (value) {
+                  _selectedCalorieReduction = value!;
+                  _calculateBMR();
+                },
+                child: Column(
+                  children: CalorieReduction.values
+                      .map(
+                        (level) => RadioListTile<CalorieReduction>(
+                          title: Text(
+                            '${level.displayName} (${(level.fraction * 100).round()}%)',
+                          ),
+                          value: level,
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildBMRResultsSection() {
     return Card(
       elevation: 2,
@@ -656,6 +768,13 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
             const SizedBox(height: 16),
 
             if (_calculatedBMR > 0) ...[
+              if (_weightLossUnavailable) ...[
+                Text(
+                  'weight_loss_unavailable'.tr(),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+                const SizedBox(height: 12),
+              ],
               _buildResultCard(
                 'bmr_label'.tr(),
                 '${_calculatedBMR.toInt()} ${'kcal'.tr()}/${'day'.tr()}',
@@ -671,6 +790,16 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
                 'tdee_description'.tr(),
                 Icons.restaurant,
               ),
+              if (_selectedNutritionGoal == NutritionGoal.weightLoss &&
+                  !_weightLossUnavailable) ...[
+                const SizedBox(height: 12),
+                _buildResultCard(
+                  'calorie_target'.tr(),
+                  '${_calculatedTarget.toInt()} ${'kcal'.tr()}/${'day'.tr()}',
+                  'calorie_target_description'.tr(),
+                  Icons.flag_outlined,
+                ),
+              ],
             ] else ...[
               Container(
                 padding: const EdgeInsets.all(16),
