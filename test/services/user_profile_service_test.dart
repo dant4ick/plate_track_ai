@@ -143,7 +143,7 @@ void main() {
 
       test('should update profile age', () async {
         final updated = await service.updateProfile(age: 26);
-        
+
         expect(updated.age, 26);
         expect(updated.weight, initialProfile.weight);
         expect(updated.height, initialProfile.height);
@@ -155,7 +155,7 @@ void main() {
 
       test('should update profile weight', () async {
         final updated = await service.updateProfile(weight: 75.0);
-        
+
         expect(updated.weight, 75.0);
         expect(updated.age, initialProfile.age);
         expect(updated.updatedAt, isNotNull);
@@ -163,7 +163,7 @@ void main() {
 
       test('should update profile height', () async {
         final updated = await service.updateProfile(height: 180.0);
-        
+
         expect(updated.height, 180.0);
         expect(updated.age, initialProfile.age);
         expect(updated.weight, initialProfile.weight);
@@ -171,7 +171,7 @@ void main() {
 
       test('should update profile gender', () async {
         final updated = await service.updateProfile(gender: Gender.female);
-        
+
         expect(updated.gender, Gender.female);
         expect(updated.age, initialProfile.age);
         expect(updated.weight, initialProfile.weight);
@@ -182,7 +182,7 @@ void main() {
         final updated = await service.updateProfile(
           activityLevel: ActivityLevel.veryActive,
         );
-        
+
         expect(updated.activityLevel, ActivityLevel.veryActive);
         expect(updated.age, initialProfile.age);
         expect(updated.weight, initialProfile.weight);
@@ -196,7 +196,7 @@ void main() {
           gender: Gender.female,
           activityLevel: ActivityLevel.veryActive,
         );
-        
+
         expect(updated.age, 30);
         expect(updated.weight, 80.0);
         expect(updated.height, 180.0);
@@ -209,11 +209,8 @@ void main() {
 
       test('should throw when updating without profile', () async {
         await service.deleteProfile();
-        
-        expect(
-          () => service.updateProfile(age: 30),
-          throwsA(isA<Exception>()),
-        );
+
+        expect(() => service.updateProfile(age: 30), throwsA(isA<Exception>()));
       });
     });
 
@@ -228,18 +225,18 @@ void main() {
         );
 
         expect(service.hasUserProfile, isTrue);
-        
+
         await service.deleteProfile();
-        
+
         expect(service.hasUserProfile, isFalse);
         expect(service.currentProfile, isNull);
       });
 
       test('should handle deleting when no profile exists', () async {
         expect(service.hasUserProfile, isFalse);
-        
+
         await expectLater(service.deleteProfile(), completes);
-        
+
         expect(service.hasUserProfile, isFalse);
       });
     });
@@ -257,9 +254,10 @@ void main() {
         final calories = service.calculateDailyCalorieNeeds();
         expect(calories, isNotNull);
         expect(calories!, greaterThan(0));
-        
-        final expectedBMR = 260 + (9.65 * 80) + (5.73 * 180) - (5.08 * 30);
-        final expectedTDEE = expectedBMR * ActivityLevel.moderatelyActive.multiplier;
+
+        final expectedBMR = 1780.0;
+        final expectedTDEE =
+            expectedBMR * ActivityLevel.moderatelyActive.multiplier;
         expect(calories, closeTo(expectedTDEE, 0.01));
       });
 
@@ -275,8 +273,8 @@ void main() {
         final bmr = service.calculateBMR();
         expect(bmr, isNotNull);
         expect(bmr!, greaterThan(0));
-        
-        final expectedBMR = 43 + (7.38 * 65) + (6.07 * 165) - (2.31 * 25);
+
+        final expectedBMR = 1395.25;
         expect(bmr, closeTo(expectedBMR, 0.01));
       });
 
@@ -301,18 +299,118 @@ void main() {
         expect(targets['protein'], greaterThan(0));
         expect(targets['carbs'], greaterThan(0));
         expect(targets['fat'], greaterThan(0));
-        
+
         // Verify macro distribution percentages
         final calories = targets['calories']!;
         final proteinCalories = targets['protein']! * 4; // 4 cal/g
         final carbsCalories = targets['carbs']! * 4; // 4 cal/g
         final fatCalories = targets['fat']! * 9; // 9 cal/g
-        
+
         expect(proteinCalories / calories, closeTo(0.20, 0.01)); // 20%
         expect(carbsCalories / calories, closeTo(0.50, 0.01)); // 50%
         expect(fatCalories / calories, closeTo(0.30, 0.01)); // 30%
       });
     });
+
+    test(
+      'unsupported weight-loss changes do not overwrite the saved profile',
+      () async {
+        await service.createProfile(
+          age: 17,
+          weight: 70,
+          height: 175,
+          gender: Gender.male,
+          activityLevel: ActivityLevel.moderatelyActive,
+        );
+        await expectLater(
+          service.updateProfile(nutritionGoal: NutritionGoal.weightLoss),
+          throwsArgumentError,
+        );
+        expect(
+          service.currentProfile!.nutritionGoal,
+          NutritionGoal.maintenance,
+        );
+        final saved = Hive.box<UserProfile>(
+          'userProfile',
+        ).get(service.currentProfile!.id)!;
+        expect(saved.nutritionGoal, NutritionGoal.maintenance);
+      },
+    );
+
+    test('rejects unsupported weight-loss creation before saving', () async {
+      final box = Hive.box<UserProfile>('userProfile');
+      final count = box.length;
+      await expectLater(
+        service.createProfile(
+          age: 35,
+          weight: 45,
+          height: 180,
+          gender: Gender.male,
+          activityLevel: ActivityLevel.moderatelyActive,
+          nutritionGoal: NutritionGoal.weightLoss,
+        ),
+        throwsArgumentError,
+      );
+      expect(box.length, count);
+      expect(service.currentProfile, isNull);
+    });
+
+    test(
+      'creates, updates and reloads goal-specific calorie targets',
+      () async {
+        await service.createProfile(
+          age: 35,
+          weight: 80,
+          height: 180,
+          gender: Gender.male,
+          activityLevel: ActivityLevel.moderatelyActive,
+          nutritionGoal: NutritionGoal.weightLoss,
+          calorieReduction: CalorieReduction.gentle,
+        );
+        expect(service.calculateDailyCalorieNeeds(), closeTo(2983.5, 0.0001));
+        expect(
+          service.getNutritionTargets()!['calories'],
+          closeTo(2685.15, 0.0001),
+        );
+        expect(service.getNutritionTargets()!['protein'], closeTo(112, 0.0001));
+        await service.updateProfile(
+          calorieReduction: CalorieReduction.substantial,
+        );
+        expect(
+          service.getNutritionTargets()!['calories'],
+          closeTo(2386.8, 0.0001),
+        );
+        await Hive.box<UserProfile>('userProfile').close();
+        final reloaded = UserProfileService();
+        await reloaded.initialize();
+        expect(
+          reloaded.currentProfile!.nutritionGoal,
+          NutritionGoal.weightLoss,
+        );
+        expect(
+          reloaded.currentProfile!.calorieReduction,
+          CalorieReduction.substantial,
+        );
+        expect(
+          reloaded.getNutritionTargets()!['calories'],
+          closeTo(2386.8, 0.0001),
+        );
+        service = reloaded;
+        await service.updateProfile(nutritionGoal: NutritionGoal.maintenance);
+        expect(
+          service.getNutritionTargets()!['calories'],
+          closeTo(2983.5, 0.0001),
+        );
+        await service.updateProfile(
+          nutritionGoal: NutritionGoal.weightLoss,
+          weight: 78,
+        );
+        expect(
+          service.getNutritionTargets()!['protein'],
+          closeTo(109.2, 0.0001),
+        );
+      },
+    );
 
     group('Service Persistence', () {
       test('should persist profile across service instances', () async {

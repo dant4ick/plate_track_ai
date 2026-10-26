@@ -14,7 +14,7 @@ void main() {
         createdAt: DateTime.now(),
       );
       final bmr = profile.calculateBMR();
-      expect(bmr, closeTo(260 + 9.65 * 80 + 5.73 * 180 - 5.08 * 30, 0.01));
+      expect(bmr, closeTo(1780, 0.001));
     });
 
     test('should calculate BMR for female', () {
@@ -28,7 +28,7 @@ void main() {
         createdAt: DateTime.now(),
       );
       final bmr = profile.calculateBMR();
-      expect(bmr, closeTo(43 + 7.38 * 60 + 6.07 * 165 - 2.31 * 25, 0.01));
+      expect(bmr, closeTo(1345.25, 0.001));
     });
 
     test('should calculate TDEE', () {
@@ -125,10 +125,10 @@ void main() {
         createdAt: createdAt,
         updatedAt: updatedAt,
       );
-      
+
       final json = profile.toJson();
       final fromJson = UserProfile.fromJson(json);
-      
+
       expect(fromJson.id, profile.id);
       expect(fromJson.age, profile.age);
       expect(fromJson.weight, profile.weight);
@@ -149,10 +149,10 @@ void main() {
         activityLevel: ActivityLevel.lightlyActive,
         createdAt: DateTime.now(),
       );
-      
+
       final json = profile.toJson();
       expect(json['updatedAt'], isNull);
-      
+
       final fromJson = UserProfile.fromJson(json);
       expect(fromJson.updatedAt, isNull);
     });
@@ -204,7 +204,9 @@ void main() {
     });
 
     test('should have multipliers in ascending order', () {
-      final multipliers = ActivityLevel.values.map((level) => level.multiplier).toList();
+      final multipliers = ActivityLevel.values
+          .map((level) => level.multiplier)
+          .toList();
       for (int i = 1; i < multipliers.length; i++) {
         expect(multipliers[i], greaterThan(multipliers[i - 1]));
       }
@@ -213,10 +215,19 @@ void main() {
     test('should have all required activity levels', () {
       expect(ActivityLevel.values.length, 5);
       expect(ActivityLevel.values.contains(ActivityLevel.sedentary), isTrue);
-      expect(ActivityLevel.values.contains(ActivityLevel.lightlyActive), isTrue);
-      expect(ActivityLevel.values.contains(ActivityLevel.moderatelyActive), isTrue);
+      expect(
+        ActivityLevel.values.contains(ActivityLevel.lightlyActive),
+        isTrue,
+      );
+      expect(
+        ActivityLevel.values.contains(ActivityLevel.moderatelyActive),
+        isTrue,
+      );
       expect(ActivityLevel.values.contains(ActivityLevel.veryActive), isTrue);
-      expect(ActivityLevel.values.contains(ActivityLevel.extremelyActive), isTrue);
+      expect(
+        ActivityLevel.values.contains(ActivityLevel.extremelyActive),
+        isTrue,
+      );
     });
 
     test('should have reasonable multiplier ranges', () {

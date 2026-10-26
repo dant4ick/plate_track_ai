@@ -122,6 +122,52 @@ void main() {
       expect(restored.goalWeight, isNull);
     });
 
+    test(
+      'round-trips nutrition goal and reduction through a real box',
+      () async {
+        final profile =
+            TestDataFactory.createUserProfile(
+              createdAt: DateTime(2026),
+            ).copyWith(
+              nutritionGoal: NutritionGoal.weightLoss,
+              calorieReduction: CalorieReduction.substantial,
+            );
+        expect(await roundTrip(profile), profile);
+      },
+    );
+
+    test(
+      'previous ten-field profiles retain weight goals without a deficit',
+      () {
+        final profile = TestDataFactory.createUserProfile(
+          weight: 67,
+          startWeight: 70,
+          goalWeight: 60,
+        );
+        final restored = UserProfileAdapter().read(
+          _ScriptedReader(
+            fieldCount: 10,
+            fields: {
+              0: profile.id,
+              1: profile.age,
+              2: profile.weight,
+              3: profile.height,
+              4: profile.gender,
+              5: profile.activityLevel,
+              6: profile.createdAt,
+              7: profile.updatedAt,
+              8: profile.startWeight,
+              9: profile.goalWeight,
+            },
+          ),
+        );
+        expect(restored.goalWeight, 60);
+        expect(restored.startWeight, 70);
+        expect(restored.nutritionGoal, NutritionGoal.maintenance);
+        expect(restored.calculateCalorieTarget(), restored.calculateTDEE());
+      },
+    );
+
     test('reads a record written before the goal fields existed', () {
       // Replays exactly what the pre-upgrade adapter emitted: a field count of
       // 8 and no entries for 8 or 9. The adapter must land on the "no goal set"
@@ -147,6 +193,8 @@ void main() {
       expect(restored.goalWeight, isNull);
       expect(restored.effectiveStartWeight, 70);
       expect(restored.weightProgress, isNull);
+      expect(restored.nutritionGoal, NutritionGoal.maintenance);
+      expect(restored.calorieReduction, CalorieReduction.moderate);
     });
   });
 
@@ -239,9 +287,8 @@ class _ScriptedReader implements BinaryReader {
   dynamic read([int? typeId]) => fields[_keyOrder[_cursor++]];
 
   @override
-  dynamic noSuchMethod(Invocation invocation) =>
-      throw UnsupportedError(
-        'UserProfileAdapter.read should not call '
-        '${invocation.memberName}',
-      );
+  dynamic noSuchMethod(Invocation invocation) => throw UnsupportedError(
+    'UserProfileAdapter.read should not call '
+    '${invocation.memberName}',
+  );
 }
