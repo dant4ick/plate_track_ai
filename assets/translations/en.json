@@ -47,6 +47,8 @@
   "this_action_cannot_be_undone": "This action cannot be undone",
   "food_item_deleted_successfully": "Food item deleted successfully",
   "recent_items": "Recent meals",
+  "recent_meals_today_hour": "Today · {start}–{end}",
+  "recent_meals_yesterday": "Yesterday",
   "all_meals": "All meals",
   "meal_details": "Meal details",
   "today": "Today",
