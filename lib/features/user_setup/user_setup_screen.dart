@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:plate_track_ai/shared/widgets/app_scaffold.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
@@ -261,7 +262,7 @@ class _UserSetupScreenState extends State<UserSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: StandardAppBar(
         titleText: widget.isEditing ? 'edit_profile'.tr() : 'user_setup'.tr(),
         showLogo: false,

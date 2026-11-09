@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:plate_track_ai/shared/widgets/app_scaffold.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/core/services/local_data_observer.dart';
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
@@ -146,7 +147,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: const StandardAppBar(),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

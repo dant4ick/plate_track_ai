@@ -23,7 +23,10 @@ class BottomActionBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
+        // AppScaffold paints the full dark canvas beneath this pinned footer.
+        color: palette.isDark
+            ? Colors.transparent
+            : Theme.of(context).scaffoldBackgroundColor,
         // A hairline separates the bar from content scrolling behind it.
         border: Border(top: BorderSide(color: palette.border)),
       ),
