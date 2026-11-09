@@ -47,6 +47,8 @@
     "this_action_cannot_be_undone": "Это действие нельзя отменить",
     "food_item_deleted_successfully": "Блюдо успешно удалено",
     "recent_items": "Недавние блюда",
+    "recent_meals_today_hour": "Сегодня · {start}–{end}",
+    "recent_meals_yesterday": "Вчера",
     "all_meals": "Все блюда",
     "meal_details": "О блюде",
     "today": "Сегодня",
