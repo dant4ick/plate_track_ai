@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:plate_track_ai/shared/widgets/app_scaffold.dart';
 
 import 'package:plate_track_ai/core/services/local_data_observer.dart';
 import 'package:plate_track_ai/core/services/user_profile_service.dart';
@@ -75,7 +76,7 @@ class _WeightHistoryScreenState extends State<WeightHistoryScreen> {
   Widget build(BuildContext context) {
     final profile = _profile;
 
-    return Scaffold(
+    return AppScaffold(
       appBar: StandardAppBar(titleText: 'weight_history'.tr(), showLogo: false),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

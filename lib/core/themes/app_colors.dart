@@ -96,6 +96,9 @@ class AppColors {
   static const Color scaffoldLight = Color(0xFFFFFFFF);
   static const Color scaffoldDark = Color(0xFF1A191F);
 
+  /// Lower endpoint of the dark page canvas; card surfaces stay independent.
+  static const Color scaffoldDarkBottom = Color(0xFF120E2A);
+
   /// Faintly pink page background — the pick-me theme's scaffold is not white.
   static const Color scaffoldPick = Color(0xFFFFF6F9);
 

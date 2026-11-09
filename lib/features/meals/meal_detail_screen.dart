@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:plate_track_ai/shared/widgets/app_scaffold.dart';
 
 import 'package:plate_track_ai/core/services/food_storage_service.dart';
 import 'package:plate_track_ai/core/themes/app_colors.dart';
@@ -55,7 +56,7 @@ class MealDetailScreen extends StatelessWidget {
       context.locale.toString(),
     ).format(item.timestamp);
 
-    return Scaffold(
+    return AppScaffold(
       appBar: StandardAppBar(titleText: 'meal_details'.tr(), showLogo: false),
       body: SingleChildScrollView(
         padding: AppDimens.pagePadding(context),

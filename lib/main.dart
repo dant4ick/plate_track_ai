@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:plate_track_ai/shared/widgets/app_scaffold.dart';
 import 'package:flutter/foundation.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:plate_track_ai/core/themes/app_colors.dart';
@@ -173,7 +174,7 @@ class _AppInitializerState extends State<AppInitializer> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
+      return AppScaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

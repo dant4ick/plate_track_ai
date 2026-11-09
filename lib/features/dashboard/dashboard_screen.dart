@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:plate_track_ai/shared/widgets/app_scaffold.dart';
 
 import 'package:plate_track_ai/core/services/local_data_observer.dart';
 import 'package:plate_track_ai/core/services/food_recognition_service.dart';
@@ -118,7 +119,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: StandardAppBar(
         actions: [
           IconButton(
